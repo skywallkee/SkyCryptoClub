@@ -647,6 +647,23 @@ button:focus {
   outline: 5px auto -webkit-focus-ring-color;
 }
 
+.alignleft {
+  padding-left: 1%;
+  float: left;
+  width:33%;
+  text-align:left;
+}
+.aligncenter {
+  float: left;
+  width:33%;
+  text-align:center;
+}
+.alignright {
+ float: left;
+ width:32%;
+ text-align:right;
+}​
+
 input,
 button,
 select,
@@ -5971,6 +5988,10 @@ button.close {
   position: relative;
   width: 100%;
   overflow: hidden;
+}
+
+.center-img{
+  margin: 0 auto;
 }
 
 .carousel-item {
@@ -18076,6 +18097,22 @@ a .material-icons {
   background-color: rgba(180, 180, 180, 0.3);
 }
 
+.user .photo {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  float: left;
+  z-index: 5;
+  margin-right: 11px;
+  border-radius: 50%;
+  margin-left: 23px;
+  box-shadow: 0 16px 38px -12px rgba(0, 0, 0, 0.56), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.user .photo img {
+  width: 100%;
+}
+
 .sidebar .user .photo {
   width: 34px;
   height: 34px;
@@ -18110,10 +18147,22 @@ a .material-icons {
   opacity: 1;
 }
 
-.sidebar .user .user-info .caret {
-  position: absolute;
-  top: 8px;
-  right: 15px;
+@media (max-width: 400px) {
+  .user .user-info .caret {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 300px) {
+  .user .user-info .caret {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 400px) {
+  .user .user-info .caret {
+    font-size: 20px;
+  }
 }
 
 .sidebar[data-background-color="black"] .nav .nav-item .nav-link {

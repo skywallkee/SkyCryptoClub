@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    Borrow | SkyCrypto Club
+    Borrow History | SkyCrypto Club
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -50,19 +50,19 @@
             </a>
             <div class="collapse" id="exchanges">
               <ul class="nav">
-                <li class="nav-item">
+                <li class="nav-item ">
                   <a class="nav-link" href="exchange_request.html">
                     <span class="sidebar-mini"> RE </span>
                     <span class="sidebar-normal"> Request Exchange </span>
                   </a>
                 </li>
-                <li class="nav-item ">
+                <li class="nav-item">
                   <a class="nav-link" href="exchange_list.html">
                     <span class="sidebar-mini"> VEL </span>
                     <span class="sidebar-normal"> View Exchange List </span>
                   </a>
                 </li>
-                <li class="nav-item ">
+                <li class="nav-item">
                   <a class="nav-link" href="exchange_history.html">
                     <span class="sidebar-mini"> EH </span>
                     <span class="sidebar-normal"> Exchange History </span>
@@ -80,7 +80,7 @@
             </a>
             <div class="collapse" id="loans">
               <ul class="nav">
-                <li class="nav-item active">
+                <li class="nav-item ">
                   <a class="nav-link" href="borrow_request.html">
                     <span class="sidebar-mini"> RL </span>
                     <span class="sidebar-normal"> Request Loan </span>
@@ -92,7 +92,7 @@
                     <span class="sidebar-normal"> View Loans List </span>
                   </a>
                 </li>
-                <li class="nav-item ">
+                <li class="nav-item active">
                   <a class="nav-link" href="borrow_history.html">
                     <span class="sidebar-mini"> BH </span>
                     <span class="sidebar-normal"> Borrow History </span>
@@ -214,77 +214,116 @@
       <!-- End Navbar -->
       <div class="content">
         <div class="container-fluid">
-          <div class="card">
-            <div class="card-header card-header-icon card-header-rose">
-              <div class="card-icon">
-                <i class="material-icons">perm_identity</i>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header card-header-icon card-header-rose">
+                  <div class="card-icon">
+                    <i class="material-icons">assignment</i>
+                  </div>
+                  <h4 class="card-title">Lending History</h4>
+                </div>
+                <div class="card-body">
+                  <div class="toolbar">
+                    <!--        Here you can write extra buttons/actions for the toolbar              -->
+                  </div>
+                  <div class="material-datatables">
+                    <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+                      <thead>
+                        <tr>
+                          <th>Username</th>
+                          <th>Currency</th>
+                          <th>Requested Amount</th>
+                          <th>Interest</th>
+                          <th>Unpaid Amount</th>
+                          <th>Sender</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th class="disabled-sorting text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>Username</th>
+                          <th>Currency</th>
+                          <th>Requested Amount</th>
+                          <th>Interest</th>
+                          <th>Unpaid Amount</th>
+                          <th>Sender</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th class="disabled-sorting text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      </tfoot>
+                      <tbody>
+                        <tr>
+                          <td>skywallkee</td>
+                          <td>BTC</td>
+                          <td>0.002</td>
+                          <td>10%</td>
+                          <td>0.0025</td>
+                          <td>c9m</td>
+                          <td>Waiting</td>
+                          <td>2011/04/27</td>
+                          <td class="text-right">
+                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
+                            <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;"onclick="Swal.fire({
+                              title: 'Are you sure?',
+                              text: 'The lending will be closed.',
+                              type: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#3085d6',
+                              cancelButtonColor: '#d33',
+                              confirmButtonText: 'Yes!'
+                            }).then((result) => {
+                              if (result.value) {
+                                Swal.fire(
+                                  'Deleted the request!',
+                                  '',
+                                  'success'
+                                )
+                              }
+                            })"><i class="material-icons">close</i>
+                            </span>
+                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>skywallkee</td>
+                          <td>BTC</td>
+                          <td>0.002</td>
+                          <td>10%</td>
+                          <td>0.0025</td>
+                          <td>c9m</td>
+                          <td>In progress</td>
+                          <td>2011/04/30</td>
+                          <td class="text-right">
+                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
+                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>skywallkee</td>
+                          <td>BTC</td>
+                          <td>0.002</td>
+                          <td>ETH</td>
+                          <td>0.25</td>
+                          <td>c9m</td>
+                          <td>Completed</td>
+                          <td>2011/04/25</td>
+                          <td class="text-right">
+                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
+                            <a href="borrow_request.html" class="btn btn-link btn-info btn-just-icon like"><i class="material-icons">refresh</i></a>
+                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="clearfix"></div>
               </div>
-              <h4 class="card-title">Borrow</h4>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <label class="col-sm-3 col-md-2 col-form-label text-info text-center">Request ID: <span class="text-muted">#123456789</span></label>
-                    <label class="col-sm-3 col-md-3 col-form-label text-info text-center">Requested by: <span class="text-muted">Anonymous</span> | <span class="text-primary">c9m</span></label>
-                    <label class="col-sm-3 col-md-3 col-form-label text-info text-center">Lent by: <span class="text-warning">skywallkee</span></label>
-                    <label class="col-sm-3 col-md-4 col-form-label text-info text-center">Status: <span class="text-success">Completed</span> | <span class="text-warning">Waiting for sender</span> | <span class="text-primary">In progress</span> | <span class="text-muted">Closed</span> | <span class="text-danger">Defaulted</span></label>
-                </div>
-                <div class="row">
-                    <label class="col-sm-2 col-md-2 col-form-label text-info text-center">Requested amount: <span class="text-primary">0.002 BTC</span></label>
-                    <label class="col-sm-2 col-md-2 col-form-label text-info text-center">Return Date: <span class="text-primary">20 Nov. 2019</span></label>
-                    <label class="col-sm-3 col-md-3 col-form-label text-info text-center">Daily Interest: <span class="text-primary">10%</span></label>
-                    <label class="col-sm-3 col-md-3 col-form-label text-info text-center">Unpaid amount: <span class="text-primary">0.0026 BTC</span></label>
-                    <label class="col-sm-2 col-md-2 col-form-label text-info text-center">Paid amount: <span class="text-primary">0.001 BTC</span></label>
-                </div>
-                <br/><hr><br/>
-                <div class="row">
-                    <div class="col-sm-6 text-center">
-                        <button class="col-sm-6 btn btn-success" onclick="Swal.fire({
-                            title: 'Are you sure?',
-                            text: 'By doing this you will send 0.002 BTC from your on-platform balance and will receive 0.09 ETH',
-                            type: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes!'
-                          }).then((result) => {
-                            if (result.value) {
-                                if (1 > 0) {
-                                    Swal.fire(
-                                        'Money sent successfuly!',
-                                        '',
-                                        'success'
-                                    )
-                                }
-                                else {
-                                    Swal.fire(
-                                        'Insufficient funds!',
-                                        '',
-                                        'error'
-                                    )
-                                }
-                            }
-                          })">Pay</button> 
-                    </div>
-                    <div class="col-sm-6 text-center">
-                        <button class="col-sm-6 btn btn-danger" disabled onclick="Swal.fire({
-                            title: 'Are you sure?',
-                            text: 'The sent coins will be refunded and the request will be closed.',
-                            type: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Yes!'
-                          }).then((result) => {
-                            if (result.value) {
-                              Swal.fire(
-                                'Deleted the request!',
-                                '',
-                                'success'
-                              )
-                            }
-                          })">Close</button>
-                    </div>
-                </div>
             </div>
           </div>
         </div>

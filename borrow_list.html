@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    Borrow History | SkyCrypto Club
+    Borrows List | SkyCrypto Club
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -62,7 +62,7 @@
                     <span class="sidebar-normal"> View Exchange List </span>
                   </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item ">
                   <a class="nav-link" href="exchange_history.html">
                     <span class="sidebar-mini"> EH </span>
                     <span class="sidebar-normal"> Exchange History </span>
@@ -86,13 +86,13 @@
                     <span class="sidebar-normal"> Request Loan </span>
                   </a>
                 </li>
-                <li class="nav-item ">
+                <li class="nav-item active">
                   <a class="nav-link" href="borrow_list.html">
                     <span class="sidebar-mini"> VLL </span>
                     <span class="sidebar-normal"> View Loans List </span>
                   </a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item ">
                   <a class="nav-link" href="borrow_history.html">
                     <span class="sidebar-mini"> BH </span>
                     <span class="sidebar-normal"> Borrow History </span>
@@ -221,7 +221,7 @@
                   <div class="card-icon">
                     <i class="material-icons">assignment</i>
                   </div>
-                  <h4 class="card-title">Lending History</h4>
+                  <h4 class="card-title">Borrow Requests List</h4>
                 </div>
                 <div class="card-body">
                   <div class="toolbar">
@@ -235,10 +235,7 @@
                           <th>Currency</th>
                           <th>Requested Amount</th>
                           <th>Interest</th>
-                          <th>Unpaid Amount</th>
-                          <th>Paid</th>
-                          <th>Sender</th>
-                          <th>Status</th>
+                          <th>Refund Time</th>
                           <th>Date</th>
                           <th class="disabled-sorting text-right">Actions</th>
                         </tr>
@@ -249,145 +246,24 @@
                           <th>Currency</th>
                           <th>Requested Amount</th>
                           <th>Interest</th>
-                          <th>Unpaid Amount</th>
-                          <th>Paid</th>
-                          <th>Sender</th>
-                          <th>Status</th>
+                          <th>Refund Time</th>
                           <th>Date</th>
                           <th class="disabled-sorting text-right">Actions</th>
                         </tr>
-                      </thead>
                       </tfoot>
                       <tbody>
                         <tr>
                           <td>skywallkee</td>
                           <td>BTC</td>
                           <td>0.002</td>
-                          <td>10%</td>
-                          <td>0.0025</td>
-                          <td>0.003</td>
-                          <td>c9m</td>
-                          <td>Waiting</td>
-                          <td>2011/04/27</td>
-                          <td class="text-right">
-                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>skywallkee</td>
-                          <td>BTC</td>
-                          <td>0.002</td>
-                          <td>10%</td>
-                          <td>0.0025</td>
-                          <td>0.0012</td>
-                          <td>c9m</td>
-                          <td>In progress</td>
-                          <td>2011/04/30</td>
-                          <td class="text-right">
-                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                            <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;"onclick="Swal.fire({
-                              title: 'Are you sure?',
-                              text: 'The action is irreversible. Take into counting that the borrower will be spared of paying you any other amount and you will not receive anything else from this point. Any unpaid amount will not be further supported by us.',
-                              type: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#3085d6',
-                              cancelButtonColor: '#d33',
-                              confirmButtonText: 'Yes!'
-                            }).then((result) => {
-                              if (result.value) {
-                                Swal.fire(
-                                  'Closed the lending!',
-                                  '',
-                                  'success'
-                                )
-                              }
-                            })"><i class="material-icons">close</i>
-                            </span>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>skywallkee</td>
-                          <td>BTC</td>
-                          <td>0.002</td>
-                          <td>ETH</td>
-                          <td>0.25</td>
-                          <td>0</td>
-                          <td>c9m</td>
-                          <td>Completed</td>
+                          <td>5%</td>
+                          <td>2020/01/02</td>
                           <td>2011/04/25</td>
                           <td class="text-right">
                             <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <div class="clearfix"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-icon card-header-rose">
-                  <div class="card-icon">
-                    <i class="material-icons">assignment</i>
-                  </div>
-                  <h4 class="card-title">Borrow History</h4>
-                </div>
-                <div class="card-body">
-                  <div class="toolbar">
-                    <!--        Here you can write extra buttons/actions for the toolbar              -->
-                  </div>
-                  <div class="material-datatables">
-                    <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
-                      <thead>
-                        <tr>
-                          <th>Username</th>
-                          <th>Currency</th>
-                          <th>Requested Amount</th>
-                          <th>Interest</th>
-                          <th>Unpaid Amount</th>
-                          <th>Sender</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                          <th class="disabled-sorting text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tfoot>
-                        <tr>
-                          <th>Username</th>
-                          <th>Currency</th>
-                          <th>Requested Amount</th>
-                          <th>Interest</th>
-                          <th>Unpaid Amount</th>
-                          <th>Sender</th>
-                          <th>Status</th>
-                          <th>Date</th>
-                          <th class="disabled-sorting text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      </tfoot>
-                      <tbody>
-                        <tr>
-                          <td>skywallkee</td>
-                          <td>BTC</td>
-                          <td>0.002</td>
-                          <td>10%</td>
-                          <td>0.0025</td>
-                          <td>c9m</td>
-                          <td>Waiting</td>
-                          <td>2011/04/27</td>
-                          <td class="text-right">
-                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
                             <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;"onclick="Swal.fire({
                               title: 'Are you sure?',
-                              text: 'The lending will be closed.',
+                              text: 'The request will be closed.',
                               type: 'warning',
                               showCancelButton: true,
                               confirmButtonColor: '#3085d6',
@@ -401,38 +277,7 @@
                                   'success'
                                 )
                               }
-                            })"><i class="material-icons">close</i>
-                            </span>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>skywallkee</td>
-                          <td>BTC</td>
-                          <td>0.002</td>
-                          <td>10%</td>
-                          <td>0.0025</td>
-                          <td>c9m</td>
-                          <td>In progress</td>
-                          <td>2011/04/30</td>
-                          <td class="text-right">
-                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>skywallkee</td>
-                          <td>BTC</td>
-                          <td>0.002</td>
-                          <td>ETH</td>
-                          <td>0.25</td>
-                          <td>c9m</td>
-                          <td>Completed</td>
-                          <td>2011/04/25</td>
-                          <td class="text-right">
-                            <a href="borrow.html" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                            <a href="borrow_request.html" class="btn btn-link btn-info btn-just-icon like"><i class="material-icons">refresh</i></a>
-                            <a href="contact_support.html" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
+                            })"><i class="material-icons">close</i></span>
                           </td>
                         </tr>
                       </tbody>

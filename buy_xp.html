@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    Request Loan | SkyCrypto Club
+    Buy XP | SkyCrypto Club
   </title>
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -15,9 +15,11 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="assets/css/material-dashboard.css?v=2.1.0" rel="stylesheet" />
+  <!-- CSS Just for demo purpose, don't include it in your project -->
+  <link href="assets/demo/demo.css" rel="stylesheet" />
 </head>
 
-<body class="">
+<body>
   <div class="wrapper ">
     <div class="sidebar" data-color="rose" data-background-color="black" data-image="assets/img/sidebar-1.jpg">
       <!--
@@ -71,7 +73,7 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item active">
+          <li class="nav-item ">
             <a class="nav-link" data-toggle="collapse" href="#loans">
               <i class="material-icons">share</i>
               <p> Loans
@@ -80,7 +82,7 @@
             </a>
             <div class="collapse" id="loans">
               <ul class="nav">
-                <li class="nav-item active">
+                <li class="nav-item ">
                   <a class="nav-link" href="borrow_request.html">
                     <span class="sidebar-mini"> RL </span>
                     <span class="sidebar-normal"> Request Loan </span>
@@ -101,7 +103,7 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item">
+          <li class="nav-item active">
             <a class="nav-link" href="memberships.html">
               <i class="material-icons">card_membership</i>
               <p> Membership </p>
@@ -113,13 +115,13 @@
               <p> Support </p>
             </a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item ">
             <a class="nav-link" href="faq_logged.html">
               <i class="material-icons">question_answer</i>
               <p> FAQ </p>
             </a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item ">
             <a class="nav-link" href="terms_logged.html">
               <i class="material-icons">file_copy</i>
               <p> Terms & Conditions </p>
@@ -139,7 +141,7 @@
               <i class="material-icons design_bullet-list-67 visible-on-sidebar-mini">view_list</i>
             </button>
           </div>
-          <a class="navbar-brand" href="#pablo">Profile</a>
+          <a class="navbar-brand" href="#pablo">Purchase Experience</a>
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
           <span class="sr-only">Toggle navigation</span>
@@ -211,88 +213,45 @@
         </div>
       </div>
     </nav>
-      <!-- End Navbar -->
-      <div class="content">
-        <div class="container-fluid">
-          <div class="card">
-            <div class="card-header card-header-icon card-header-rose">
-              <div class="card-icon">
-                <i class="material-icons">perm_identity</i>
-              </div>
-              <h4 class="card-title">Request Loan</h4>
+    <!-- End Navbar -->
+    <!-- None Membership -->
+    <div class="content">
+      <div class="container-fluid">
+        <div class="card ">
+          <div class="card-header card-header-rose card-header-icon">
+            <div class="card-icon">
+              <i class="material-icons">star</i>
             </div>
-            <div class="card-body">
-              <form method="get" action="/" class="form-horizontal">
-                <div class="row">
-                    <label class="col-sm-3 col-form-label label-checkbox">Request from:</label>
-                    <div class="col-sm-2 checkbox-radios">
-                        <div class="form-check">
-                            <label class="form-check-label">
-                            <input class="form-check-input" type="radio" name="requestFrom" value="site" checked> Website (1% fee)
-                            <span class="circle">
-                                <span class="check"></span>
-                            </span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 checkbox-radios">
-                        <div class="form-check">
-                            <label class="form-check-label">
-                            <input class="form-check-input" type="radio" name="requestFrom" value="user"> Another user (0.75% fee)
-                            <span class="circle">
-                                <span class="check"></span>
-                            </span>
-                            </label>
-                        </div>
-                    </div>
+            <h4 class="card-title">Buy XP</h4>
+          </div>
+          <div class="card-body ">
+            <div class="row">
+              <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="form-group ">
+                  <label class="bmd-label-floating">XP amount</label>
+                  <input type="number" class="form-control" id="interest" min=1 max=25>
                 </div>
-                <br/><hr><br/>
-                <div class="row">
-                  <div class="col-lg-2 col-md-6 col-sm-12">
-                    <select class="selectpicker" data-style="select-with-transition" title="Currency" data-size="5">
-                      <option value="BTC">Bitcoin</option>
-                      <option value="ETH">Ethereum</option>
-                      <option value="LTC">Litecoin</option>
-                      <option value="XDG">Dogecoin</option>
-                      <option value="BCH">Bitcoin Cash</option>
-                      <option value="XRP">Ripple</option>
-                    </select>
-                  </div>
-                  <div class="col-lg-2 col-md-6 col-sm-12">
-                    <div class="form-group ">
-                      <label class="bmd-label-floating">Amount</label>
-                      <input type="text" class="form-control">
-                    </div>
-                  </div>
-                  <div class="col-lg-2 col-md-6 col-sm-12">
-                    <select class="selectpicker" data-style="select-with-transition" title="Platform" data-size="5">
-                      <option value="1" disabled>PrimeDice</option>
-                      <option value="2">Stake</option>
-                    </select>
-                  </div>
-                  <div class="col-lg-2 col-md-6 col-sm-12">
-                    <div class="form-group ">
-                      <label class="bmd-label-floating">Interest</label>
-                      <input type="number" class="form-control" id="interest" min=1 max=25>
-                    </div>
-                  </div>
-                  <div class="col-lg-4 col-md-6 col-sm-12">
-                    <div class="form-group">
-                      <label class="label-control">Refund Date</label>
-                      <input type="text" class="form-control datetimepicker" value="21/06/2018"/>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12 col-md-6 col-sm-3">
-                    <button type="submit" class="btn btn-rose pull-right">Make Request</button>
-                  </div>
-                </div>
-                <div class="clearfix"></div>
-              </form>
+              </div>
+              <select class="selectpicker col-lg-3 col-md-6 col-sm-12" data-style="select-with-transition" title="Amount To Pay" data-size="5">
+                <option value="BTC">0.001 BTC</option>
+                <option value="ETH">0.2 ETH</option>
+                <option value="LTC">0.1 LTC</option>
+                <option value="XDG">500 XDG</option>
+                <option value="BCH">0.15 BCH</option>
+                <option value="XRP">50 XRP</option>
+              </select>
+              <div class="col-lg-3 col-md-12 col-sm-12 my-auto text-center">
+                <span class="text-success"><b>Resulting XP: <span class="text-rose">53,000</span> (<span class="text-rose">Level 1</span>)</b></span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-6 col-md-12 col-sm-12 my-auto text-center">
+              </div>
+              <button class="btn btn-success btn-lg col-lg-5 col-md-12 col-sm-12">Make Purchase</button>
             </div>
           </div>
         </div>
+      </div>
       </div>
       <footer class="footer">
         <div class="container">
@@ -528,60 +487,86 @@
       });
     });
 
-    $(document).ready(function() {
-      $('#datatables').DataTable({
-        "pagingType": "full_numbers",
-        "lengthMenu": [
-          [10, 25, 50, -1],
-          [10, 25, 50, "All"]
-        ],
-        responsive: true,
-        language: {
-          search: "_INPUT_",
-          searchPlaceholder: "Search records",
+    var dataExchanged = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH'],
+        series: [
+          [542, 443, 320, 780, 553]
+        ]
+      };
+
+    var optionsExchanged = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsExchanged = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
         }
-      });
+      }]
+    ];
 
-      var table = $('#datatable').DataTable();
+    var simpleBarChart = Chartist.Bar('#exchangedChart', dataExchanged, optionsExchanged, responsiveOptionsExchanged);
 
-      // Edit record
-      table.on('click', '.edit', function() {
-        $tr = $(this).closest('tr');
-        var data = table.row($tr).data();
-        alert('You press on Row: ' + data[0] + ' ' + data[1] + ' ' + data[2] + '\'s row.');
-      });
+    var dataBorrowed = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH'],
+        series: [
+          [42, 43, 620, 700, 333]
+        ]
+      };
 
-      // Delete a record
-      table.on('click', '.remove', function(e) {
-        $tr = $(this).closest('tr');
-        table.row($tr).remove().draw();
-        e.preventDefault();
-      });
+    var optionsBorrowed = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
 
-      //Like record
-      table.on('click', '.like', function() {
-        alert('You clicked on Like button');
-      });
-    });
+    var responsiveOptionsBorrowed = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
 
-    $('.datetimepicker').datetimepicker({
-    icons: {
-        time: "fa fa-clock-o",
-        date: "fa fa-calendar",
-        up: "fa fa-chevron-up",
-        down: "fa fa-chevron-down",
-        previous: 'fa fa-chevron-left',
-        next: 'fa fa-chevron-right',
-        today: 'fa fa-screenshot',
-        clear: 'fa fa-trash',
-        close: 'fa fa-remove'
-    }
-});
-  </script>
-  <script>
-    $(document).ready(function() {
-      md.checkFullPageBackgroundImage();
-    });
+    var simpleBarChart = Chartist.Bar('#borrowedChart', dataBorrowed, optionsBorrowed, responsiveOptionsBorrowed);
+
+    var dataLent = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH'],
+        series: [
+          [342, 743, 920, 1080, 553]
+        ]
+      };
+
+    var optionsLent = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsLent = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#lentChart', dataLent, optionsLent, responsiveOptionsLent);
   </script>
 </body>
 

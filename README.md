@@ -5,19 +5,19 @@
 ### This project entitles a virtual lending and exchanging bank for crypto currencies using a Stake's API as a middle-wallet.
 
 On the platform users can:
-<<<<<<< HEAD
+
 - Exchange between the crypto currencies available on Stake (BTC, XDG, BCH, XRP, ETH, LTC, TRX). Exchanges can be done: 
 - - via website (exchange with available currencies the website has)
 - - peer-to-peer (post an exchange request and another user can exchange the coins with you)
 - Borrow crypto currencies available on Stake. Borrows can be done: 
 - - via website (borrow from the available currencies the platform owns) 
 - - peer-to-peer (post a borrow request and another user can lend you)
-=======
+
 - Exchange between the crypto currencies available on Stake (BTC, XDG, BCH, XRP, ETH, LTC, TRX)
 - - Exchanges can be done: via website (exchange with available currencies the website has) or peer-to-peer (post an exchange request and another user can exchange the coins with you)
 - Borrow crypto currencies available on Stake
 - - Borrows can be done: via website (borrow from the available currencies the platform owns) or peer-to-peer (post a borrow request and another user can lend you)
->>>>>>> Update README.md
+
 - Lending crypto currencies available on Stake
 - - Whenever someone posts a borrow request, you can view the request and decide if you want to borrow or not
 

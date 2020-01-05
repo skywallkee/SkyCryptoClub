@@ -15,6 +15,22 @@
 
 /*     brand Colors              */
 
+.card-pricing .ribbon {
+  width: 160px;
+  height: 32px;
+  font-size: 12px;
+  text-align: center;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0px 2px 3px rgba(136, 136, 136, 0.25);
+  background: #4dbe3b;
+  transform: rotate(-45deg);
+  position: absolute;
+  left: -42px;
+  top: 15px;
+  padding-top: 7px; 
+}
+
 .card {
   font-size: .875rem;
 }

@@ -15,8 +15,6 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="assets/css/material-dashboard.css?v=2.1.0" rel="stylesheet" />
-  <!-- CSS Just for demo purpose, don't include it in your project -->
-  <link href="assets/demo/demo.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -141,7 +139,7 @@
               <i class="material-icons design_bullet-list-67 visible-on-sidebar-mini">view_list</i>
             </button>
           </div>
-          <a class="navbar-brand" href="#pablo">Membership</a>
+          <a class="navbar-brand" href="#pablo">Start Membership</a>
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
           <span class="sr-only">Toggle navigation</span>
@@ -217,374 +215,334 @@
     <!-- None Membership -->
     <div class="content">
       <div class="container-fluid">
-        <div class="card ">
-          <div class="card-header card-header-default card-header-icon">
+        <div class="card">
+          <div class="card-header card-header-rose card-header-icon">
             <div class="card-icon">
               <i class="material-icons">card_membership</i>
             </div>
-            <h4 class="card-title">Current Membership</h4>
+            <h4 class="card-title">Choose Membership Type</h4>
           </div>
-          <div class="card-body ">
-            <div class="row">
-              <div class="col-md-3 text-center my-auto">
-                <h3>Membership</h3>
-                <span class="badge badge-default"><h2><b>None</b></h2></span><br />
+          <div class="card-body">
+            <div class="row" style="display:flex;">
+              <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card card-pricing card-plain" style="height: 95%" onmouseover="hoverMembership(this, 'over')" onmouseout="hoverMembership(this, 'out')">
+                  <h6 class="card-category">None</h6>
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-default ">
+                      <i class="material-icons">filter_none</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      7% fee under 0.001 BTC<br/>
+                      5% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      2% fee base borrow amount<br/>
+                      1% fee from daily interest<br/>
+                      1% fee from Grace penalty<br/>
+                      Grace Period penalty: +5% interest<br/>
+                      Minimum interest: 10% daily<br/>
+                      Maximum borrow period: 7 days<br/>
+                      Maximum Grace period: 7 days<br/>
+                      <span style="color:red">Lenders will see non-member status</span>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <a href="#pablo" class="mt-auto btn btn-round btn-none col-sm-12">Cancel Membership</a>
+                  </div>
+                </div>
               </div>
-              <div class="col-md-5 border-left border-right">
-                <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-                <h4><b>
-                <ul>
-                  <li>Exchange</li>
-                  <ul>
-                    <li>Fees: </li>
-                    <ul>
-                      <li>Exchanges under the equivalent of 0.001 BTC: 7%</li>
-                      <li>Exchanges over the equivalent of 0.001 BTC: 5%</li>
-                    </ul>
-                    <li>Limit: 60% XP</li>
-                  </ul>
-                  <li>Borrow</li>
-                  <ul>
-                    <li>Fees: </li>
-                    <ul>
-                      <li>2% from base borrow amount</li>
-                      <li>1% from the daily interest</li>
-                      <li>1% from the Grace penalty</li>
-                    </ul>
-                    <li>Minimum interest: 10% daily</li>
-                    <li>Maximum borrow period: 7 days + 7 days Grace period</li>
-                    <li>Grace period penalty: +5% interest</li>
-                    <li>Maximum borrow amount: 60% XP</li>
-                    <li style="color: red">Lenders will see the non-member status</li>
-                  </ul>
-                </ul>
-                </b></h4>
+              <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12" >
+                <div class="card card-pricing card-plain" style="height: 95%" onmouseover="hoverMembership(this, 'over')" onmouseout="hoverMembership(this, 'out')">
+                  <h6 class="card-category">Entry</h6>
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-info ">
+                      <i class="material-icons">weekend</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      6.5% fee under 0.001 BTC<br/>
+                      4.5% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      2% fee base borrow amount<br/>
+                      1% fee from daily interest<br/>
+                      0.75% fee from Grace penalty<br/>
+                      Grace Period penalty: +5% interest<br/>
+                      Minimum interest: 6% daily<br/>
+                      Maximum borrow period: 10 days<br/>
+                      Maximum Grace period: 7 days<br/>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <div class="form-group col-sm-12">
+                      <label for="currency">Select Currency</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="currency">
+                        <option value="BTC">Bitcoin</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="LTC">Litecoin</option>
+                        <option value="XDG">Dogecoin</option>
+                        <option value="BCH">Bitcoin Cash</option>
+                        <option value="XRP">Ripple</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-sm-12">
+                      <label for="subscription">Select Subscription</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="subscription">
+                        <option>One Time - 200k satoshi</option>
+                        <option>1 month - 5k satoshi</option>
+                        <option>3 months - 10k satoshi (1 month FREE)</option>
+                        <option>6 months - 20k satoshi (2 months FREE)</option>
+                        <option>1 year - 45k satoshi (3 month FREE)</option>
+                      </select>
+                    </div>
+                    <a href="#pablo" class="mt-auto btn btn-round btn-info col-sm-12">Choose Plan</a>
+                  </div>
+                </div>
               </div>
-              <div class="col-md-4 text-center my-auto">
-                <a href="start_membership.html" class="btn btn-success btn-lg">Start Membership</a><br />
-                <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a><br />
+              <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card card-pricing card-plain" style="height: 95%" onmouseover="hoverMembership(this, 'over')" onmouseout="hoverMembership(this, 'out')">
+                  <h6 class="card-category">Beginner</h6>
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-warning ">
+                      <i class="material-icons">home</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      6% fee under 0.001 BTC<br/>
+                      4% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      1.5% fee base borrow amount<br/>
+                      0.75% fee from daily interest<br/>
+                      0.7% fee from Grace penalty<br/>
+                      Grace Period penalty: +5% interest<br/>
+                      Minimum interest: 5% daily<br/>
+                      Maximum borrow period: 14 days<br/>
+                      Maximum Grace period: 7 days<br/>
+                    </p>
+                    <hr>
+                    <b>Lend</b>
+                    <p class="card-description">
+                      25% from first interest<br/>
+                      5% fee from daily gained interest<br/>
+                      Lend only to: <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span><br/>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <div class="form-group col-sm-12">
+                      <label for="currency">Select Currency</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="currency">
+                        <option value="BTC">Bitcoin</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="LTC">Litecoin</option>
+                        <option value="XDG">Dogecoin</option>
+                        <option value="BCH">Bitcoin Cash</option>
+                        <option value="XRP">Ripple</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-sm-12">
+                      <label for="subscription">Select Subscription</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="subscription">
+                        <option>One Time - 250k satoshi</option>
+                        <option>1 month - 7.5k satoshi</option>
+                        <option>3 months - 15k satoshi (1 month FREE)</option>
+                        <option>6 months - 30k satoshi (2 months FREE)</option>
+                        <option>1 year - 67.5k satoshi (3 month FREE)</option>
+                      </select>
+                    </div>
+                    <a href="#pablo" class="mt-auto btn btn-round btn-warning col-sm-12">Choose Plan</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card card-pricing" style="height: 95%" onmouseover="hoverMembership(this, 'overi')" onmouseout="hoverMembership(this, 'outi')">
+                  <h6 class="card-category">Intermediate</h6>
+                  Recommended
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-success ">
+                      <i class="material-icons" style="transform: rotate(-45deg);">send</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      5.5% fee under 0.001 BTC<br/>
+                      3.75% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      1.25% fee base borrow amount<br/>
+                      0.7% fee from daily interest<br/>
+                      0.7% fee from Grace penalty<br/>
+                      Grace Period penalty: +5% interest<br/>
+                      Minimum interest: 5% daily<br/>
+                      Maximum borrow period: 18 days<br/>
+                      Maximum Grace period: 7 days<br/>
+                    </p>
+                    <hr>
+                    <b>Lend</b>
+                    <p class="card-description">
+                      25% from first interest<br/>
+                      5% fee from daily gained interest<br/>
+                      Lend only to: <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span><br/>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <div class="form-group col-sm-12">
+                      <label for="currency">Select Currency</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="currency">
+                        <option value="BTC">Bitcoin</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="LTC">Litecoin</option>
+                        <option value="XDG">Dogecoin</option>
+                        <option value="BCH">Bitcoin Cash</option>
+                        <option value="XRP">Ripple</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-sm-12">
+                      <label for="subscription">Select Subscription</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="subscription">
+                        <option>One Time - 300k satoshi</option>
+                        <option>1 month - 10k satoshi</option>
+                        <option>3 months - 20k satoshi (1 month FREE)</option>
+                        <option>6 months - 40k satoshi (2 months FREE)</option>
+                        <option>1 year - 90k satoshi (3 month FREE)</option>
+                      </select>
+                    </div>
+                    <a href="#pablo" class="mt-auto btn btn-round btn-success col-sm-12">Choose Plan</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card card-pricing card-plain" style="height: 95%" onmouseover="hoverMembership(this, 'over')" onmouseout="hoverMembership(this, 'out')">
+                  <h6 class="card-category">Advanced</h6>
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-danger ">
+                      <i class="material-icons" style="transform: rotate(45deg);">airplanemode_active</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      5% fee under 0.001 BTC<br/>
+                      3.5% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      1.2% fee base borrow amount<br/>
+                      0.65% fee from daily interest<br/>
+                      0.65% fee from Grace penalty<br/>
+                      Grace Period penalty: +5% interest<br/>
+                      Minimum interest: 4% daily<br/>
+                      Maximum borrow period: 20 days<br/>
+                      Maximum Grace period: 10 days<br/>
+                    </p>
+                    <hr>
+                    <b>Lend</b>
+                    <p class="card-description">
+                      25% from first interest<br/>
+                      5% fee from daily gained interest<br/>
+                      Lend only to: <span class="badge badge-info">Entry</span> <span class="badge badge-warning">Beginner</span> <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span><br/>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <div class="form-group col-sm-12">
+                      <label for="currency">Select Currency</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="currency">
+                        <option value="BTC">Bitcoin</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="LTC">Litecoin</option>
+                        <option value="XDG">Dogecoin</option>
+                        <option value="BCH">Bitcoin Cash</option>
+                        <option value="XRP">Ripple</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-sm-12">
+                      <label for="subscription">Select Subscription</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="subscription">
+                        <option>One Time - 350k satoshi</option>
+                        <option>1 month - 15k satoshi</option>
+                        <option>3 months - 30k satoshi (1 month FREE)</option>
+                        <option>6 months - 60k satoshi (2 months FREE)</option>
+                        <option>1 year - 135k satoshi (3 month FREE)</option>
+                      </select>
+                    </div>
+                    <a href="#pablo" class="mt-auto btn btn-round btn-danger col-sm-12">Choose Plan</a>
+                  </div>
+                </div>
+              </div><div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                <div class="card card-pricing card-plain" style="height: 95%" onmouseover="hoverMembership(this, 'over')" onmouseout="hoverMembership(this, 'out')">
+                  <h6 class="card-category">Pro</h6>
+                  <div class="card-body d-flex flex-column">
+                    <div class="card-icon icon-primary ">
+                      <i class="material-icons">star</i>
+                    </div>
+                    <h3 class="card-title"></h3>
+                    <b>Exchange</b>
+                    <p class="card-description">
+                      4.5% fee under 0.001 BTC<br/>
+                      3.25% fee over 0.001 BTC<br/>
+                    </p>
+                    <hr>
+                    <b>Borrow</b>
+                    <p class="card-description">
+                      1% fee base borrow amount<br/>
+                      0.5% fee from daily interest<br/>
+                      0.5% fee from Grace penalty<br/>
+                      Grace Period penalty: +4% interest<br/>
+                      Minimum interest: 1% daily<br/>
+                      Maximum borrow period: 28 days<br/>
+                      Maximum Grace period: 14 days<br/>
+                    </p>
+                    <hr>
+                    <b>Lend</b>
+                    <p class="card-description">
+                      25% from first interest<br/>
+                      5% fee from daily gained interest<br/>
+                      Lend only to: <span class="badge badge-default">None</span> <span class="badge badge-info">Entry</span> <span class="badge badge-warning">Beginner</span> <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span><br/>
+                    </p>
+                  </div>
+                  <div class="card-footer justify-content-center row">
+                    <div class="form-group col-sm-12">
+                      <label for="currency">Select Currency</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="currency">
+                        <option value="BTC">Bitcoin</option>
+                        <option value="ETH">Ethereum</option>
+                        <option value="LTC">Litecoin</option>
+                        <option value="XDG">Dogecoin</option>
+                        <option value="BCH">Bitcoin Cash</option>
+                        <option value="XRP">Ripple</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-sm-12">
+                      <label for="subscription">Select Subscription</label>
+                      <select class="form-control selectpicker" data-style="btn btn-link" id="subscription">
+                        <option>One Time - 500k satoshi</option>
+                        <option>1 month - 25k satoshi</option>
+                        <option>3 months - 50k satoshi (1 month FREE)</option>
+                        <option>6 months - 100k satoshi (2 months FREE)</option>
+                        <option>1 year - 225k satoshi (3 month FREE)</option>
+                      </select>
+                    </div>
+                    <a href="#pablo" class="mt-auto btn btn-round btn-primary col-sm-12">Choose Plan</a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     <!-- End None Membership -->
-    <!-- Entry Membership -->
-    <div class="container-fluid">
-      <div class="card ">
-        <div class="card-header card-header-info card-header-icon">
-          <div class="card-icon">
-            <i class="material-icons">card_membership</i>
-          </div>
-          <h4 class="card-title">Current Membership</h4>
-        </div>
-        <div class="card-body ">
-          <div class="row">
-            <div class="col-md-3 text-center my-auto">
-              <h3>Membership</h3>
-              <span class="badge badge-info"><h2><b>Entry</b></h2></span><br /><br />
-              <h4>Available until: 03/03/2020</h4>
-            </div>
-            <div class="col-md-5 border-left border-right">
-              <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-              <h4><b>
-              <ul>
-                <li>Exchange</li>
-                <ul>
-                  <li>Fees: </li>
-                  <ul>
-                    <li>Exchanges under the equivalent of 0.001 BTC: 6.5%</li>
-                    <li>Exchanges over the equivalent of 0.001 BTC: 4.5%</li>
-                  </ul>
-                  <li>Limit: 75% XP</li>
-                </ul>
-                <li>Borrow</li>
-                <ul>
-                  <li>Fees: </li>
-                  <ul>
-                    <li>2% from base borrow amount</li>
-                    <li>1% from the daily interest</li>
-                    <li>0.75% from the Grace penalty</li>
-                  </ul>
-                  <li>Minimum interest: 6% daily</li>
-                  <li>Maximum borrow period: 10 days + 7 days Grace period</li>
-                  <li>Grace period penalty: +5% interest</li>
-                  <li>Maximum borrow amount: 75% XP</li>
-                </ul>
-              </ul>
-              </b></h4>
-            </div>
-            <div class="col-md-4 text-center my-auto">
-              <a href="extend_membership.html" class="btn btn-info btn-lg">Extend Membership</a><br />
-              <a href="start_membership.html" class="btn btn-lg" style="background-color: deeppink;">Change Membership</a><br />
-              <a href="cancel_membership.html" class="btn btn-danger btn-lg">Cancel Membership</a><br />
-              <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- End Entry Membership -->
-    <!-- Beginner Membership -->
-    <div class="container-fluid">
-      <div class="card ">
-        <div class="card-header card-header-warning card-header-icon">
-          <div class="card-icon">
-            <i class="material-icons">card_membership</i>
-          </div>
-          <h4 class="card-title">Current Membership</h4>
-        </div>
-        <div class="card-body ">
-          <div class="row">
-            <div class="col-md-3 text-center my-auto">
-              <h3>Membership</h3>
-              <span class="badge badge-warning"><h2><b>Beginner</b></h2></span><br /><br />
-              <h4>Available until: 03/03/2020</h4>
-            </div>
-            <div class="col-md-5 border-left border-right">
-              <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-              <h4><b>
-              <ul>
-                <li>Exchange</li>
-                <ul>
-                  <li>Fees: </li>
-                  <ul>
-                    <li>Exchanges under the equivalent of 0.001 BTC: 6%</li>
-                    <li>Exchanges over the equivalent of 0.001 BTC: 4.25%</li>
-                  </ul>
-                  <li>Limit: 80% XP</li>
-                </ul>
-                <li>Borrow</li>
-                <ul>
-                  <li>Fees: </li>
-                  <ul>
-                    <li>1.5% from base borrow amount</li>
-                    <li>0.75% from the daily interest</li>
-                    <li>0.7% from the Grace penalty</li>
-                  </ul>
-                  <li>Minimum interest: 5% daily</li>
-                  <li>Maximum borrow period: 14 days + 7 days Grace period</li>
-                  <li>Grace period penalty: +5% interest</li>
-                  <li>Maximum borrow amount: 80% XP</li>
-                </ul>
-                <li>Lend</li>
-                <ul>
-                  <li>Fees: </li>
-                  <ul>
-                    <li>25% from first interest</li>
-                    <li>5% from the daily gained interest</li>
-                  </ul>
-                  <li>Lend only to: <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span></li>
-                </ul>
-              </ul>
-              </b></h4>
-            </div>
-            <div class="col-md-4 text-center my-auto">
-              <a href="extend_membership.html" class="btn btn-info btn-lg">Extend Membership</a><br />
-              <a href="start_membership.html" class="btn btn-lg" style="background-color: deeppink;">Change Membership</a><br />
-              <a href="cancel_membership.html" class="btn btn-danger btn-lg">Cancel Membership</a><br />
-              <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- End Beginner Membership -->
-    <!-- Intermediate Membership -->
-    <div class="container-fluid">
-      <div class="card ">
-        <div class="card-header card-header-success card-header-icon">
-          <div class="card-icon">
-            <i class="material-icons">card_membership</i>
-          </div>
-          <h4 class="card-title">Current Membership</h4>
-        </div>
-          <div class="card-body ">
-            <div class="row">
-              <div class="col-md-3 text-center my-auto">
-                <h3>Membership</h3>
-                <span class="badge badge-success col-md-12"><h2><b>Intermediate</b></h2></span><br /><br />
-                <h4>Available until: 03/03/2020</h4>
-              </div>
-              <div class="col-md-5 border-left border-right">
-                <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-                <h4><b>
-                <ul>
-                  <li>Exchange</li>
-                  <ul>
-                    <li>Fees: </li>
-                    <ul>
-                      <li>Exchanges under the equivalent of 0.001 BTC: 5.5%</li>
-                      <li>Exchanges over the equivalent of 0.001 BTC: 4%</li>
-                    </ul>
-                    <li>Limit: 85% XP</li>
-                  </ul>
-                  <li>Borrow</li>
-                  <ul>
-                    <li>Fees: </li>
-                    <ul>
-                      <li>1.25% from base borrow amount</li>
-                      <li>0.7% from the daily interest</li>
-                      <li>0.7% from the Grace penalty</li>
-                    </ul>
-                    <li>Minimum interest: 5% daily</li>
-                    <li>Maximum borrow period: 18 days + 7 days Grace period</li>
-                    <li>Grace period penalty: +5% interest</li>
-                    <li>Maximum borrow amount: 85% XP</li>
-                  </ul>
-                  <li>Lend</li>
-                  <ul>
-                    <li>Fees: </li>
-                    <ul>
-                      <li>15% from first interest</li>
-                      <li>4% from the daily gained interest</li>
-                    </ul>
-                    <li>Lend only to: <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span></li>
-                  </ul>
-                </ul>
-                </b></h4>
-              </div>
-              <div class="col-md-4 text-center my-auto">
-                <a href="extend_membership.html" class="btn btn-info btn-lg">Extend Membership</a><br />
-                <a href="start_membership.html" class="btn btn-lg" style="background-color: deeppink;">Change Membership</a><br />
-                <a href="cancel_membership.html" class="btn btn-danger btn-lg">Cancel Membership</a><br />
-                <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- End Intermediate Membership -->
-      <!-- Advanced Membership -->
-      <div class="container-fluid">
-        <div class="card ">
-          <div class="card-header card-header-danger card-header-icon">
-            <div class="card-icon">
-              <i class="material-icons">card_membership</i>
-            </div>
-            <h4 class="card-title">Current Membership</h4>
-          </div>
-          <div class="card-body ">
-            <div class="row">
-                <div class="col-md-3 text-center my-auto">
-                  <h3>Membership</h3>
-                  <span class="badge badge-danger"><h2><b>Advanced</b></h2></span><br /><br />
-                  <h4>Available until: 03/03/2020</h4>
-                </div>
-                <div class="col-md-5 border-left border-right">
-                  <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-                  <h4><b>
-                  <ul>
-                    <li>Exchange</li>
-                    <ul>
-                      <li>Fees: </li>
-                      <ul>
-                        <li>Exchanges under the equivalent of 0.001 BTC: 5%</li>
-                        <li>Exchanges over the equivalent of 0.001 BTC: 3.75%</li>
-                      </ul>
-                      <li>Limit: 90% XP</li>
-                    </ul>
-                    <li>Borrow</li>
-                    <ul>
-                      <li>Fees: </li>
-                      <ul>
-                        <li>1.2% from base borrow amount</li>
-                        <li>0.65% from the daily interest</li>
-                        <li>0.65% from the Grace penalty</li>
-                      </ul>
-                      <li>Minimum interest: 4% daily</li>
-                      <li>Maximum borrow period: 20 days + 10 days Grace period</li>
-                      <li>Grace period penalty: +5% interest</li>
-                      <li>Maximum borrow amount: 90% XP</li>
-                    </ul>
-                    <li>Lend</li>
-                    <ul>
-                      <li>Fees: </li>
-                      <ul>
-                        <li>12% from first interest</li>
-                        <li>4% from the daily gained interest</li>
-                      </ul>
-                      <li>Lend only to: <span class="badge badge-info">Entry</span> <span class="badge badge-warning">Beginner</span> <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span></li>
-                    </ul>
-                  </ul>
-                  </b></h4>
-                </div>
-                <div class="col-md-4 text-center my-auto">
-                  <a href="extend_membership.html" class="btn btn-info btn-lg">Extend Membership</a><br />
-                  <a href="start_membership.html" class="btn btn-lg" style="background-color: deeppink;">Change Membership</a><br />
-                  <a href="cancel_membership.html" class="btn btn-danger btn-lg">Cancel Membership</a><br />
-                  <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a>
-                </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- End Advanced Membership -->
-      <!-- Pro Membership -->
-      <div class="container-fluid">
-        <div class="card ">
-            <div class="card-header card-header-primary card-header-icon">
-              <div class="card-icon">
-                <i class="material-icons">card_membership</i>
-              </div>
-              <h4 class="card-title">Current Membership</h4>
-            </div>
-            <div class="card-body ">
-              <div class="row">
-                  <div class="col-md-3 text-center my-auto">
-                    <h3>Membership</h3>
-                    <span class="badge badge-primary"><h2><b>Pro</b></h2></span><br /><br />
-                    <h4>Available until: 03/03/2020</h4>
-                  </div>
-                  <div class="col-md-5 border-left border-right">
-                    <h3 class="text-center"><b>Current abilities:</b></h3> <br />
-                    <h4><b>
-                    <ul>
-                      <li>Exchange</li>
-                      <ul>
-                        <li>Fees: </li>
-                        <ul>
-                          <li>Exchanges under the equivalent of 0.001 BTC: 4.5%</li>
-                          <li>Exchanges over the equivalent of 0.001 BTC: 3.5%</li>
-                        </ul>
-                        <li>Limit: 90% XP</li>
-                      </ul>
-                      <li>Borrow</li>
-                      <ul>
-                        <li>Fees: </li>
-                        <ul>
-                          <li>1% from base borrow amount</li>
-                          <li>0.5% from the daily interest</li>
-                          <li>0.5% from the Grace penalty</li>
-                        </ul>
-                        <li>Minimum interest: 1% daily</li>
-                        <li>Maximum borrow period: 28 days + 14 days Grace period</li>
-                        <li>Grace period penalty: +4% interest</li>
-                        <li>Maximum borrow amount: 90% XP</li>
-                      </ul>
-                      <li>Lend</li>
-                      <ul>
-                        <li>Fees: </li>
-                        <ul>
-                          <li>7% from first interest</li>
-                          <li>3% from the daily gained interest</li>
-                        </ul>
-                        <li>Lend only to: <span class="badge badge-default">None</span> <span class="badge badge-info">Entry</span> <span class="badge badge-warning">Beginner</span> <span class="badge badge-success">Intermediate</span> <span class="badge badge-danger">Advanced</span> <span class="badge badge-primary">Pro</span></li>
-                      </ul>
-                    </ul>
-                    </b></h4>
-                  </div>
-                  <div class="col-md-4 text-center my-auto">
-                    <a href="extend_membership.html" class="btn btn-info btn-lg">Extend Membership</a><br />
-                    <a href="start_membership.html" class="btn btn-lg" style="background-color: deeppink;">Change Membership</a><br />
-                    <a href="cancel_membership.html" class="btn btn-danger btn-lg">Cancel Membership</a><br />
-                    <a href="buy_xp.html" class="btn btn-warning btn-lg">Buy XP</a>
-                  </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- End Pro Membership -->
       </div>
       <footer class="footer">
         <div class="container">
@@ -650,6 +608,18 @@
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="assets/js/material-dashboard.js?v=2.1.0" type="text/javascript"></script>
   <script>
+    function hoverMembership(card, hover) {
+      if(hover == "over") {
+        card.classList.remove("card-plain");
+      } else if(hover == "out"){
+        card.classList.add("card-plain");
+      } else if(hover == "overi"){
+        card.style["mysavestyle"] = card.style["box-shadow"];
+        card.style["box-shadow"] = "0px 0px 5px green";
+      } else if(hover == "outi") {
+        card.style["box-shadow"] = card.style["mysavestyle"];
+      }
+    }
     $(document).ready(function() {
       $().ready(function() {
         $sidebar = $('.sidebar');

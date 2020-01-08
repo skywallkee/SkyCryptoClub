@@ -159,7 +159,7 @@
                 </p>
               </a>
               <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item active" href="#">DEPOSIT/WITHDRAW</a>
+                <button type="button" class="dropdown-item btn btn-info active" data-toggle="modal" data-target="#depositWithdraw">DEPOSIT/WITHDRAW</button>
                 <a class="dropdown-item" href="#">0.00000000 BTC</a>
                 <a class="dropdown-item" href="#">0.00000000 ETH</a>
                 <a class="dropdown-item" href="#">0.00000000 LTC</a>
@@ -213,6 +213,79 @@
         </div>
       </div>
     </nav>
+
+    <!-- Modal Deposit/Withdraw -->
+    <div class="modal fade" id="depositWithdraw" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header" style="margin-left: auto; margin-right: auto;">
+            <ul class="nav nav-pills nav-pills-icons" role="tablist">
+              <li class="nav-item">
+                  <a class="nav-link active" href="#depositTab" role="tab" data-toggle="tab">
+                      Deposit
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a class="nav-link" href="#withdrawTab" role="tab" data-toggle="tab">
+                      Withdraw
+                  </a>
+              </li>
+          </ul>
+          </div>
+          <div class="modal-body">
+            <div class="tab-content tab-space">
+              <div class="tab-pane active text-center" id="depositTab">
+                Send any tip to user <b class="text-rose">skyBot</b> with one of the <b class="text-danger">linked accounts</b> and you'll automatically have the balance assigned to your account.
+              </div>
+              <div class="tab-pane" id="withdrawTab">
+                <div class="row">
+                  <select class="selectpicker col-sm-12" data-style="select-with-transition" title="Select Account" data-size="5">
+                    <option value="1">skywallkee</option>
+                    <option value="2">skyg131</option>
+                    <option value="3">skyw111</option>
+                    <option value="4">skyg141</option>
+                    <option value="5">c9me</option>
+                    <option value="6">c9mrad3</option>
+                    <option value="7">c9mi</option>
+                    <option value="8">skywalkee</option>
+                    <option value="9">skyw11</option>
+                  </select>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label class="bmd-label-floating">Amount</label>
+                      <input type="text" class="form-control">
+                    </div>
+                  </div>
+                  <select class="selectpicker col-sm-12" data-style="select-with-transition" title="Currency" data-size="5">
+                    <option value="BTC">Bitcoin</option>
+                    <option value="ETH">Ethereum</option>
+                    <option value="LTC">Litecoin</option>
+                    <option value="XDG">Dogecoin</option>
+                    <option value="BCH">Bitcoin Cash</option>
+                    <option value="XRP">Ripple</option>
+                  </select>
+                  <button type="button" class="btn btn-primary col-sm-12" onclick="
+                  if(false){
+                  Swal.fire(
+                      'Withdrawal Successful!',
+                      '',
+                      'success'
+                    )
+                  }
+                  else{
+                  Swal.fire(
+                      'Failed to Withdraw!',
+                      '',
+                      'error'
+                    )
+                  }">Withdraw</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- End Navbar -->
     <!-- None Membership -->
     <div class="content">

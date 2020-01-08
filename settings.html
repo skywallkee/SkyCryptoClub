@@ -284,6 +284,90 @@
         </div>
       </div>
     </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="twofa" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Activate 2FA</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group ">
+                <label class="bmd-label-floating">Copy this code to your authenticator app</label>
+                <input type="text" class="form-control" value="ASDFGHIJKLMNOPQRSTUVWXYZ" readonly>
+              </div>
+              <div class="text-center">
+                Don't let anyone see this!
+                <br />
+                <img src="assets/img/qrcode.png" class="col-sm-6 text-center">
+              </div>
+              <div class="form-group ">
+                <label class="bmd-label-floating">Password</label>
+                <input type="password" class="form-control">
+              </div>
+              <div class="form-group ">
+                <label class="bmd-label-floating">Two Factor Code</label>
+                <input type="text" class="form-control">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success col-sm-12" onclick="
+                  if(true){
+                  Swal.fire(
+                      'Activation Successful!',
+                      '',
+                      'success'
+                    )
+                  }
+                  else{
+                  Swal.fire(
+                      'Failed to Activate!',
+                      '',
+                      'error'
+                    )
+                  }">Activate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal
+      <div class="modal fade" id="twofa" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Deactivate 2FA</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="tab-content tab-space">
+                <div class="row">
+                  <button type="button" class="btn btn-danger col-sm-12" onclick="
+                      if(true){
+                      Swal.fire(
+                          'Deactivation Successful!',
+                          '',
+                          'success'
+                        )
+                      }
+                      else{
+                      Swal.fire(
+                          'Failed to Deactivate!',
+                          '',
+                          'error'
+                        )
+                      }">Deactivate</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
       <!-- End Navbar -->
       <div class="content">
         <div class="container-fluid">
@@ -420,10 +504,10 @@
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <button type="submit" class="btn btn-rose pull-right">Update Profile</button>
-                  </div>
+                <div class="row text-center">
+                  <div class="col-sm-6 text-center" style="margin-right: auto; margin-left: auto;"></div>
+                  <button type="button" class="btn btn-rose pull-right col-md-2 col-sm-12" data-toggle="modal" data-target="#twofa">2FA Settings</button>
+                  <button type="submit" class="btn btn-rose pull-right col-md-3 col-sm-12">Update Profile</button>
                 </div>
                 <br/><hr><br/>
                 <div class="row">

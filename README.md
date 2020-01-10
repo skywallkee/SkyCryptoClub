@@ -1,7 +1,6 @@
 # SkyCryptoClub
-[Preview](https://www.skycrypto.club) (user: test ; password: test)
 
-![Presentation of the index page for SkyCrypto Club](https://i.imgur.com/E0FWZ3p.png)
+![Presentation of the index page for SkyCrypto Club](https://i.imgur.com/o0XTPgZ.png)
 
 ### This project entitles a virtual lending and exchanging bank for crypto currencies using a Stake's API as a middle-wallet.
 

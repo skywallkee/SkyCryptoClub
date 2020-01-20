@@ -13,3 +13,10 @@ class Platform(db.Model):
     # Partnered platforms available on SCC
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(35), nullable=False)
+
+class Account(db.Model):
+    # Linked accounts from partnered platforms
+    userId = db.Column(db.String(64), ForeignKey('user.publicId'))
+    username = db.Column(db.String(35), primary_key=True)
+    platform = db.Column(db.String(35), ForeignKey('platform.name'), primary_key=True)
+

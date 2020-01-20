@@ -1,6 +1,8 @@
 from flask import Flask
-from .extensions import login_manager, db
 
+from .commands import create_tables
+from .extensions import login_manager, db
+from .user_routes import user_routes
 
 def create_app(config_file="settings.py"):
     app = Flask(__name__)
@@ -16,5 +18,9 @@ def create_app(config_file="settings.py"):
     # @login_manager.user_loader
     # def load_user(user_id):
     #     return User.query.get(user_id)
+
+    app.register_blueprint(user_routes)
+
+    app.cli.add_command(create_tables)
 
     return app

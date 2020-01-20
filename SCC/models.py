@@ -45,3 +45,17 @@ class Membership(db.Model):
     max_borrow_amount = db.Column(db.Float)
     lend_first_fee = db.Column(db.Float)
     lend_daily_fee = db.Column(db.Float)
+
+class Profile(db.Model):
+    # Table for user profile available publicly
+    userId = db.Column(db.String(64), ForeignKey('user.publicId'), primary_key=True)
+    banned = db.Column(db.Bool, default=False)
+    exchange_ban_due = db.Column(db.DateTime)
+    borrow_ban_due = db.Column(db.DateTime)
+    lend_ban_due = db.Column(db.DateTime)
+    xp = db.Column(db.Float, default=0.0)
+    public_stats = db.Column(db.Bool, default=True)
+    public_level = db.Column(db.Bool, default=True)
+    public_xp = db.Column(db.Bool, default=True)
+    public_name = db.Column(db.Bool, default=True)
+    has_tfa = db.Column(db.Bool, default=False)

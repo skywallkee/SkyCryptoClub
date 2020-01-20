@@ -20,11 +20,6 @@ class Account(db.Model):
     username = db.Column(db.String(35), primary_key=True)
     platform = db.Column(db.String(35), ForeignKey('platform.name'), primary_key=True)
 
-class Ignored(db.Model):
-    # Table of users that have been ignored
-    ignoredById = db.Column(db.String(64), ForeignKey('user.publicId'))
-    ignoredId = db.Column(db.String(64), ForeignKey('user.publicId'))
-
 class Membership(db.Model):
     # Table with all available memberships
     name = db.Column(db.String(25), primary_key=True)
@@ -60,10 +55,15 @@ class Profile(db.Model):
     public_name = db.Column(db.Bool, default=True)
     has_tfa = db.Column(db.Bool, default=False)
 
+class Ignored(db.Model):
+    # Table of users that have been ignored
+    ignoredById = db.Column(db.String(64), ForeignKey('profile.userId'))
+    ignoredId = db.Column(db.String(64), ForeignKey('profile.userId'))
+
 class ProfileMembership(db.Model):
     # Table with memberships of all users
     id = db.Column(db.Integer, primary_key=True)
-    userId = db.Column(db.String(64), ForeignKey('user.publicId'), unique=True)
+    userId = db.Column(db.String(64), ForeignKey('profile.userId'), unique=True)
     membership = db.Column(db.String(25), ForeignKey('membership.name'))
     valid_until = db.Column(db.DateTime)
     paid_per_day = db.Column(db.Float)
@@ -85,8 +85,8 @@ class Borrow(db.Model):
     currency = db.Column(db.String(20), ForeignKey('currency.name'))
     amount = db.Column(db.Float(precision=10))
     paid = db.Column(db.Float(precision=10), default=0)
-    by_id = db.Column(db.String(64), ForeignKey('user.publicId'))
-    through = db.Column(db.String(64), ForeignKey('user.publicId'))
+    by_id = db.Column(db.String(64), ForeignKey('profile.userId'))
+    through_id = db.Column(db.String(64), ForeignKey('profile.userId'))
     interest = db.Column(db.Float)
     status = db.Column(db.String(64), ForeignKey('borrowstatus.status'))
     return_date = db.Column(db.DateTime)
@@ -96,3 +96,16 @@ class Borrow(db.Model):
 class ExchangeStatus(db.Model):
     # Table with exchange statuses
     status = db.Column(db.String(64), primary_key=True)
+
+class Exchange(db.Model):
+    # Table with all exchange requests
+    id = db.Column(db.Integer, primary_key=True)
+    ref_id = db.Column(db.String(64))
+    from_currency = db.Column(db.String(20), ForeignKey('currency.name'))
+    from_amount = db.Column(db.Float(precision=10))
+    to_currency = db.Column(db.String(20), ForeignKey('currency.name'))
+    to_amount = db.Column(db.Float(precision=10))
+    by_id = db.Column(db.String(64), ForeignKey('profile.userId'))
+    through_id = db.Column(db.String(64), ForeignKey('profile.userId'))
+    status = db.Column(db.String(64), ForeignKey('exchangestatus.status'))
+    created_date = db.Column(db.DateTime)

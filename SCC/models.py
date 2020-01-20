@@ -3,16 +3,16 @@ from .extensions import db
 class User(db.Model):
     # User login table, unseen by users
     id = db.Column(db.Integer, primary_key=True)
-    publicId = db.Column(db.String(64))
-    username = db.Column(db.String(35))
+    publicId = db.Column(db.String(64), unique=True)
+    username = db.Column(db.String(35), unique=True)
     password = db.Column(db.String(64))
-    email = db.Column(db.String(64))
+    email = db.Column(db.String(64), unique=True)
     otp_token = db.Column(db.String(64))
 
 class Platform(db.Model):
     # Partnered platforms available on SCC
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(35), nullable=False)
+    name = db.Column(db.String(35), nullable=False, unique=True)
 
 class Account(db.Model):
     # Linked accounts from partnered platforms
@@ -59,3 +59,11 @@ class Profile(db.Model):
     public_xp = db.Column(db.Bool, default=True)
     public_name = db.Column(db.Bool, default=True)
     has_tfa = db.Column(db.Bool, default=False)
+
+class ProfileMembership(db.Model):
+    # Table with memberships of all users
+    id = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.String(64), ForeignKey('user.publicId'), unique=True)
+    membership = db.Column(db.String(25), ForeignKey('membership.name'))
+    valid_until = db.Column(db.DateTime)
+    paid_per_day = db.Column(db.Float)

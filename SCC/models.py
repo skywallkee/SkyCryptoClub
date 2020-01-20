@@ -73,3 +73,7 @@ class Currency(db.Model):
     # our website paired with the platform they can be used on
     name = db.Column(db.String(20), primary_key=True)
     platform = db.Column(db.String(35), ForeignKey('platform.name'), primary_key=True)
+
+class BorrowStatus(db.Model):
+    # Table with borrow statuses
+    status = db.Column(db.String(64), primary_key=True)

@@ -20,3 +20,7 @@ class Account(db.Model):
     username = db.Column(db.String(35), primary_key=True)
     platform = db.Column(db.String(35), ForeignKey('platform.name'), primary_key=True)
 
+class Ignored(db.Model):
+    # Table of users that have been ignored
+    ignoredById = db.Column(db.String(64), ForeignKey('user.publicId'))
+    ignoredId = db.Column(db.String(64), ForeignKey('user.publicId'))

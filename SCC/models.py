@@ -24,3 +24,24 @@ class Ignored(db.Model):
     # Table of users that have been ignored
     ignoredById = db.Column(db.String(64), ForeignKey('user.publicId'))
     ignoredId = db.Column(db.String(64), ForeignKey('user.publicId'))
+
+class Membership(db.Model):
+    # Table with all available memberships
+    name = db.Column(db.String(25), primary_key=True)
+    price = db.Column(db.Float(precision=10)) # BTC Price
+    can_exchange = db.Column(db.Bool)
+    can_borrow = db.Column(db.Bool)
+    can_lend = db.Column(db.Bool)
+    exchange_small_fee = db.Column(db.Float)
+    exchange_large_fee = db.Column(db.Float)
+    exchange_limit = db.Column(db.Float)
+    borrow_base_fee = db.Column(db.Float)
+    borrow_daily_fee = db.Column(db.Float)
+    borrow_grace_fee = db.Column(db.Float)
+    minimum_interest = db.Column(db.Float)
+    max_borrow_days = db.Column(db.Integer)
+    max_grace_days = db.Column(db.Integer)
+    grace_penalty = db.Column(db.Float)
+    max_borrow_amount = db.Column(db.Float)
+    lend_first_fee = db.Column(db.Float)
+    lend_daily_fee = db.Column(db.Float)

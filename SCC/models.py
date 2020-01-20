@@ -92,3 +92,7 @@ class Borrow(db.Model):
     return_date = db.Column(db.DateTime)
     grace_date = db.Column(db.DateTime)
     created_date = db.Column(db.DateTime)
+
+class ExchangeStatus(db.Model):
+    # Table with exchange statuses
+    status = db.Column(db.String(64), primary_key=True)

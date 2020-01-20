@@ -57,8 +57,8 @@ class Profile(db.Model):
 
 class Ignored(db.Model):
     # Table of users that have been ignored
-    ignoredById = db.Column(db.String(64), ForeignKey('profile.userId'))
-    ignoredId = db.Column(db.String(64), ForeignKey('profile.userId'))
+    ignoredById = db.Column(db.String(64), ForeignKey('profile.userId'), primary_key=True)
+    ignoredId = db.Column(db.String(64), ForeignKey('profile.userId'), primary_key=True)
 
 class ProfileMembership(db.Model):
     # Table with memberships of all users
@@ -81,7 +81,7 @@ class BorrowStatus(db.Model):
 class Borrow(db.Model):
     # Table with all borrow requests
     id = db.Column(db.Integer, primary_key=True)
-    ref_id = db.Column(db.String(64))
+    ref_id = db.Column(db.String(64), unique=True)
     currency = db.Column(db.String(20), ForeignKey('currency.name'))
     amount = db.Column(db.Float(precision=10))
     paid = db.Column(db.Float(precision=10), default=0)
@@ -100,7 +100,7 @@ class ExchangeStatus(db.Model):
 class Exchange(db.Model):
     # Table with all exchange requests
     id = db.Column(db.Integer, primary_key=True)
-    ref_id = db.Column(db.String(64))
+    ref_id = db.Column(db.String(64), unique=True)
     from_currency = db.Column(db.String(20), ForeignKey('currency.name'))
     from_amount = db.Column(db.Float(precision=10))
     to_currency = db.Column(db.String(20), ForeignKey('currency.name'))
@@ -112,4 +112,11 @@ class Exchange(db.Model):
 
 class FAQCategory(db.Model):
     # Table with FAQ categories
-    name = db.Column(db.String(64))
+    name = db.Column(db.String(64), primary_key=True)
+
+class FAQ(db.Model):
+    # Table with Frequent Asked Questions
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(64), ForeignKey('faqcategory.name'), unique=True)
+    question = db.Column(db.String(256), unique=True)
+    answer = db.Column(db.String(256))

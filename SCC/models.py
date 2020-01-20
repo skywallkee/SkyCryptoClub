@@ -109,3 +109,7 @@ class Exchange(db.Model):
     through_id = db.Column(db.String(64), ForeignKey('profile.userId'))
     status = db.Column(db.String(64), ForeignKey('exchangestatus.status'))
     created_date = db.Column(db.DateTime)
+
+class FAQCategory(db.Model):
+    # Table with FAQ categories
+    name = db.Column(db.String(64))

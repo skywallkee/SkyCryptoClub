@@ -67,3 +67,9 @@ class ProfileMembership(db.Model):
     membership = db.Column(db.String(25), ForeignKey('membership.name'))
     valid_until = db.Column(db.DateTime)
     paid_per_day = db.Column(db.Float)
+
+class Currency(db.Model):
+    # Table that displays all the currencies available on 
+    # our website paired with the platform they can be used on
+    name = db.Column(db.String(20), primary_key=True)
+    platform = db.Column(db.String(35), ForeignKey('platform.name'), primary_key=True)

@@ -77,3 +77,18 @@ class Currency(db.Model):
 class BorrowStatus(db.Model):
     # Table with borrow statuses
     status = db.Column(db.String(64), primary_key=True)
+
+class Borrow(db.Model):
+    # Table with all borrow requests
+    id = db.Column(db.Integer, primary_key=True)
+    ref_id = db.Column(db.String(64))
+    currency = db.Column(db.String(20), ForeignKey('currency.name'))
+    amount = db.Column(db.Float(precision=10))
+    paid = db.Column(db.Float(precision=10), default=0)
+    by_id = db.Column(db.String(64), ForeignKey('user.publicId'))
+    through = db.Column(db.String(64), ForeignKey('user.publicId'))
+    interest = db.Column(db.Float)
+    status = db.Column(db.String(64), ForeignKey('borrowstatus.status'))
+    return_date = db.Column(db.DateTime)
+    grace_date = db.Column(db.DateTime)
+    created_date = db.Column(db.DateTime)

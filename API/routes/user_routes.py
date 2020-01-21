@@ -1,12 +1,24 @@
 import re, uuid, random
+import os
+# Time checkers
+from datetime import datetime
+import time
 
+# Check if email is valid
 from validate_email import validate_email
 
+# Requests, Generate Password and Check Password
 from flask import Blueprint, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from .extensions import db
-from .models import User, Membership, Profile, ProfileMembership
+# Models and database
+from ..extensions import db
+from ..models import User, Membership, Profile, ProfileMembership
+
+# To send password email
+import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
     
 user_routes = Blueprint('user_routes', __name__)
 
@@ -16,8 +28,9 @@ user_routes = Blueprint('user_routes', __name__)
 # ------------------- INDEX ---------------------- #
 @user_routes.route('/', methods=['GET'])
 def index():
-    return jsonify({"message":"Welcome on SkyCrypto.Club API Service. For documentation try: https://github.com/skywallkee/SkyCryptoClub/wiki/API"})
-
+    link = "https://github.com/skywallkee/SkyCryptoClub/wiki/API-available-commands-and-permissions"
+    message = "Welcome on SkyCrypto.Club API Service. For documentation try: {}".format(link)
+    return jsonify({"message":message})
 
 
 
@@ -130,6 +143,7 @@ def get_all_users():
         user_data['email'] = user.email
         user_data['password'] = user.password
         user_data['otp_token'] = user.otp_token
+        user_data['last_pass_reset'] = user.last_pass_reset
         out.append(user_data)
 
     return jsonify(out)
@@ -147,6 +161,7 @@ def get_user_by_id(userId):
         user_data['email'] = user.email
         user_data['password'] = user.password
         user_data['otp_token'] = user.otp_token
+        user_data['last_pass_reset'] = user.last_pass_reset
         return jsonify(user_data)
     else:
         return jsonify({"message": "Public Id doesn't correspond to any user"})
@@ -164,6 +179,7 @@ def get_user_by_username(username):
         user_data['email'] = user.email
         user_data['password'] = user.password
         user_data['otp_token'] = user.otp_token
+        user_data['last_pass_reset'] = user.last_pass_reset
         return jsonify(user_data)
     else:
         return jsonify({"message": "Username doesn't correspond to any user"})
@@ -205,6 +221,12 @@ def reset_user_password():
     data = request.get_json()
     try:
         username = data["username"]
+        # Check if user did reset his password in the past 10 minutes
+        user = User.query.filter_by(username=username).first()
+        last_reset = time.mktime(user.last_pass_reset.timetuple())
+        now = time.mktime(datetime.now().timetuple())
+        if int(now - last_reset) / 60 < 5:
+           return jsonify({"message":"Can only reset once every 5 minutes"})
 
         # GENERATE RANDOM PASSWORD
         small_letters = "abcdefghijklmnopqrstuvwxyz"
@@ -219,20 +241,52 @@ def reset_user_password():
 
         new_password = "".join(random.sample(new_password, len(new_password)))
 
+        # Send Email with not hashed password
+        sender_email = os.environ.get('MAIL_USER')
+        receiver_email = user.email
+        password = os.environ.get('MAIL_PASS')
 
-        user = User.query.filter_by(username=username).first()
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "Password Recovery"
+        message["From"] = sender_email
+        message["To"] = receiver_email
+
+        text = """Your new password is:\
+        {}""".format(new_password)
+        html = """\
+        <html>
+        <body>
+            <h1>New Password</h1>
+            {}
+        </body>
+        </html>
+        """.format(new_password)
+
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
+        message.attach(part1)
+        message.attach(part2)
+
+        # Create secure connection with server and send email
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("mail.privateemail.com", 465, context=context) as server:
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+        
+
+        # Set password to account
         new_password = generate_password_hash(new_password, "sha256")
-        user.password = new_password
-        db.session.commit()
 
-        # ------------------- TODO ---------------------- #
-        # SEND PASSWORD THROUGH EMAIL
-        # CAN RESET ONLY ONCE EVERY TEN MINUTES
-        # ------------------- TODO ---------------------- #
+        user.password = new_password
+        user.last_pass_reset = datetime.now()
+        db.session.commit()
 
         return jsonify({"message": "Password changed successfully!"})
     except Exception as e:
-        return jsonify({"message":str(e)})
+        if str(e).contains("Connection unexpectedly closed"):
+            return jsonify({"message":str(e) + ". Try again."})
+        else:
+            return jsonify({"message":str(e)})
 
 
 

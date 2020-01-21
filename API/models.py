@@ -1,4 +1,5 @@
 from .extensions import db
+from datetime import datetime
 
 class User(db.Model):
     # User login table, unseen by users
@@ -9,6 +10,7 @@ class User(db.Model):
     password = db.Column(db.String(80))
     email = db.Column(db.String(80), unique=True)
     otp_token = db.Column(db.String(80), default="")
+    last_pass_reset = db.Column(db.DateTime, default=datetime.now())
 
 class Role(db.Model):
     # Table with available user roles and permissions
@@ -17,6 +19,7 @@ class Role(db.Model):
     name = db.Column(db.String(35))
     color = db.Column(db.String(35))
     defaultR = db.Column(db.Boolean)
+
     # Admin Permissions
     admin_panel = db.Column(db.Boolean)
     admin_statistics = db.Column(db.Boolean)

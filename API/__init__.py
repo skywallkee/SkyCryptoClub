@@ -2,7 +2,7 @@ from flask import Flask
 
 from .commands import create_tables
 from .extensions import login_manager, db
-from .user_routes import user_routes
+from .routes.user_routes import user_routes
 
 def create_app(config_file="settings.py"):
     app = Flask(__name__)

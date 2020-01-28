@@ -24,7 +24,6 @@ user_routes = Blueprint('user_routes', __name__)
 
 
 
-
 # ------------------- INDEX ---------------------- #
 @user_routes.route('/', methods=['GET'])
 def index():
@@ -137,13 +136,8 @@ def get_all_users():
     out = []
 
     for user in users:
-        user_data = {}
-        user_data['publicId'] = user.publicId
-        user_data['username'] = user.username
-        user_data['email'] = user.email
-        user_data['password'] = user.password
-        user_data['otp_token'] = user.otp_token
-        user_data['last_pass_reset'] = user.last_pass_reset
+        user_data = user.__dict__
+        del user_data["_sa_instance_state"]
         out.append(user_data)
 
     return jsonify(out)
@@ -155,13 +149,8 @@ def get_all_users():
 def get_user_by_id(userId):
     user = User.query.filter_by(publicId=userId).first()
     if user:
-        user_data = {}
-        user_data['publicId'] = user.publicId
-        user_data['username'] = user.username
-        user_data['email'] = user.email
-        user_data['password'] = user.password
-        user_data['otp_token'] = user.otp_token
-        user_data['last_pass_reset'] = user.last_pass_reset
+        user_data = user.__dict__
+        del user_data["_sa_instance_state"]
         return jsonify(user_data)
     else:
         return jsonify({"message": "Public Id doesn't correspond to any user"})
@@ -173,13 +162,8 @@ def get_user_by_id(userId):
 def get_user_by_username(username):
     user = User.query.filter_by(username=username).first()
     if user:
-        user_data = {}
-        user_data['publicId'] = user.publicId
-        user_data['username'] = user.username
-        user_data['email'] = user.email
-        user_data['password'] = user.password
-        user_data['otp_token'] = user.otp_token
-        user_data['last_pass_reset'] = user.last_pass_reset
+        user_data = user.__dict__
+        del user_data["_sa_instance_state"]
         return jsonify(user_data)
     else:
         return jsonify({"message": "Username doesn't correspond to any user"})

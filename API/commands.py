@@ -25,7 +25,7 @@ def create_tables():
         respond_tickets=False, close_tickets=False, reopen_tickets=False, add_faq=False, edit_faq=False, remove_faq=False,\
         view_user_borrows=False, view_user_lendings=False, view_user_profile=False, view_user_exchanges=False,\
         view_exchange=False, view_borrow=False, view_user_balance=False, delete_account=False)
-    adminRole = Role(name="User", color="grey", defaultR=False, admin_panel=True, admin_statistics=True,\
+    adminRole = Role(name="Admin", color="red", defaultR=False, admin_panel=True, admin_statistics=True,\
         edit_memberships=True, create_memberships=True, delete_memberships=True, add_platform=True,\
         edit_platform=True, delete_platform=True, ban_user=True, edit_xp=True, edit_user_membership=True,\
         add_currency=True, edit_currency=True, delete_currency=True, add_borrow_status=True,\

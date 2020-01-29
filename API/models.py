@@ -157,6 +157,7 @@ class Currency(db.Model):
     # Table that displays all the currencies available on 
     # our website paired with the platform they can be used on
     name = db.Column(db.String(20), primary_key=True)
+    large_name = db.Column(db.String(20), nullable=False)
     platform = db.Column(db.String(35), db.ForeignKey('platform.name'), primary_key=True)
 
 class BorrowStatus(db.Model):

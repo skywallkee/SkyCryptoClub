@@ -10,6 +10,8 @@ flask = "*"
 flask-sqlalchemy = "*"
 flask-login = "*"
 python-dotenv = "*"
+validate-email = "*"
+py3dns = "*"
 
 [requires]
 python_version = "3.6"

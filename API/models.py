@@ -95,7 +95,7 @@ class Membership(db.Model):
     __tablename__ = 'membership'
     # Table with all available memberships
     name = db.Column(db.String(25), primary_key=True)
-    defaultM = db.Column(db.Boolean)
+    defaultM = db.Column(db.Boolean, default=False)
     color = db.Column(db.String(35))
     price = db.Column(db.Float(precision=10)) # BTC Price
     can_exchange = db.Column(db.Boolean)
@@ -119,16 +119,34 @@ class Profile(db.Model):
     __tablename__ = 'profile'
     # Table for user profile available publicly
     userId = db.Column(db.String(80), db.ForeignKey('user.publicId'), primary_key=True)
-    banned = db.Column(db.Boolean, default=False)
-    exchange_ban_due = db.Column(db.DateTime)
-    borrow_ban_due = db.Column(db.DateTime)
-    lend_ban_due = db.Column(db.DateTime)
     xp = db.Column(db.Float, default=0.0)
     public_stats = db.Column(db.Boolean, default=True)
     public_level = db.Column(db.Boolean, default=True)
     public_xp = db.Column(db.Boolean, default=True)
     public_name = db.Column(db.Boolean, default=True)
     has_tfa = db.Column(db.Boolean, default=False)
+
+class BannedProfile(db.Model):
+    __tablename__ = 'bannedprofile'
+    # Table of users that have any kind of ban
+    bId = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.String(80), db.ForeignKey('profile.userId'))
+    total_ban = db.Column(db.Boolean, default=False)
+    exchange_ban = db.Column(db.Boolean, default=False)
+    borrow_ban = db.Column(db.Boolean, default=False)
+    lend_ban = db.Column(db.Boolean, default=False)
+
+class BanDue(db.Model):
+    __tablename__ = 'bandue'
+    bId = db.Column(db.Integer, db.ForeignKey('bannedprofile.bId'), primary_key=True)
+    due = db.Column(db.DateTime)
+
+class Wallet(db.Model):
+    __tablename__ = 'wallet'
+    # Table for user's balances
+    userId = db.Column(db.String(80), db.ForeignKey('profile.userId'), primary_key=True)
+    currency = db.Column(db.String(20), db.ForeignKey('currency.name'), primary_key=True)
+    amount = db.Column(db.Float(precision=10), default=0.0)
 
 class Account(db.Model):
     __tablename__ = 'account'
@@ -150,7 +168,6 @@ class ProfileMembership(db.Model):
     userId = db.Column(db.String(80), db.ForeignKey('profile.userId'), unique=True)
     membership = db.Column(db.String(25), db.ForeignKey('membership.name'))
     valid_until = db.Column(db.DateTime)
-    paid_per_day = db.Column(db.Float, default=0)
 
 class Currency(db.Model):
     __tablename__ = 'currency'

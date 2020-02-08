@@ -154,6 +154,16 @@ class Account(db.Model):
     username = db.Column(db.String(35), primary_key=True)
     platform = db.Column(db.String(35), db.ForeignKey('platform.name'), primary_key=True)
     profileId = db.Column(db.String(80), db.ForeignKey('profile.userId'))
+    verified = db.Column(db.Boolean, default=False)
+
+class SentCode(db.Model):
+    __tablename__ = 'sentcodes'
+    # Sent codes for accounts to be verified
+    sentId = db.Column(db.Integer, primary_key=True)
+    profileId = db.Column(db.String(80), db.ForeignKey('profile.userId'))
+    username = db.Column(db.String(35), db.ForeignKey('account.username'))
+    code = db.Column(db.String(64))
+    valid_until = db.Column(db.DateTime)
 
 class Ignored(db.Model):
     __tablename__ = 'ignored'

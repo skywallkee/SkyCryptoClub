@@ -24,7 +24,7 @@ from functools import wraps
     
 user_routes = Blueprint('user_routes', __name__)
 
-encryption_key = "this_is_secret" # use random strings for this, you can set this in app.config['SECRET_KEY]
+encryption_key = "this_is_secret" # use random strings for this, you can also set this in app.config['ENCRYPTION_KEY'], but this will also be fine
 
 # __________________________________CHANGED HERE___________________
 # a decorator for checking if the token is valid
@@ -33,7 +33,7 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        #  IN THE OBJECT POSTED USE A "headers" OBJECT WITH A PARAMETER OF "x-access-token"
+        #  IN THE OBJECT POSTED USE A "headers" OBJECT WITH A PARAMETER OF "x-access-token" you can google it-> send headers in the post request
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
         if not token:
@@ -71,7 +71,7 @@ def login():
             tfa = data["tfa"]
         else:
             tfa = ""
-            
+        # _________________________________SOME CHANGES HERE TOO!______________________________
         # Check if account existing
         if not username or not password:
             return jsonify({'message': 'Could not verify'}), 401
@@ -107,6 +107,8 @@ def login():
 @user_routes.route('/login_test', methods=['GET', 'POST'])
 @token_required
 def login_test(current_user):
+    # NOW YOU SIMPLY NEED TO ADD A DECORATOR OF "token_required" FOR AUTHENTICATION AFTER LOGGING IN
+    # PASS "current_user" IN EVERY FUNCTION FOR ROUTES WHICH REQUIRE LOGGING IN
     return jsonify({'message': 'you can see this only if you sent the token in headers with the object'})
 
 

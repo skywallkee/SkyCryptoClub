@@ -19,10 +19,33 @@ from ..models import User, Membership, Profile, ProfileMembership
 import smtplib, ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import jwt
+from functools import wraps
     
 user_routes = Blueprint('user_routes', __name__)
 
+encryption_key = "this_is_secret" # use random strings for this, you can also set this in app.config['ENCRYPTION_KEY'], but this will also be fine
 
+# __________________________________CHANGED HERE___________________
+# a decorator for checking if the token is valid
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        #  IN THE OBJECT POSTED USE A "headers" OBJECT WITH A PARAMETER OF "x-access-token" you can google it-> send headers in the post request
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        if not token:
+            return jsonify({'message': 'token is missing'}), 401
+        try:
+            data = jwt.decode(token, encryption_key)
+            _id = data['user_id']
+            current_user = User.query.get(_id)
+        except:
+            return jsonify({'message': 'Token is Invalid!'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
 
 # ------------------- INDEX ---------------------- #
 @user_routes.route('/', methods=['GET'])
@@ -34,6 +57,7 @@ def index():
 
 
 # ------------------- LOGIN ---------------------- #
+# THIS IS CHANGED TOO!
 @user_routes.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -47,12 +71,26 @@ def login():
             tfa = data["tfa"]
         else:
             tfa = ""
-            
+        # _________________________________SOME CHANGES HERE TOO!______________________________
         # Check if account existing
-        user = User.query.filter_by(username=username).all()
-        if len(user) < 1:
-            return jsonify({"message": "Incorrect Username or Password"})
-        user = user[0]
+        if not username or not password:
+            return jsonify({'message': 'Could not verify'}), 401
+
+        user = User.query.filter_by(username=username).first()
+
+        if not user:
+            return jsonify({'message': 'Could not verify'}), 401
+        if check_password_hash(user.password, password):
+            token = jwt.encode(
+                {
+                    'user_id': user.id,
+                    'username': user.name, # you can add more parameters for encoding
+                },
+                encryption_key
+            )
+            return jsonify({'token': token.decode('UTF-8')})
+            # Now post this token in "headers" object with parameter: 'x-access-token'
+        return jsonify({'message': 'Could not verify'}), 401
 
         # Check if tfa is correct
         if user.otp_token == "":
@@ -64,15 +102,14 @@ def login():
             pass
             # ------------------- TODO ---------------------- #
 
-        # Check password
-        if check_password_hash(user.password, password) == False:
-            return jsonify({"message": "Incorrect Username or Password"})
+# a test route for login check
 
-        # Return token
-        return jsonify({"message":"This is your token"})
-    except Exception as e:
-        return jsonify({"message":str(e)})
-
+@user_routes.route('/login_test', methods=['GET', 'POST'])
+@token_required
+def login_test(current_user):
+    # NOW YOU SIMPLY NEED TO ADD A DECORATOR OF "token_required" FOR AUTHENTICATION AFTER LOGGING IN
+    # PASS "current_user" IN EVERY FUNCTION FOR ROUTES WHICH REQUIRE LOGGING IN
+    return jsonify({'message': 'you can see this only if you sent the token in headers with the object'})
 
 
 # ------------------- REGISTER ---------------------- #

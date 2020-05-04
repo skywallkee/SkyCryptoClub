@@ -1,0 +1,121 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Settings | SkyCrypto Club{% endblock %}
+
+{% block page %}Linked Accounts Settings{% endblock %}
+
+{% block content %}
+
+<script>
+  function giveError(title, message){
+    $.notify({
+        title: '<strong>' + title + '</strong>',
+        message: message
+    },{
+        type: 'danger',
+        delay: 3000,
+        placement: {
+            from: 'top',
+            align: 'center'
+        }
+    });
+  }  
+  function giveSuccess(title, message){
+    $.notify({
+        title: '<strong>' + title + '</strong>',
+        message: message
+    },{
+        type: 'success',
+        delay: 4500,
+        placement: {
+            from: 'top',
+            align: 'center'
+        }
+    });
+  }  
+</script>
+{% if danger %}
+<script>giveError('{{ danger.title }}', '{{ danger.message }}')</script>
+{% endif %}
+{% if success %}
+<script>giveSuccess('{{ success.title }}', '{{ success.message }}')</script>
+{% endif %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row text-center">
+            <div class="container">
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2 " href="{% url 'settings' %}">
+              Profile
+            </a>
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2" href="{% url 'privacy' %}">
+              Privacy
+            </a>
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2 active" href="{% url 'linked' %}">
+              Linked Accounts
+            </a>
+          </div>
+          </div>
+          <div class="card">
+            <div class="card-header card-header-icon card-header-rose">
+              <div class="card-icon">
+                <i class="material-icons">perm_identity</i>
+              </div>
+              <h4 class="card-title">Edit Profile -
+                <small class="category">Link other platform accounts</small>
+              </h4>
+            </div>
+            <div class="card-body">
+              <form method="POST" class="form-horizontal">{% csrf_token %}
+                <div class="row">
+                  <div class="col-lg-8 col-md-6 col-sm-6 col-xs-12">
+                    <select class="selectpicker col-sm-12" name="accountId" data-style="select-with-transition" title="Linked Accounts" data-size="5">
+                        {% for account in linked %}
+                            <option value="{{ account.id }}">{{ account.username }} | {{ account.platform }} | {% if account.active == True %}Active{% else %}Inactive{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+                    <button type="submit" name="removeAccount" class="btn btn-rose pull-right col-sm-12">Remove Account</button>
+                  </div>
+                </div>
+                <br /><hr><br />
+                <div class="row">
+                  <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Account</label>
+                      <input name="accountUsername" type="text" class="form-control">
+                      <small id="accountAddHelp" class="form-text text-muted text-center">Add <span class="text-danger">BotSky</span> to your friends list before requesting a token.</small>
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6 col-sm-12">
+                    <select name="accountPlatform" class="selectpicker col-sm-12" data-style="select-with-transition" title="Platform" data-size="5">
+                      {% for platform in platforms %}
+                        <option value="{{ platform.id }}">{{ platform.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
+                    <button type="submit" name="requestToken" class="btn btn-rose pull-right col-sm-12">Request Token</button>
+                  </div>
+                </div>
+                <br /><hr><br />
+                <div class="row">
+                  <div class="col-lg-8 col-md-6 col-sm-6 col-xs-12">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Token</label>
+                      <input type="password" name="accountToken" class="form-control col-sm-12">
+                    </div>
+                  </div>
+                  <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
+                    <button type="submit" name="addAccount" class="btn btn-rose pull-right col-sm-12">Add Account</button>
+                  </div>
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endblock %}

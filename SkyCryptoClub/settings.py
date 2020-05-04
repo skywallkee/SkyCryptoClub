@@ -146,8 +146,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR + "/SkyCryptoClub", 'static'),
 )
-MEDIA_URL = '/avatars/'
-MEDIA_ROOT = os.path.join(BASE_DIR + "/SkyCryptoClub", 'avatars')
+MEDIA_URL = '/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR + "/SkyCryptoClub", 'images')
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

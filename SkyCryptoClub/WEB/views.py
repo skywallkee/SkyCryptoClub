@@ -57,7 +57,12 @@ def user_logout(request):
 def index(request):
     # Load the index template and the context
     template    = loader.get_template('WEB/index.html')
-    context     = {}
+    large_number = random.randint(1, 15)
+    medium_number = random.randint(1, 16)
+    small_number = random.randint(1, 2)
+    context     = {"stake_large": "/images/partners/stake/large{}.gif".format(large_number),
+                   "stake_medium": "/images/partners/stake/medium{}.gif".format(medium_number),
+                   "stake_small": "/images/partners/stake/small{}.gif".format(small_number)}
     # Return the template
     return HttpResponse(template.render(context, request))
 

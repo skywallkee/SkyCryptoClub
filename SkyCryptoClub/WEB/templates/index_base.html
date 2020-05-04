@@ -219,6 +219,11 @@
               <i class="material-icons">home</i> Home
             </a>
           </li>
+          <li class="nav-item {% if page == 'contact' %}active{% endif %}">
+            <a href="" class="nav-link">
+              <i class="material-icons">email</i> Contact Us
+            </a>
+          </li>
           {% if user.is_authenticated %}
           <li class="nav-item ">
             <a href="{% url 'dashboard' %}" class="nav-link">
@@ -249,6 +254,9 @@
   <!-- End Navbar -->
   <div class="wrapper wrapper-full-page">
   {% block content %}{% endblock %}
+  <div class="d-xs-block d-md-none">
+    <br />
+  </div>
   <footer class="footer">
     <div class="container">
       <nav class="float-center">

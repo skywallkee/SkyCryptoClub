@@ -1,0 +1,140 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Settings | SkyCrypto Club{% endblock %}
+
+{% block page %}Privacy Settings{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row text-center">
+            <div class="container">
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2" href="{% url 'settings' %}">
+              Profile
+            </a>
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2 active" href="{% url 'privacy' %}">
+              Privacy
+            </a>
+            <a class="btn btn-info col-sm-12 col-md-5 col-lg-4 col-xl-2" href="{% url 'linked' %}">
+              Linked Accounts
+            </a>
+          </div>
+          </div>
+          <div class="card">
+            <div class="card-header card-header-icon card-header-rose">
+              <div class="card-icon">
+                <i class="material-icons">perm_identity</i>
+              </div>
+              <h4 class="card-title">Edit Profile -
+                <small class="category">Change what others can see</small>
+              </h4>
+            </div>
+            <div class="card-body">
+              <form method="POST" class="form-horizontal">{% csrf_token %}
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="row">
+                      <label class="col-sm-4 col-form-label label-checkbox">Public Statistics on Profile</label>
+                      <div class="col-sm-8 checkbox-radios">
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicStats" value="true" {% if profile.publicStats %}checked{% endif %}> Yes
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicStats" value="false" {% if not profile.publicStats %}checked{% endif %}> No
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="row">
+                      <label class="col-sm-4 col-form-label label-checkbox">Display Level on Profile</label>
+                      <div class="col-sm-8 checkbox-radios">
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicLevel" value="true" {% if profile.publicLevel %}checked{% endif %}> Yes
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicLevel" value="false" {% if not profile.publicLevel %}checked{% endif %}> No
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="row">
+                      <label class="col-sm-4 col-form-label label-checkbox">Display XP on Profile</label>
+                      <div class="col-sm-8 checkbox-radios">
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicXP" value="true" {% if profile.publicXP %}checked{% endif %}> Yes
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicXP" value="false" {% if not profile.publicXP %}checked{% endif %}> No
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="row">
+                      <label class="col-sm-4 col-form-label label-checkbox">Display Name on Platform</label>
+                      <div class="col-sm-8 checkbox-radios">
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicName" value="true" {% if profile.publicName %}checked{% endif %}> Yes
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input class="form-check-input" type="radio" name="publicName" value="false" {% if not profile.publicName %}checked{% endif %}> No
+                            <span class="circle">
+                              <span class="check"></span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row text-center">
+                  <div class="col-sm-6 text-center" style="margin-right: auto; margin-left: auto;"></div>
+                  <button type="submit" class="btn btn-rose pull-right col-md-3 col-sm-12">Update Privacy</button>
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endblock %}

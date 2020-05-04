@@ -1,0 +1,267 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Profile | SkyCrypto Club{% endblock %}
+
+{% block page %}Profile{% endblock %}
+
+{% block content %}
+      <!-- End Navbar -->
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card ">
+            <div class="card-header card-header-success card-header-icon">
+              <div class="card-icon">
+                <i class="material-icons"></i>
+              </div>
+              <h4 class="card-title">About</h4>
+            </div>
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-md-4">
+                  <div style="text-align: center">
+                  <div class="user">
+                    <div class="user-info">
+                      <div style="text-align: center">
+                      <div style="display:inline-block;">
+                      <div class="photo">
+                        <img src="{{ profile.avatar.url }}">
+                      </div>
+                      </div></div>
+                      <h2>{{ profile.user.username }}</h2>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+                {% if profile.publicXP == True or owner %}
+                <div class="col-md-8">
+                  <div class="row">
+                    <span class="alignleft">
+                      {% widthratio profile.xp 500 1 %}%
+                    </span>
+                    <span class="aligncenter">
+                      {{ profile.xp }}/50000
+                    </span>
+                    {% if profile.publicLevel == True or owner %}
+                    <span class="alignright">
+                      <b>Level: {{ profile.level }} {{ title }}</b>
+                    </span>
+                    {% endif %}
+                  </div>
+                  <div class="progress progress-line-primary">
+                    <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="{% widthratio profile.xp 500 1 %}" aria-valuemin="0" aria-valuemax="100" style="width: {% widthratio profile.xp 500 1 %}%;">
+                      <span class="sr-only">{% widthratio profile.xp 500 1 %}% Complete</span>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+              {% if profile.publicStats == True or owner %}
+              <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-stats">
+                    <div class="card-header card-header-warning card-header-icon">
+                      <div class="card-icon">
+                        <i class="material-icons">compare_arrows</i>
+                      </div>
+                      <p class="card-category">Completed Started Exchanges</p>
+                      <h3 class="card-title">{{ statistics.totalExchangesStarted }}</h3>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-stats">
+                    <div class="card-header card-header-rose card-header-icon">
+                      <div class="card-icon">
+                        <i class="material-icons">compare_arrows</i>
+                      </div>
+                      <p class="card-category">Exchanges Done</p>
+                      <h3 class="card-title">{{ statistics.totalExchangesSent }}</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-chart">
+                    <div class="card-header card-header-rose">
+                      <div id="nrExchangesSent" class="ct-chart"></div>
+                    </div>
+                    <div class="card-body text-center">
+                      <h4 class="card-title">Number of Exchanges Sent</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-chart">
+                    <div class="card-header card-header-warning">
+                      <div id="nrExchangesReceived" class="ct-chart"></div>
+                    </div>
+                    <div class="card-body text-center">
+                      <h4 class="card-title ">Number of Exchanges Received</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-chart">
+                    <div class="card-header card-header-info">
+                      <div id="amountExchangesSent" class="ct-chart"></div>
+                    </div>
+                    <div class="card-body text-center">
+                      <h4 class="card-title ">Amount of Exchanges Sent</h4>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-12">
+                  <div class="card card-chart">
+                    <div class="card-header card-header-info">
+                      <div id="amountExchangesReceived" class="ct-chart"></div>
+                    </div>
+                    <div class="card-body text-center">
+                      <h4 class="card-title ">Amount of Exchanges Received</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+<!-- Chartist JS -->
+<script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+<script>
+      var dataNrExchangedSent = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.numberBTCSent }}'), 
+          parseFloat('{{ statistics.numberETHSent }}'), 
+          parseFloat('{{ statistics.numberLTCSent }}'), 
+          parseFloat('{{ statistics.numberXDGSent }}'), 
+          parseFloat('{{ statistics.numberBCHSent }}'),
+          parseFloat('{{ statistics.numberXRPSent }}'),
+          parseFloat('{{ statistics.numberTRXSent }}')]
+        ]
+      };
+
+    var optionsNrExchangedSent = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsNrExchangedSent = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#nrExchangesSent', dataNrExchangedSent, optionsNrExchangedSent, responsiveOptionsNrExchangedSent);
+
+    var dataNrExchangedReceived = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.numberBTCReceived }}'), 
+          parseFloat('{{ statistics.numberETHReceived }}'), 
+          parseFloat('{{ statistics.numberLTCReceived }}'), 
+          parseFloat('{{ statistics.numberXDGReceived }}'), 
+          parseFloat('{{ statistics.numberBCHReceived }}'),
+          parseFloat('{{ statistics.numberXRPReceived }}'),
+          parseFloat('{{ statistics.numberTRXReceived }}')]
+        ]
+      };
+
+    var optionsNrExchangedReceived = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsNrExchangedReceived = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#nrExchangesReceived', dataNrExchangedReceived, optionsNrExchangedReceived, responsiveOptionsNrExchangedReceived);
+
+    var dataAmountExchangedSent = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.amountBTCSent }}'), 
+          parseFloat('{{ statistics.amountETHSent }}'), 
+          parseFloat('{{ statistics.amountLTCSent }}'), 
+          parseFloat('{{ statistics.amountXDGSent }}'), 
+          parseFloat('{{ statistics.amountBCHSent }}'),
+          parseFloat('{{ statistics.amountXRPSent }}'),
+          parseFloat('{{ statistics.amountTRXSent }}')]
+        ]
+      };
+
+    var optionsAmountExchangedSent = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsAmountExchangedSent = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#amountExchangesSent', dataAmountExchangedSent, optionsAmountExchangedSent, responsiveOptionsAmountExchangedSent);
+
+    var dataAmountExchangedReceived = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.amountBTCReceived }}'), 
+          parseFloat('{{ statistics.amountETHReceived }}'), 
+          parseFloat('{{ statistics.amountLTCReceived }}'), 
+          parseFloat('{{ statistics.amountXDGReceived }}'), 
+          parseFloat('{{ statistics.amountBCHReceived }}'),
+          parseFloat('{{ statistics.amountXRPReceived }}'),
+          parseFloat('{{ statistics.amountTRXReceived }}')]
+        ]
+      };
+
+    var optionsAmountExchangedReceived = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsAmountExchangedReceived = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#amountExchangesReceived', dataAmountExchangedReceived, optionsAmountExchangedReceived, responsiveOptionsAmountExchangedReceived);
+  </script>
+{% endblock %}

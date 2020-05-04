@@ -1,0 +1,191 @@
+{% extends "index_base.html" %}
+
+{% block title %}Login | SkyCrypto Club{% endblock %}
+
+{% block page %}Login{% endblock %}
+
+{% block content %}
+
+
+<div class="login-page">
+<form class="form" method="post" action="" id="login-form">{% csrf_token %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 col-sm-8 ml-auto mr-auto">
+                <div class="card card-login">
+                    <div class="card-header card-header-rose text-center">
+                        <h4 class="card-title">Login</h4>
+                    </div>
+                    <div class="card-body ">
+                        <span class="bmd-form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="material-icons">account_circle</i>
+                            </span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Username..." name="username" id="username">
+                        </div>
+                        </span>
+                        <span class="bmd-form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                <i class="material-icons">lock_outline</i>
+                            </span>
+                            </div>
+                            <input type="password" class="form-control" placeholder="Password..." name="password" id="password">
+                        </div>
+                        </span>
+                    </div>
+                    <div class="card-footer justify-content-center">
+                        <a href="{% url 'recover-password' %}">Forgot your password?</a>
+                        <button type="button" onclick="checkLogin()" class="btn btn-rose btn-link btn-lg">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="tfaModal" tabindex="-1" role="">
+        <div class="modal-dialog modal-login" role="document">
+            <div class="modal-content">
+                <div class="card card-signup card-plain">
+                    <div class="modal-header">
+                      <div class="card-header card-header-primary text-center">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                          <i class="material-icons">clear</i>
+                        </button>
+    
+                        <h4 class="card-title">Two Factor Token</h4>
+                        A Two Factor code has been sent on your E-Mail. Please enter it below. Available only 15 minutes.
+                      </div>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form" method="" action="">
+                            <div class="card-body">
+                                <div class="form-group bmd-form-group">
+                                    <div class="input-group">
+                                      <div class="input-group-prepend">
+                                        <div class="input-group-text"><i class="material-icons">lock_outline</i></div>
+                                      </div>
+                                      <input type="text" placeholder="2FA..." class="form-control" name="2FA" id="2FA">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <a onclick="checkTFA()" class="btn btn-primary btn-link btn-wd btn-lg">Check 2FA</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<script>
+
+
+
+    var csrfcookie = function() {
+        var cookieValue = null,
+            name = 'csrftoken';
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    function checkLogin() {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+
+        $.ajax({
+            type: "POST",
+            url: "/check-login/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "username": username,
+                "password": password,
+            }),
+            success: function(data){
+                if (data != 200) {
+                    $.notify({
+                        title: '<strong>Invalid username or password!</strong>',
+                        message: ''
+                    },{
+                        type: 'danger',
+                        delay: 900,
+                        placement: {
+                            from: 'top',
+                            align: 'center'
+                        }
+                    });
+                }
+                else {
+                    $('#tfaModal').modal('show');
+                }
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
+    function checkTFA() {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+        let tfa = document.getElementById("2FA").value;
+
+        $.ajax({
+        type: "POST",
+        url: "/check-tfa/",
+        headers: {
+            "Content-Type": "application/json",
+            "HTTP_GROUP_NAME": "groups_name",
+            "X-CSRFToken": csrfcookie()
+        },
+        data: JSON.stringify({
+            "username": username,
+            "password": password,
+            "2FA": tfa,
+        }),
+        success: function(data){
+            if (data != 200) {
+                $.notify({
+                    title: '<strong>Invalid 2FA Code!</strong>',
+                    message: ''
+                },{
+                    type: 'danger',
+                    delay: 900,
+                    placement: {
+                        from: 'top',
+                        align: 'center'
+                    }
+                });
+            }
+            else {
+                document.getElementById("login-form").submit();
+            }
+        },
+        failure: function(data){
+            console.log(data);
+        },
+    });
+    }
+</script>
+{% endblock %}

@@ -6,12 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
-flask-sqlalchemy = "*"
-flask-login = "*"
-python-dotenv = "*"
-validate-email = "*"
-py3dns = "*"
+django = "*"
+django-admin-tools = "*"
+feedparser = "*"
+djangorestframework = "*"
+pillow = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"

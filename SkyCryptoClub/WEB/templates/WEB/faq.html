@@ -1,0 +1,58 @@
+{% extends "index_base.html" %}
+
+{% block title %}FAQ | SkyCrypto Club{% endblock %}
+
+{% block page %}Frequently Asked Questions{% endblock %}
+
+{% block content %}
+
+
+<div class="main-page">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-10 ml-auto mr-auto">
+            <div class="card card-signup card-hidden">
+              <div class="card-body ">
+                <h2 class="card-title text-center">FAQ</h4>
+                <ul class="nav nav-pills nav-pills-warning" role="tablist">
+                  {% for category in categories %}
+                    <li class="nav-item">
+                      <a class="nav-link" data-toggle="tab" href="#link{{ category.id }}" role="tablist">
+                        {{ category.name }}  
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <div class="tab-content tab-space">
+                  {% for category in categories %}
+                  <div class="tab-pane" id="link{{ category.id }}">
+                    <div id="accordion{{ category.id }}" role="tablist">
+                      {% for answer in answers %}
+                       {% if answer.category.id == category.id %}
+                          <div class="card-collapse">
+                            <div class="card-header" role="tab" id="heading{{ answer.id }}">
+                              <h5 class="mb-0">
+                                <a data-toggle="collapse" href="#collapse{{ answer.id }}" aria-expanded="false" aria-controls="collapse{{ answer.id }}" class="collapsed">
+                                  {{ answer.question }}
+                                  <i class="material-icons">keyboard_arrow_down</i>
+                                </a>
+                              </h5>
+                            </div>
+                            <div id="collapse{{ answer.id }}" class="collapse" role="tabpanel" aria-labelledby="heading{{ answer.id }}" data-parent="#accordion">
+                              <div class="card-body">
+                                {{ answer.answer|safe }}
+                              </div>
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+{% endblock %}

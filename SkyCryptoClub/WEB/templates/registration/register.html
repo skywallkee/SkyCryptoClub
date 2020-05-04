@@ -1,0 +1,118 @@
+{% extends "index_base.html" %}
+
+{% block title %}Register | SkyCrypto Club{% endblock %}
+
+{% block page %}Register{% endblock %}
+
+{% block content %}
+
+{% if created %}
+<script>
+  $.notify({
+            title: '<strong>{{ created.title }}</strong>',
+            message: '{{ created.message }}'
+        },{
+            type: 'success',
+            delay: 5000,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+</script>
+{% endif %}
+
+{% if error %}
+<script>
+  $.notify({
+            title: '<strong>{{ error.title }}</strong>',
+            message: '{{ error.message }}'
+        },{
+            type: 'danger',
+            delay: 5000,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+</script>
+{% endif %}
+
+<div class="login-page">
+<form class="form" method="POST" id="registerForm">{% csrf_token %}
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 col-md-6 col-sm-8 ml-auto mr-auto">
+          <div class="card card-login">
+            <div class="card-header card-header-rose text-center">
+              <h4 class="card-title">Register</h4>
+            </div>
+            <div class="card-body ">
+              <span class="bmd-form-group">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">
+                      <i class="material-icons">face</i>
+                    </span>
+                  </div>
+                  <input type="text" class="form-control" placeholder="Username..." minlength="3" maxlength="34" id="username" name="username" required>
+                </div>
+              </span>
+              <span class="bmd-form-group">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">
+                      <i class="material-icons">email</i>
+                    </span>
+                  </div>
+                  <input type="email" class="form-control" placeholder="Email..." id="email" name="email" required>
+                </div>
+              </span>
+            </div>
+            <div class="card-footer justify-content-center">
+              <button type="button" onclick="register()" href="" class="btn btn-rose btn-link btn-lg" id="signupBtn">Sign Up</a>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</form>
+<script>
+  function register() {
+    let form = document.getElementById("registerForm");
+    if (!form.checkValidity()) {
+      let username = document.getElementById("username");
+      let email = document.getElementById("email");
+      if (!username.checkValidity()){
+        $.notify({
+            title: '<strong>Username length must be between 3 and 34!</strong>',
+            message: ''
+        },{
+            type: 'danger',
+            delay: 900,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+      }
+      if (!email.checkValidity()) {
+        $.notify({
+            title: '<strong>Please enter a valid email!</strong>',
+            message: ''
+        },{
+            type: 'danger',
+            delay: 900,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+      }
+    }
+    else {
+      form.submit();
+    }
+  }
+</script>
+{% endblock %}

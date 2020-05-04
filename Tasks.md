@@ -1,4 +1,15 @@
 # Tasks:
+- [ ] Create Contact Page
+- - for both, logged in and not logged in users
+- - form that will send a mail to contact@skycrypto.club
+- - should not replace support tickets!
+- - the main purpose will be for users that can't login/have account problems and for partners
+
+- [x] Add Partners Banner to Index
+- - add banners for mobile, tablet and desktop
+- - banners should be responsive to window resize
+- - banners should change after each refresh
+
 - [x] Refactor Profile Dashboard
 - - currently, user's profile method differs from other user's profile method
 - - merge both methods into one, so that both, currently logged in user and other user's profiles are in one method

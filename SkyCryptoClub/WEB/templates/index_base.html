@@ -19,7 +19,6 @@
 
 <!--   Core JS Files   -->
 <script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/core/bootstrap-material-design.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.jquery.min.js' %}"></script>
 <!--  Notifications Plugin    -->
@@ -214,13 +213,13 @@
       </button>
       <div class="collapse navbar-collapse justify-content-end">
         <ul class="navbar-nav">
-          <li class="nav-item {% if page == 'home' %}active{% endif %}">
+          <li class="nav-item {% if request.path == '' %}active{% endif %}">
             <a href="{% url 'index' %}" class="nav-link">
               <i class="material-icons">home</i> Home
             </a>
           </li>
-          <li class="nav-item {% if page == 'contact' %}active{% endif %}">
-            <a href="" class="nav-link">
+          <li class="nav-item {% if request.path == '/contact/' %}active{% endif %}">
+            <a href="{% url 'contact'%}" class="nav-link">
               <i class="material-icons">email</i> Contact Us
             </a>
           </li>
@@ -236,12 +235,12 @@
             </a>
           </li>
           {% else %}
-          <li class="nav-item {% if page == 'register' %}active{% endif %}">
+          <li class="nav-item {% if request.path == '/register/' %}active{% endif %}">
             <a href="{% url 'register' %}" class="nav-link">
               <i class="material-icons">person_add</i> Register
             </a>
           </li>
-          <li class="nav-item {% if page == 'login' %}active{% endif %}">
+          <li class="nav-item {% if request.path == '/login/' %}active{% endif %}">
             <a href="{% url 'login' %}" class="nav-link">
               <i class="material-icons">fingerprint</i> Login
             </a>

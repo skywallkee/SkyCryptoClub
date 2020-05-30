@@ -1,5 +1,5 @@
 # Tasks:
-- [ ] Create Contact Page
+- [x] Create Contact Page
 - - for both, logged in and not logged in users
 - - form that will send a mail to contact@skycrypto.club
 - - should not replace support tickets!
@@ -14,7 +14,7 @@
 - - currently, user's profile method differs from other user's profile method
 - - merge both methods into one, so that both, currently logged in user and other user's profiles are in one method
 
-- [ ] Refactor Profile Code @urgent
+- [x] Refactor Profile Code @urgent
 - - check index/profile/settings methods and refactor them
 - - splitting should include:
 - - - splitting methods into multiple more appropriate one-purpose functions
@@ -28,3 +28,7 @@
 - - make mesages in a GLOBAL messages file
 - - each language message should be of the form: VARIABLE_TITLLE = {"LANGUAGE": {"message": message}}
 - - EXAMPLE: HELLO_WORLD = {"en": {"message": "Hello World"}, "de": {"message": "Hello Welt"}}
+
+- [ ] Create Messages File @soon
+- - create a MESSAGES.py that contains dictionaries with each messages that are being sent
+- - this will allow messages to be modified easily from one file (allowing translation too)

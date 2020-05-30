@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
-                    Question, FAQCategory, Statistics, FoundDeposit
+                    Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -42,7 +42,7 @@ admin.site.register(Statistics, StatisticsAdmin)
 
 
 class UserRoleAdmin(admin.ModelAdmin):
-    fields = ['profile', 'role']
+    fields = ['profile', 'role', 'primary']
 
 admin.site.register(UserRole, UserRoleAdmin)
 
@@ -137,3 +137,9 @@ class QuestionAdmin(admin.ModelAdmin):
     fields = ['category', 'question', 'answer', 'accepted']
 
 admin.site.register(Question, QuestionAdmin)
+
+
+class PublicityBannersAdmin(admin.ModelAdmin):
+    fields = ['image', 'imageType']
+
+admin.site.register(PublicityBanners, PublicityBannersAdmin)

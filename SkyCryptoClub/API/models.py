@@ -59,7 +59,7 @@ class TwoFactorLogin(models.Model):
     def setKey():
         import string
         import random
-        characters = string.ascii_letters + string.digits + string.punctuation
+        characters = string.ascii_letters + string.digits
         stringLength = 34
         return ''.join(random.choice(characters) for i in range(stringLength))
     id = models.AutoField(primary_key=True)
@@ -71,9 +71,17 @@ class TwoFactorLogin(models.Model):
         return self.user.username + " | " + str(self.valid_until)
 
 
+def avatar_upload(instance, filename):
+    avatar_name = instance.user.username + "." + filename.split(".")[-1]
+    full_path = os.path.join(settings.MEDIA_ROOT, avatar_name)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+    return avatar_name
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    avatar = models.ImageField(default="default_avatar.jpg")
+    avatar = models.ImageField(default="default_avatar.jpg", upload_to=avatar_upload)
     xp = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     level = models.BigIntegerField(default=0)
     publicStats = models.BooleanField(default=True)
@@ -208,9 +216,10 @@ class UserRole(models.Model):
     id = models.AutoField(primary_key=True)
     profile = models.ForeignKey(Profile, unique=False, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, unique=False, on_delete=models.CASCADE)
+    primary = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("profile", "role")
+        unique_together = (("profile", "role"), ("profile", "primary"))
     
     def __str__(self):
         return self.profile.user.username + " | " + self.role.name
@@ -344,6 +353,19 @@ class Question(models.Model):
     
     def __str__(self):
         return self.category.name + " | " + self.question
+
+BANNER_CHOICES = (
+    ("large", "large"),
+    ("medium", "medium"),
+    ("small", "small"),
+)
+
+class PublicityBanners(models.Model):
+    image = models.ImageField(upload_to="partners/")
+    imageType = models.CharField(max_length = 35, choices = BANNER_CHOICES, default = "large")
+    
+    def __str__(self):
+        return self.image.name
 
 
 def create_user_profile(sender, instance, created, **kwargs):

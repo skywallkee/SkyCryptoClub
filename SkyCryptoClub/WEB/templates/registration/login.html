@@ -137,7 +137,7 @@
                     });
                 }
                 else {
-                    $('#tfaModal').modal('show');
+                    $('#tfaModal').modal({show: true, backdrop: false});
                 }
             },
             failure: function(data){

@@ -1,6 +1,6 @@
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
-                    FAQCategory, Question, Statistics
+                    FAQCategory, Question, Statistics, PublicityBanners
 from rest_framework import serializers
 
 
@@ -146,3 +146,9 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Question
         fields = ['url', 'category', 'question', 'answer', 'accepted']
+
+
+class PublicityBannersSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = PublicityBanners
+        fields = ['image', 'imageType']

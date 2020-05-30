@@ -12,6 +12,10 @@ feedparser = "*"
 djangorestframework = "*"
 pillow = "*"
 requests = "*"
+pyotp = "*"
+gunicorn = "*"
+boto3 = "*"
+django-storages = "*"
 
 [requires]
 python_version = "3.6"

@@ -61,10 +61,11 @@ urlpatterns = [
     path(r'recover/', WEBviews.recover_password, name='recover-password'),
     path(r'faq/', WEBviews.faq, name='faq'),
     path(r'terms/', WEBviews.terms, name='terms'),
+    path(r'contact/', WEBviews.contact, name='contact'),
     path(r'dashboard/', WEBviews.dashboard, name='dashboard'),
     path(r'dashboard/<str:username>/', WEBviews.dashboard_user, name='dashboard_user'),
     path(r'settings/', WEBviews.settings, name='settings'),
     path(r'settings/privacy/', WEBviews.privacy, name='privacy'),
     path(r'settings/linked/', WEBviews.linked, name='linked'),
     path('', WEBviews.index, name='index'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]

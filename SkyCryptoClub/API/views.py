@@ -7,21 +7,21 @@ from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, Use
                                           ProfileBanSerializer, PlatformSerializer, PlatformCurrencySerializer, \
                                           CurrencySerializer, WalletSerializer, AccountSerializer, AccountKeySerializer, \
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, \
-                                          FAQCategorySerializer, QuestionSerializer, StatisticsSerializer
+                                          FAQCategorySerializer, QuestionSerializer, StatisticsSerializer, PublicityBannersSerializer
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
                     Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
-                    FAQCategory, Question, Statistics, FoundDeposit
+                    FAQCategory, Question, Statistics, FoundDeposit, PublicityBanners
 import json
 
 
-from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN
-import smtplib, ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN, TOTP
+from ..APIS import send_mail
+from ..MESSAGES import TFA_HTML, TFA_TEXT, TFA_SUBJECT
+from ..METHODS import get_json_data
 from multiprocessing import Process
 import time
 from decimal import *
@@ -179,72 +179,32 @@ class QuestionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
-def send_key_mail(user, key):
-    # Send Email with not hashed password
-    sender_email = gEMAIL
-    receiver_email = user.email
-    password = gPASSWORD
-
-    message = MIMEMultipart("alternative")
-    message["Subject"] = "2FA Key"
-    message["From"] = sender_email
-    message["To"] = receiver_email
-
-    text = """Your 2FA key is:\
-    {}""".format(key)
-    html = """\
-    <html>
-    <body>
-        <h1>Your 2FA key is:</h1>
-        {}
-    </body>
-    </html>
-    """.format(key)
-
-    part1 = MIMEText(text, "plain")
-    part2 = MIMEText(html, "html")
-    message.attach(part1)
-    message.attach(part2)
-
-    # Create secure connection with server and send email
-    context = ssl.create_default_context()
-    while True:
-        try:
-            with smtplib.SMTP_SSL("mail.privateemail.com", 465, context=context) as server:
-                server.login(sender_email, password)
-                server.sendmail(sender_email, receiver_email, message.as_string())
-        except Exception as e:
-            print("Couldn't send TFA mail: ", e)
-            time.sleep(5)
-            continue
-        break
+class PublicityBannersViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows banners to be viewed or edited.
+    """
+    queryset = PublicityBanners.objects.all()
+    serializer_class = PublicityBannersSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 
 def user_login(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data["username"]
-        password = data["password"]
-        user = authenticate(username=username, password=password)
-        if user:
-            if user.is_active:
-                sendTfa = None
-                tfalist = TwoFactorLogin.objects.filter(user=user, valid_until__range=[timezone.now(), timezone.now() + timezone.timedelta(minutes=15)])
-                if len(tfalist) > 0:
-                    return HttpResponse(200)
-                sendTfa = TwoFactorLogin.objects.create(user=user)
-                key = sendTfa.key
-                send_mail_process = Process(target=send_key_mail, args=(user, key,))
-                send_mail_process.start()
-                return HttpResponse(200)
-            else:
-                return HttpResponse(400)
-        else:
-            print("Someone tried to login and failed.")
-            print("They used username: {} and password: {}".format(username,password))
-            return HttpResponse(400)
-    else:
-        return HttpResponse("Invalid request method", 404)
+    if request.method != 'POST':
+        return HttpResponse(400)
+    data = get_json_data(json.loads(request.body), ["username", "password"])
+    if len(data) != 2:
+        return HttpResponse(400)
+    username, password = data
+    user = authenticate(username=username, password=password)
+    if not user or not user.is_active:
+        return HttpResponse(400)
+    TFA = TwoFactorLogin.objects.filter(user=user, valid_until__gt=timezone.now()).first()
+    if not TFA:
+        TFA = TwoFactorLogin.objects.create(user=user)
+    key = TFA.key
+    send_TFA_mail = Process(target=send_mail, args=(user.email, TFA_SUBJECT, TFA_TEXT.format(key), TFA_HTML.format(key)))
+    send_TFA_mail.start()
+    return HttpResponse(200)
 
 def check_tfa(request):
     if request.method == 'POST':
@@ -324,8 +284,6 @@ def get_available_balance(request):
         return HttpResponse(400)
 
 def reload_stake(accounts, platform, profile):
-    if not request.user.is_authenticated:
-        return HttpResponse(400)
     import requests
     url = "https://api.stake.com/graphql"
     searching = True
@@ -399,7 +357,7 @@ def do_withdraw_stake(platform, currency, amount, username):
     if userId is None:
         return None
     else:
-        payload = "{\"query\":\"mutation SendTipMutation {\\nsendTip(userId: \\\"" + userId + "\\\", amount: " + str(amount) + ", currency: " + currency.name + ", isPublic: true, chatId: \\\"f0326994-ee9e-411c-8439-b4997c187b95\\\") {\\nid\\namount\\ncurrency}\\n}\"}"
+        payload = "{\"query\":\"mutation SendTipMutation {\\nsendTip(userId: \\\"" + userId + "\\\", amount: " + str(amount) + ", currency: " + currency.name + ", isPublic: true, chatId: \\\"f0326994-ee9e-411c-8439-b4997c187b95\\\", tfaToken: \"" + TOTP.now() + "\") {\\nid\\namount\\ncurrency}\\n}\"}"
         headers = {
         'Content-Type': 'application/json',
         'x-access-token': STAKE_TOKEN,

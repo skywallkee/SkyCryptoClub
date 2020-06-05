@@ -16,6 +16,7 @@ pyotp = "*"
 gunicorn = "*"
 boto3 = "*"
 django-storages = "*"
+django-heroku = "*"
 
 [requires]
 python_version = "3.6"

@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 admin.site.unregister(Group)
 
 class UserAdmin(admin.ModelAdmin):
-    fields = ['id', 'publicId', 'username', 'email', 'password', 'is_staff', 'is_active', 'date_joined']
+    fields = ['publicId', 'username', 'email', 'password', 'is_staff', 'is_active', 'date_joined']
 
 admin.site.register(User, UserAdmin)
 

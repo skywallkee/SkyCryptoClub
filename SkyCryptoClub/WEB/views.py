@@ -73,13 +73,15 @@ def get_banners():
     medium = PublicityBanners.objects.filter(imageType="medium")
     small = PublicityBanners.objects.filter(imageType="small")
 
-    pickLarge = random.randint(0, len(large) - 1)
-    pickMedium = random.randint(0, len(medium) - 1)
-    pickSmall = random.randint(0, len(small) - 1)
-
-    banners["stake_large"] = large[pickLarge].image.url
-    banners["stake_medium"] = medium[pickMedium].image.url
-    banners["stake_small"] = small[pickSmall].image.url
+    if len(large) > 0:
+        pickLarge = random.randint(0, len(large) - 1)
+        banners["stake_large"] = large[pickLarge].image.url
+    if len(medium) > 0:
+        pickMedium = random.randint(0, len(medium) - 1)
+        banners["stake_medium"] = medium[pickMedium].image.url
+    if len(small) > 0:
+        pickSmall = random.randint(0, len(small) - 1)
+        banners["stake_small"] = small[pickSmall].image.url
     return banners
 
 
@@ -239,13 +241,14 @@ def recover_password(request):
 
     username, email = data
     user = User.objects.filter(username=username, email=email)
-    if len(user) > 0:
+    if len(user) < 1:
         return render(request, 'registration/recover_password.html', fail)
         
     user = user.first()
-    user.set_password(generate_password())
+    password = generate_password()
+    user.set_password(password)
     user.save()
-    send_mail_process = Process(target=send_mail, args=(user.email, user.username, password,))
+    send_mail_process = Process(target=send_mail, args=(user.email, user.username, password, password))
     send_mail_process.start()
     return render(request, 'registration/recover_password.html', success)
 
@@ -536,8 +539,7 @@ def remove_linked_account(request, context):
 #              the account and send the key to that account
 #              if the message has been send, the account exists
 #              otherwise it doesn't and is being deleted
-def send_linked_key(profile, platform, username, context):
-    account = Account.objects.create(profile=profile, platform=platform, username=username)
+def send_linked_key(profile, platform, username, account, context):
     key = AccountKey.objects.filter(account=account).first()
     message = "Your key is: " + key.key
     response = send_message(account, message)
@@ -557,7 +559,7 @@ def send_linked_key(profile, platform, username, context):
 # Description: Given a token, check if it exists,
 #               if it exists, then activate the account,
 #               otherwise, return error
-def confirm_linked_account(token):
+def confirm_linked_account(token, context):
     key = AccountKey.objects.filter(key=token)
     if len(key) == 1:
         key = key.first()
@@ -598,9 +600,11 @@ def linked(request):
             if username and platformId:
                 platform = Platform.objects.filter(id=platformId).first()
                 if len(Account.objects.filter(profile=profile, platform=platform, username=username)) == 0:
-                    context = send_linked_key(profile, platform, username, context)
+                    account = Account.objects.create(profile=profile, platform=platform, username=username)
+                    context = send_linked_key(profile, platform, username, account, context)
                 elif not Account.objects.filter(profile=profile, platform=platform, username=username).first().active:
-                    context = send_linked_key(profile, platform, username, context)
+                    account = Account.objects.filter(profile=profile, platform=platform, username=username).first()
+                    context = send_linked_key(profile, platform, username, account, context)
                 else:
                     context["danger"] = {"title": "Account already activated", "message": "The given account has already been activated on your account!"}
         if 'addAccount' in request.POST:

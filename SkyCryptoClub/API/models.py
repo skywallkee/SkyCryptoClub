@@ -7,18 +7,11 @@ from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 from .managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin):
-    def setId():
-        number = User.objects.count()
-        if number == None:
-            return 1
-        else:
-            return number + 1
-
-    id = models.BigIntegerField(default=setId)
     publicId = models.UUIDField(primary_key=True, default=uuid.uuid4)
     username = models.CharField(max_length=35, unique=True)
     email = models.EmailField(_('email address'), unique=True)

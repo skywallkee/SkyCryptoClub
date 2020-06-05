@@ -5,13 +5,12 @@ from rest_framework import serializers
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField()
     publicId = serializers.ReadOnlyField()
     last_password_reset = serializers.ReadOnlyField()
     date_joined = serializers.ReadOnlyField()
     class Meta:
         model = User
-        fields = ['url', 'id', 'publicId', 'username', 'email', 'password', 
+        fields = ['url', 'publicId', 'username', 'email', 'password', 
                   'is_staff', 'is_active', 'last_password_reset', 
                   'date_joined']
 

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import django_heroku
 from .GLOBAL import SECRET_KEY as gSECRET, \
     AWS_ACCESS_KEY_ID as AWS_ID, \
     AWS_SECRET_ACCESS_KEY as AWS_SECRET, \
@@ -174,3 +175,5 @@ GZIP_CONTENT_TYPES = (
  'application/x-javascript',
  'text/javascript'
 )
+
+django_heroku.settings(locals())

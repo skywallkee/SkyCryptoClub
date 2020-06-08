@@ -23,6 +23,21 @@
 - - - promoting reusability for other methods
 - - - describing methods with appropriate comments for better understanding
 
+- [ ] Create Exchanges
+- - Request Exchange
+- - - Users can make a new request and set the wanted rate
+- - View Exchange List
+- - - Users can view all the requests that are opened
+- - - Users can filter all the requests based on the given criteria (currency, min amount, max amount, ratio)
+- - Exchange History
+- - - Users can view all their past exchanges
+
+- [ ] Create Support Page
+- - Support Ticket
+- - - Users can open/close/reply to their support tickets regarding a given problem
+- - - Support staff can reply to support tickets assigned to their field of expertise
+- - - Support staff can mark a ticket as answered
+
 - [ ] User Language @soon
 - - add language field to User model with English as default
 - - make mesages in a GLOBAL messages file

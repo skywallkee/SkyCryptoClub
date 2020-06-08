@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, UserRoleSerializer, RoleSerializer, \
                                           ProfileBanSerializer, PlatformSerializer, PlatformCurrencySerializer, \
-                                          CurrencySerializer, WalletSerializer, AccountSerializer, AccountKeySerializer, \
+                                          CurrencySerializer, WalletSerializer, AccountSerializer, \
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, \
                                           FAQCategorySerializer, QuestionSerializer, StatisticsSerializer, PublicityBannersSerializer
 from django.contrib.auth import get_user_model
@@ -13,7 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
-                    Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
+                    Account, PasswordToken, Exchange, TwoFactorLogin, \
                     FAQCategory, Question, Statistics, FoundDeposit, PublicityBanners
 import json
 
@@ -140,15 +140,6 @@ class AccountViewSet(viewsets.ModelViewSet):
     """
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class AccountKeyViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows currency to be viewed or edited.
-    """
-    queryset = AccountKey.objects.all()
-    serializer_class = AccountKeySerializer
     permission_classes = [permissions.IsAdminUser]
 
 

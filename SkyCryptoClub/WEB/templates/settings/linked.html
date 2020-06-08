@@ -68,48 +68,54 @@
             <div class="card-body">
               <form method="POST" class="form-horizontal">{% csrf_token %}
                 <div class="row">
-                  <div class="col-lg-8 col-md-6 col-sm-6 col-xs-12">
-                    <select class="selectpicker col-sm-12" name="accountId" data-style="select-with-transition" title="Linked Accounts" data-size="5">
-                        {% for account in linked %}
-                            <option value="{{ account.id }}">{{ account.username }} | {{ account.platform }} | {% if account.active == True %}Active{% else %}Inactive{% endif %}</option>
-                        {% endfor %}
-                    </select>
-                  </div>
-                  <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
-                    <button type="submit" name="removeAccount" class="btn btn-rose pull-right col-sm-12">Remove Account</button>
-                  </div>
-                </div>
-                <br /><hr><br />
-                <div class="row">
-                  <div class="col-lg-4 col-md-6 col-sm-12">
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
                     <div class="form-group ">
                       <label class="bmd-label-floating">Account</label>
                       <input name="accountUsername" type="text" class="form-control">
-                      <small id="accountAddHelp" class="form-text text-muted text-center">Add <span class="text-danger">BotSky</span> to your friends list before requesting a token.</small>
                     </div>
                   </div>
-                  <div class="col-lg-4 col-md-6 col-sm-12">
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
                     <select name="accountPlatform" class="selectpicker col-sm-12" data-style="select-with-transition" title="Platform" data-size="5">
                       {% for platform in platforms %}
                         <option value="{{ platform.id }}">{{ platform.name }}</option>
                       {% endfor %}
                     </select>
                   </div>
-                  <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-                    <button type="submit" name="requestToken" class="btn btn-rose pull-right col-sm-12">Request Token</button>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">API Key</label>
+                      <input name="apiKey" type="text" class="form-control">
+                      <small id="apiKeyHelp" class="form-text text-muted text-center">The API Key is <span class="text-danger">only</span> used to verify your ownership of the account and we don't store or use it for any other purpose.</small>
+                    </div>
                   </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <button type="submit" name="addAccount" class="btn btn-rose pull-right col-sm-12">Add Account</button>
+                  </div>
+                  <div class="col-3"></div>
                 </div>
                 <br /><hr><br />
                 <div class="row">
-                  <div class="col-lg-8 col-md-6 col-sm-6 col-xs-12">
-                    <div class="form-group ">
-                      <label class="bmd-label-floating">Token</label>
-                      <input type="password" name="accountToken" class="form-control col-sm-12">
-                    </div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <select class="selectpicker col-sm-12" name="accountId" data-style="select-with-transition" title="Linked Accounts" data-size="5">
+                        {% for account in linked %}
+                            <option value="{{ account.id }}">{{ account.username }} | {{ account.platform }}</option>
+                        {% endfor %}
+                    </select>
                   </div>
-                  <div class="col-lg-4 col-md-6 col-sm-6 col-xs-12">
-                    <button type="submit" name="addAccount" class="btn btn-rose pull-right col-sm-12">Add Account</button>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <button type="submit" name="removeAccount" class="btn btn-rose pull-right col-sm-12">Remove Account</button>
                   </div>
+                  <div class="col-3"></div>
                 </div>
                 <div class="clearfix"></div>
               </form>

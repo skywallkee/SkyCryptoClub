@@ -36,7 +36,6 @@ router.register(r'currencies', APIviews.CurrencyViewSet)
 router.register(r'platformcurrencies', APIviews.PlatformCurrencyViewSet)
 router.register(r'wallets', APIviews.WalletViewSet)
 router.register(r'accounts', APIviews.AccountViewSet)
-router.register(r'accountkeys', APIviews.AccountKeyViewSet)
 router.register(r'exchanges', APIviews.ExchangeViewSet)
 router.register(r'faqcategories', APIviews.FAQCategoryViewSet)
 router.register(r'questions', APIviews.QuestionViewSet)
@@ -54,7 +53,7 @@ urlpatterns = [
     path(r'withdraw/', APIviews.withdraw, name='withdraw'),
     path(r'get-platform-accounts/', APIviews.get_platform_accounts, name='get-platform-accounts'),
     path(r'admin_tools/', include('admin_tools.urls')),
-    path(r'admin/', admin.site.urls),
+    path(r'admin/', admin.site.urls, name='admin-panel'),
     path(r'login/', WEBviews.user_login, name='login'),
     path(r'logout/', auth_views.LogoutView.as_view(), name='logout'),
     path(r'register/', WEBviews.user_register, name='register'),

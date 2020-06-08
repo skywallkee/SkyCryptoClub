@@ -132,6 +132,15 @@
               </button>
             </div>
             <a class="navbar-brand" href="{% url 'dashboard' %}">{% block page %}{% endblock %}</a>
+            {% if user.is_superuser %}
+            <ul class="navbar-nav d-block d-lg-none">
+              <li class="nav-item dropdown">
+                <a class="nav-link" href="{% url 'admin:index' %}" id="navbarDropdownMenuLink">
+                  <i class="material-icons">admin_panel_settings</i>
+                </a>
+              </li>
+            </ul>
+            {% endif %}
             <ul class="navbar-nav d-block d-lg-none">
               <li class="nav-item dropdown">
                 <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
@@ -148,6 +157,16 @@
           </button>
           <div class="collapse navbar-collapse justify-content-end">
             <ul class="navbar-nav">
+              {% if user.is_superuser %}
+              <li class="nav-item dropdown">
+                <a class="nav-link" href="{% url 'admin:index' %}" id="navbarDropdownMenuLink">
+                  <i class="material-icons">admin_panel_settings</i>
+                  <p class="d-lg-none d-md-block">
+                    Admin Panel
+                  </p>
+                </a>
+              </li>
+              {% endif %}
               <li class="nav-item dropdown">
                 <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
                   <i class="material-icons">account_balance</i>

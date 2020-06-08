@@ -1,5 +1,5 @@
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
-                    Wallet, Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
+                    Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, \
                     FAQCategory, Question, Statistics, PublicityBanners
 from rest_framework import serializers
 
@@ -120,12 +120,6 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Account
         fields = ['url', 'profile', 'platform', 'username', 'active']
-
-
-class AccountKeySerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = AccountKey
-        fields = ['url', 'account', 'key']
 
 
 class ExchangeSerializer(serializers.HyperlinkedModelSerializer):

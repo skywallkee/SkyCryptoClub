@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
-                    Wallet, Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
+                    Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, \
                     Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
 from django.contrib.auth.models import Group
 
@@ -113,12 +113,6 @@ class FoundDepositAdmin(admin.ModelAdmin):
     fields = ['tipId', 'profile', 'account', 'platform']
 
 admin.site.register(FoundDeposit, FoundDepositAdmin)
-
-
-class AccountKeyAdmin(admin.ModelAdmin):
-    fields = ['account', 'key']
-
-admin.site.register(AccountKey, AccountKeyAdmin)
 
 
 class ExchangeAdmin(admin.ModelAdmin):

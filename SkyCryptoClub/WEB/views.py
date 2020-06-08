@@ -12,7 +12,7 @@ import time
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, Statistics, \
-                         Platform, PlatformCurrency, Wallet, Account, AccountKey, UserRole, \
+                         Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners
 from django.contrib.auth import get_user_model
 
@@ -475,51 +475,6 @@ def privacy(request):
     return render(request, 'settings/privacy.html', context)
 
 
-# Functionality: Find User's ID on Stake.com
-# Description: Makes a query request to stake api with
-#              user's username and finds user's ID
-def find_user_id_stake(username):
-    import requests
-    url = "https://api.stake.com/graphql"
-    payload = "{\"query\":\"query {\\n user(name: \\\"" + username + "\\\") {\\n id\\n}\\n}\"}"
-    headers = {'x-access-token': STAKE_TOKEN,}
-    data = api_request(url, payload, headers, "POST")
-    if "data" in data and "user" in data["data"]:
-        user = data["data"]["user"]
-        if "id" in user:
-            return user["id"]
-    return None
-
-
-# Functionality: Send a Message on Stake
-# Description: Finds user's ID on Stake and makes
-#              a mutation request to send a message to
-#              the user
-def send_message_stake(account, message):
-    userId = find_user_id_stake(account.username)
-    if userId is None:
-        return None
-    else:
-        url = "https://api.stake.com/graphql"
-        payload = "{\"query\":\"mutation {\\n sendMessage(userId: \\\"" + userId + "\\\", message: \\\"" + message + "\\\") {\\n id}}\"}"
-        headers = {'x-access-token': STAKE_TOKEN}
-        data = api_request(url, payload, headers, "POST")
-        return data
-
-
-# Functionality: Send User Message
-# Description: Checks account's platform and sends
-#              a given message on that platform to the
-#              given user
-def send_message(account, message):
-    if account.platform.name == "Stake":
-        response = send_message_stake(account, message)
-        if response is None:
-            return None
-        else:
-            return response
-
-
 # Functionality: Remove Linked Account
 # Description: Receives the id of the account to be
 #              deleted and deltes it from the database
@@ -534,41 +489,39 @@ def remove_linked_account(request, context):
     return context
 
 
-# Functionality: Send token on Stake
-# Description: Create a linked account and a key for
-#              the account and send the key to that account
-#              if the message has been send, the account exists
-#              otherwise it doesn't and is being deleted
-def send_linked_key(profile, platform, username, account, context):
-    key = AccountKey.objects.filter(account=account).first()
-    message = "Your key is: " + key.key
-    response = send_message(account, message)
-    if response is None:
-        context["danger"] = {"title": "Account doesn't exist!", "message": "The given account doesn't exist on the given platform!"}
-        account.delete()
-        key.delete()
-    else:
-        context["success"] = {"title": "Account added successfully!", "message": "The given account has been added! A confirmation \
-                                                                    token has been sent on your account. Please make sure that you can \
-                                                                    receive private messages on the selected platform. If not, enable them or \
-                                                                    add skyBot to your friends list and request the token again!"}
-    return context
+# Functionality: Find User's ID on Stake.com
+# Description: Makes a query request to stake api with
+#              user's username and finds user's ID
+def find_user(api):
+    import requests
+    url = "https://api.stake.com/graphql"
+    payload = "{\"query\":\"query {\\n user {\\n name\\n}\\n}\"}"
+    headers = {'x-access-token': api,}
+    data = api_request(url, payload, headers, "POST")
+    user = data["data"]["user"]
+    if user:
+        return user["name"]
+    return None
 
 
 # Functionality: Confirm Linked Account
-# Description: Given a token, check if it exists,
-#               if it exists, then activate the account,
-#               otherwise, return error
-def confirm_linked_account(token, context):
-    key = AccountKey.objects.filter(key=token)
-    if len(key) == 1:
-        key = key.first()
-        key.account.active = True
-        key.account.save()
-        key.delete()
-        context["success"] = {"title": "Account activated successfully!", "message": "The given account has been successfully activated!"}
+# Description: Check if the given account is
+#              paired to the API Key and create
+#              the account
+def confirm_linked_account(request, context):
+    data = get_json_data(request.POST, ("accountUsername", "accountPlatform", "apiKey"))
+    username, platform, key = data
+    account = Account.objects.filter(username=username)
+    if len(account) == 0:
+        if find_user(key) == username:
+            platform = Platform.objects.filter(id=platform).first()
+            profile = Profile.objects.filter(user=request.user).first()
+            Account.objects.create(username=username, platform=platform, profile=profile, active=True)
+            context["success"] = {"title": "Account linked successfully!", "message": "The given account has been successfully linked!"}
+        else:
+            context["danger"] = {"title": "Account wasn't linked", "message": "The given API Key doesn't match the provided username!"}
     else:
-        context["danger"] = {"title": "Account wasn't activated", "message": "The given token doesn't correspond to any account!"}
+        context["danger"] = {"title": "Account wasn't linked", "message": "The given account is already linked!"}
     return context
 
 
@@ -594,20 +547,6 @@ def linked(request):
     if request.method == "POST":
         if 'removeAccount' in request.POST:
             context = remove_linked_account(request, context)
-        if 'requestToken' in request.POST:
-            username = request.POST.get('accountUsername')
-            platformId = request.POST.get('accountPlatform')
-            if username and platformId:
-                platform = Platform.objects.filter(id=platformId).first()
-                if len(Account.objects.filter(profile=profile, platform=platform, username=username)) == 0:
-                    account = Account.objects.create(profile=profile, platform=platform, username=username)
-                    context = send_linked_key(profile, platform, username, account, context)
-                elif not Account.objects.filter(profile=profile, platform=platform, username=username).first().active:
-                    account = Account.objects.filter(profile=profile, platform=platform, username=username).first()
-                    context = send_linked_key(profile, platform, username, account, context)
-                else:
-                    context["danger"] = {"title": "Account already activated", "message": "The given account has already been activated on your account!"}
         if 'addAccount' in request.POST:
-            token = request.POST.get('accountToken')
-            context = confirm_linked_account(token, context)
+            context = confirm_linked_account(request, context)
     return render(request, 'settings/linked.html', context)

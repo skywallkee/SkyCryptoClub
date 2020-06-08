@@ -286,22 +286,6 @@ class Account(models.Model):
         return self.profile.user.username + " | " + self.platform.name + " | " + str(self.active)
 
 
-class AccountKey(models.Model):
-    def setKey():
-        import string
-        import random
-        characters = string.ascii_letters + string.digits
-        stringLength = 34
-        return ''.join(random.choice(characters) for i in range(stringLength))
-
-    id = models.AutoField(primary_key=True)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    key = models.CharField(max_length=35, default=setKey)
-    
-    def __str__(self):
-        return self.account.platform.name + " | " + self.account.profile.user.username + " | " + self.account.username + " | " + self.key
-
-
 class FoundDeposit(models.Model):
     id = models.AutoField(primary_key=True)
     tipId = models.CharField(max_length=40)
@@ -398,11 +382,5 @@ def create_wallets(sender, instance, created, **kwargs):
         for user in users:
             Wallet.objects.create(profile=user, store=instance, amount=0)
 
-
-def create_key(sender, instance, created, **kwargs):
-    if created:
-        key = AccountKey.objects.create(account=instance)
-
 post_save.connect(create_user, sender=User)
 post_save.connect(create_wallets, sender=PlatformCurrency)
-post_save.connect(create_key, sender=Account)

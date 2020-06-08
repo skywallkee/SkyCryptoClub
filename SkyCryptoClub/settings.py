@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-import django_heroku
 from .GLOBAL import SECRET_KEY as gSECRET, \
     AWS_ACCESS_KEY_ID as AWS_ID, \
     AWS_SECRET_ACCESS_KEY as AWS_SECRET, \
@@ -150,7 +149,7 @@ CSRF_COOKIE_DOMAIN = None
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR + "/SkyCryptoClub", 'static'),
+    os.path.join(BASE_DIR, 'static'),
 )
 
 LOGIN_REDIRECT_URL = '/'
@@ -163,9 +162,13 @@ AWS_STORAGE_BUCKET_NAME = AWS_BUCKET
 
 AWS_S3_FILE_OVERWRITE = True
 AWS_DEFAULT_ACL = None
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_LOCATION = 'static'
+STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+
+MEDIAFILES_LOCATION = 'media'
+DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
 
 # COMPRESSION
 AWS_IS_GZIPPED = True
@@ -176,4 +179,6 @@ GZIP_CONTENT_TYPES = (
  'text/javascript'
 )
 
-django_heroku.settings(locals())
+if not DEBUG:
+    import django_heroku
+    django_heroku.settings(locals())

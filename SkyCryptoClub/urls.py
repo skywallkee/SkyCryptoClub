@@ -36,13 +36,15 @@ router.register(r'currencies', APIviews.CurrencyViewSet)
 router.register(r'platformcurrencies', APIviews.PlatformCurrencyViewSet)
 router.register(r'wallets', APIviews.WalletViewSet)
 router.register(r'accounts', APIviews.AccountViewSet)
-router.register(r'accountkeys', APIviews.AccountKeyViewSet)
 router.register(r'exchanges', APIviews.ExchangeViewSet)
 router.register(r'faqcategories', APIviews.FAQCategoryViewSet)
 router.register(r'questions', APIviews.QuestionViewSet)
 
 
 urlpatterns = [
+    path('', WEBviews.index, name='index'),
+
+    # API
     path(r'endpoints/', include(router.urls)),
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path(r'check-login/', APIviews.user_login, name='check-login'),
@@ -53,19 +55,36 @@ urlpatterns = [
     path(r'reload-balance/', APIviews.reload_balance, name='reload-balance'),
     path(r'withdraw/', APIviews.withdraw, name='withdraw'),
     path(r'get-platform-accounts/', APIviews.get_platform_accounts, name='get-platform-accounts'),
+
+    # ADMIN
     path(r'admin_tools/', include('admin_tools.urls')),
-    path(r'admin/', admin.site.urls),
+    path(r'admin/', admin.site.urls, name='admin-panel'),
+
+    # USER REGISTRATION
     path(r'login/', WEBviews.user_login, name='login'),
     path(r'logout/', auth_views.LogoutView.as_view(), name='logout'),
     path(r'register/', WEBviews.user_register, name='register'),
     path(r'recover/', WEBviews.recover_password, name='recover-password'),
+
+    # FAQ & TERMS
     path(r'faq/', WEBviews.faq, name='faq'),
     path(r'terms/', WEBviews.terms, name='terms'),
     path(r'contact/', WEBviews.contact, name='contact'),
+
+    # DASHBOARD
     path(r'dashboard/', WEBviews.dashboard, name='dashboard'),
     path(r'dashboard/<str:username>/', WEBviews.dashboard_user, name='dashboard_user'),
+
+    # SETTINGS
     path(r'settings/', WEBviews.settings, name='settings'),
     path(r'settings/privacy/', WEBviews.privacy, name='privacy'),
     path(r'settings/linked/', WEBviews.linked, name='linked'),
-    path('', WEBviews.index, name='index'),
+
+    # EXCHANGES
+    path(r'exchanges/', WEBviews.exchanges, name='exchanges'),
+    path(r'exchanges/history/', WEBviews.exchanges_history, name='exchanges-history'),
+    path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
+    path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
+    path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),
+    path(r'pay-exchange/', APIviews.payExchange, name='pay-exchange'),
 ]

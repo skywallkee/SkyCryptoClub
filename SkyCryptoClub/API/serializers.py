@@ -1,6 +1,6 @@
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
-                    Wallet, Account, AccountKey, PasswordToken, Exchange, TwoFactorLogin, \
-                    FAQCategory, Question, Statistics, PublicityBanners
+                    Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, ExchangeTaxPeer, \
+                    FAQCategory, Question, Statistics, PublicityBanners, ExchangeStatus
 from rest_framework import serializers
 
 
@@ -122,16 +122,22 @@ class AccountSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['url', 'profile', 'platform', 'username', 'active']
 
 
-class AccountKeySerializer(serializers.HyperlinkedModelSerializer):
+class ExchangeStatusSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = AccountKey
-        fields = ['url', 'account', 'key']
+        model = ExchangeStatus
+        fields = ['url', 'status', 'color']
+
+
+class ExchangeTaxPeerSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ExchangeTaxPeer
+        fields = ['url', 'minAmount', 'maxamount', 'percentage', 'currency']
 
 
 class ExchangeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Exchange
-        fields = ['url', 'creator', 'from_currency', 'from_amount', 'to_currency', 'to_amount', 'exchanged_by']
+        fields = ['url', 'creator', 'from_currency', 'from_amount', 'to_currency', 'to_amount', 'exchanged_by', 'status']
 
 
 class FAQCategorySerializer(serializers.HyperlinkedModelSerializer):

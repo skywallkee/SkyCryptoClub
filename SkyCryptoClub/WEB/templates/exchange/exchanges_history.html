@@ -1,0 +1,205 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Exchange | SkyCrypto Club{% endblock %}
+
+{% block page %}Exchange{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card">
+                <div class="card-header card-header-icon card-header-rose">
+                  <div class="card-icon">
+                    <i class="material-icons">assignment</i>
+                  </div>
+                  <h4 class="card-title">Exchange History</h4>
+                </div>
+                <div class="card-body">
+                  <div class="toolbar">
+                    <!--        Here you can write extra buttons/actions for the toolbar              -->
+                  </div>
+                  <div class="material-datatables">
+                    <table id="datatables" class="table table-hover display nowrap" cellspacing="0" width="100%" style="font-weight: bold;">
+                      <thead>
+                        <tr>
+                          <th>#ID</th>
+                          <th data-priority="1">Creator</th>
+                          <th>Given</th>
+                          <th>Requested</th>
+                          <th data-priority="2">Sender</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th class="disabled-sorting text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tfoot>
+                        <tr>
+                          <th>#ID</th>
+                          <th>Creator</th>
+                          <th>From Currency</th>
+                          <th>Requested Amount</th>
+                          <th>Sender</th>
+                          <th>Status</th>
+                          <th>Date</th>
+                          <th class="disabled-sorting text-right">Actions</th>
+                        </tr>
+                      </tfoot>
+                      <tbody>
+                        {% for exchange in exchanges %}
+                        <tr>
+                          <td>#{{ exchange.eid }}</td>
+                          <td>{{ exchange.creator }}</td>
+                          <td>{{ exchange.from_amount }} <span style="color: {{exchange.from_currency.currency.color }};">{{ exchange.from_currency.currency.name }}</span> {{ exchange.from_currency.platform.name }}</td>
+                          <td>{{ exchange.to_amount }} <span style="color: {{exchange.to_currency.currency.color }};">{{ exchange.to_currency.currency.name }}</span> {{ exchange.to_currency.platform.name }}</td>
+                          <td>{{ exchange.exchanged_by }}</td>
+                          <td><span style="font-weight: bold; color: {{ exchange.status.color }};">{{ exchange.status.status }}</span></td>
+                          <td>{{ exchange.created_at }}</td>
+                          <td class="text-right">
+                            <a href="{% url 'exchange-page' exchange.eid %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
+                            {% if exchange.creator.user == user %}
+                              {% if exchange.status.status == "Open" or exchange.status.status == "Pending" %}
+                                <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;"onclick="deleteRequest({{ exchange.eid }})"><i class="material-icons">close</i></span>
+                              {% endif %}
+                            {% endif %}
+                            {% if exchange.status.status == "Completed" %}
+                              <a href="" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
+                            {% endif %}
+                            {% if exchange.status.status == "Pending" %}
+                              <span class="btn btn-link btn-success btn-just-icon remove" style="cursor:pointer;"onclick="approveRequest({{ exchange.eid }})"><i class="material-icons">check</i></span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="clearfix"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<script>
+function closeExchange(exchangeId) {
+      $.ajax({
+            type: "POST",
+            url: "/delete-exchange/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "eid": exchangeId,
+            }),
+            success: function(data){
+                if (data != 200) {
+                    $.notify({
+                        title: '<strong>You can\'t close this exchange request!</strong>',
+                        message: ''
+                    },{
+                        type: 'danger',
+                        delay: 900,
+                        placement: {
+                            from: 'top',
+                            align: 'center'
+                        }
+                    });
+                }
+                else {
+                    location.reload();
+                }
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
+    function deleteRequest(eid) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'The sent coins will be refunded and the request will be closed.',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!'
+      }).then((result) => {
+        if (result.value) {
+          closeExchange(eid);
+        }
+      })
+    }
+function openExchange(exchangeId) {
+      $.ajax({
+            type: "POST",
+            url: "/open-exchange/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "eid": exchangeId,
+            }),
+            success: function(data){
+                if (data != 200) {
+                    $.notify({
+                        title: '<strong>You can\'t open this exchange request!</strong>',
+                        message: ''
+                    },{
+                        type: 'danger',
+                        delay: 900,
+                        placement: {
+                            from: 'top',
+                            align: 'center'
+                        }
+                    });
+                }
+                else {
+                    location.reload();
+                }
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
+    function approveRequest(eid) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'The exchange will be made Open, making it public to everyone.',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!'
+      }).then((result) => {
+        if (result.value) {
+          openExchange(eid);
+        }
+      })
+    }
+$(document).ready(function() {
+      var table = $('#datatable').DataTable(); ;
+      $('#datatables').DataTable({
+        "ordering": false,
+        "bPaginate": false,
+        "bLengthChange": false,
+        "bFilter": true,
+        "bInfo": false,
+        "searching": false,
+        "language": {
+          "emptyTable": "{{ emptyTableMessage }}",
+        },
+        responsive: true,
+      });
+    });
+  </script>
+{% endblock %}

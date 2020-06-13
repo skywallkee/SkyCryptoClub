@@ -229,6 +229,13 @@
               <i class="material-icons">dashboard</i> Dashboard ({{ user.username }})
             </a>
           </li>
+          {% if user.is_superuser %}
+          <li class="nav-item ">
+            <a href="{% url 'admin:index' %}" class="nav-link">
+              <i class="material-icons">admin_panel_settings</i> Admin Panel
+            </a>
+          </li>
+          {% endif %}
           <li class="nav-item ">
             <a href="{% url 'logout' %}" class="nav-link">
               <i class="material-icons">highlight_off</i> Log-Out

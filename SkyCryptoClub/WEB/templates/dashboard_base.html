@@ -78,20 +78,20 @@
             </a>
             <div class="collapse show" id="exchanges">
               <ul class="nav">
-                <li class="nav-item {% if request.path == '/exchange/create/' %}active{% endif %}">
+                <li class="nav-item {% if 'exchange' in request.path and 'create' in request.path %}active{% endif %}">
                   <a class="nav-link" href="{% url 'request-exchange'%}">
                     <span class="sidebar-mini"> RE </span>
                     <span class="sidebar-normal"> Request Exchange </span>
                   </a>
                 </li>
-                <li class="nav-item {% if request.path == '/exchanges/' %}active{% endif %}">
-                  <a class="nav-link" href="{% url 'exchanges' %}">
+                <li class="nav-item {% if 'exchanges/page=' in request.path %}active{% endif %}">
+                  <a class="nav-link" href="{% url 'exchanges' 1 %}">
                     <span class="sidebar-mini"> VEL </span>
                     <span class="sidebar-normal"> View Exchange List </span>
                   </a>
                 </li>
-                <li class="nav-item {% if request.path == '/exchange/history/' %}active{% endif %}">
-                  <a class="nav-link" href="{% url 'exchanges-history' %}">
+                <li class="nav-item {% if 'exchange' in request.path and 'history' in request.path %}active{% endif %}">
+                  <a class="nav-link" href="{% url 'exchanges-history' 1 %}">
                     <span class="sidebar-mini"> EH </span>
                     <span class="sidebar-normal"> Exchange History </span>
                   </a>
@@ -143,7 +143,7 @@
             {% endif %}
             <ul class="navbar-nav d-block d-lg-none">
               <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
+                <a class="nav-link" href="" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
                   <i class="material-icons">account_balance</i>
                 </a>
               </li>

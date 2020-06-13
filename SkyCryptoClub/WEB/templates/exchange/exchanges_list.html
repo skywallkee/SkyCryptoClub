@@ -8,6 +8,79 @@
 {% block content %}
       <div class="content">
         <div class="container-fluid">
+              <div class="card">
+                <div class="card-body">
+                  <div class="card-collapse">
+                    <div class="card-header" role="tab" id="filters">
+                      <h5 class="mb-0">
+                        <a data-toggle="collapse" href="#collapseFilters" aria-expanded="true" aria-controls="collapseFilters" class="collapsed">
+                          Filters
+                          <i class="material-icons">keyboard_arrow_down</i>
+                        </a>
+                      </h5>
+                    </div>
+                    <div id="collapseFilters" class="collapse show" role="tabpanel" aria-labelledby="filters" data-parent="#accordion">
+                      <div class="card-body">
+                        <form id="filterForm" method="get" class="form-horizontal">
+                          <div class="row">
+                            <select class="selectpicker col-12 col-xl-3" id="fromPlatform" name="fromPlatform" data-style="select-with-transition" title="From Platform" data-size="5" onchange="updateCurrency('fromPlatform', 'fromCurrency')">
+                              <option value="any" select>Any Platform</option>
+                              {% for platform in platforms %}
+                                <option value="{{ platform.id }}">
+                                  {{ platform.name }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                            <select class="selectpicker col-12 col-xl-3" id="fromCurrency" name="fromCurrency" data-style="select-with-transition" title="From Currency" data-size="5">
+                            </select>
+                            <select class="selectpicker col-12 col-xl-3" id="toPlatform" name="toPlatform" data-style="select-with-transition" title="To Platform" data-size="5" onchange="updateCurrency('toPlatform', 'toCurrency')">
+                              <option value="any" select>Any Platform</option>
+                              {% for platform in platforms %}
+                                <option value="{{ platform.id }}">
+                                  {{ platform.name }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                            <select class="selectpicker col-12 col-xl-3" id="toCurrency" name="toCurrency" data-style="select-with-transition" title="To Currency" data-size="5">
+                            </select>
+                          </div>
+                          <div class="row">
+                            <div class="col-12 col-xl-3">
+                              <div class="form-group col-12">
+                                <label class="bmd-label-static">Min Requested</label>
+                                <input type="number" step="0.00000001" id="minRequested" name="minRequested" min="0" class="form-control">
+                              </div>
+                            </div>
+                            <div class="col-12 col-xl-3">
+                              <div class="form-group col-12">
+                                <label class="bmd-label-static">Max Requested</label>
+                                <input type="number" step="0.00000001" id="maxRequested" name="maxRequested" min="0" class="form-control">
+                              </div>
+                            </div>
+                            <div class="col-12 col-xl-3">
+                              <div class="form-group col-12">
+                                <label class="bmd-label-static">Min Given</label>
+                                <input type="number" step="0.00000001" id="minGiven" name="minGiven" min="0" class="form-control">
+                              </div>
+                            </div>
+                            <div class="col-12 col-xl-3">
+                              <div class="form-group col-12">
+                                <label class="bmd-label-static">Max Given</label>
+                                <input type="number" step="0.00000001" id="maxGiven" name="maxGiven" min="0" class="form-control">
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-12">
+                              <button type="submit" class="btn btn-rose pull-right">Filter</button>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
           <div class="card">
             <div class="card-header card-header-icon card-header-rose">
               <div class="card-icon">
@@ -43,6 +116,28 @@
                   </tbody>
                 </table>
               </div>
+              <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item {% if not canPrevious %}disabled{% endif %}">
+                    <a class="page-link" href="{% url 'exchanges' currentPage|add:-1 %}">Previous</a>
+                  </li>
+                  {% for page in pages %}
+                    {% if page == currentPage %}
+                      <li class="page-item active">
+                        <span class="page-link">
+                          {{ page }}
+                          <span class="sr-only">(current)</span>
+                        </span>
+                      </li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="{% url 'exchanges' page %}">{{ page }}</a></li>
+                    {% endif %}
+                  {% endfor %}
+                  <li class="page-item {% if not canNext %}disabled{% endif %}">
+                    <a class="page-link" href="{% url 'exchanges' currentPage|add:1 %}">Next</a>
+                  </li>
+                </ul>
+              </nav>
             </div>
             <div class="clearfix"></div>
           </div>
@@ -50,6 +145,48 @@
       </div>
   
     <script>
+function updateCurrency(platformSelect, currencySelect) {
+  let selectForm = document.getElementById(platformSelect);
+  let platform = selectForm.options[selectForm.selectedIndex].value;
+  if (platform != "any")
+  $.ajax({
+        type: "POST",
+        url: "/get-platform-currencies/",
+        headers: {
+            "Content-Type": "application/json",
+            "HTTP_GROUP_NAME": "groups_name",
+            "X-CSRFToken": csrfcookie()
+        },
+        data: JSON.stringify({
+            "platform": platform,
+        }),
+        success: function(data){
+            if (data == 400) {
+                $.notify({
+                    title: '<strong>Invalid platform!</strong>',
+                    message: ''
+                },{
+                    type: 'danger',
+                    delay: 900,
+                    placement: {
+                        from: 'top',
+                        align: 'center'
+                    }
+                });
+            }
+            else {
+                $('#' + currencySelect).find('option').remove();
+                for (let currency of data) {
+                  $('#' + currencySelect).append("<option name='currency'>"+ currency[0] +"</option>");
+                }
+                $('#' + currencySelect).selectpicker('refresh');
+            }
+        },
+        failure: function(data){
+            console.log(data);
+        },
+    });
+}
     function closeExchange(exchangeId) {
       $.ajax({
             type: "POST",

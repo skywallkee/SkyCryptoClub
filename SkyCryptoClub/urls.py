@@ -81,9 +81,9 @@ urlpatterns = [
     path(r'settings/linked/', WEBviews.linked, name='linked'),
 
     # EXCHANGES
-    path(r'exchanges/', WEBviews.exchanges, name='exchanges'),
+    path(r'exchanges/page=<int:page>/', WEBviews.exchanges, name='exchanges'),
     path(r'exchanges/create/', WEBviews.requestExchange, name='request-exchange'),
-    path(r'exchanges/history/', WEBviews.exchanges_history, name='exchanges-history'),
+    path(r'exchanges/history/page=<int:page>/', WEBviews.exchanges_history, name='exchanges-history'),
     path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
     path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
     path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),

@@ -48,7 +48,7 @@ import random
 import os
 
 from decimal import *
-
+import math
 
 # Functionality: User Log Out Function
 # Description: If the user is logged in, the function
@@ -603,27 +603,119 @@ def requestExchange(request):
         return redirect('/exchange/' + str(exchange.eid) + "/")
     return render(request, 'exchange/exchange_request.html', context)
 
+
+def filterExchanges(request, exchanges):
+    # Retrieve GET parameters
+    fromPlatform = request.GET["fromPlatform"] if "fromPlatform" in request.GET and request.GET["fromPlatform"] != "" else "any"
+    fromCurrency = request.GET["fromCurrency"] if "fromCurrency" in request.GET and request.GET["fromCurrency"] != "" else "any"
+    toPlatform = request.GET["toPlatform"] if "toPlatform" in request.GET and request.GET["toPlatform"] != "" else "any"
+    toCurrency = request.GET["toCurrency"] if "toCurrency" in request.GET and request.GET["toCurrency"] != "" else "any"
+    try:
+        minRequested = Decimal(request.GET["minRequested"]) if "minRequested" in request.GET and request.GET["minRequested"] != "" else "any"
+    except:
+        minRequested = "any"
+    try:
+        maxRequested = Decimal(request.GET["maxRequested"]) if "maxRequested" in request.GET and request.GET["maxRequested"] != "" else "any"
+    except:
+        maxRequested = "any"
+    try:
+        minGiven = Decimal(request.GET["minGiven"]) if "minGiven" in request.GET and request.GET["minGiven"] != "" else "any"
+    except:
+        minGiven = "any"
+    try:
+        maxGiven = Decimal(request.GET["maxGiven"]) if "maxGiven" in request.GET and request.GET["maxGiven"] != "" else "any"
+    except:
+        maxGiven = "any"
+
+    # Filter From Platform and From Currency
+    fromPCs = PlatformCurrency.objects.all()
+    if fromPlatform != "any":
+        platform = Platform.objects.filter(id=fromPlatform).first()
+        fromPCs = fromPCs.filter(platform=platform)
+    if fromCurrency != "any":
+        currency = Currency.objects.filter(name=fromCurrency).first()
+        fromPCs = fromPCs.filter(currency=currency)
+    filteredFrom = Exchange.objects.none()
+    for pc in fromPCs:
+        filteredFrom = filteredFrom | exchanges.filter(from_currency = pc)
+    exchanges = filteredFrom
+    # Filter To Platform and To Currency
+    toPCs = PlatformCurrency.objects.all()
+    if toPlatform != "any":
+        platform = Platform.objects.filter(id=toPlatform).first()
+        toPCs = toPCs.filter(platform=platform)
+    if toCurrency != "any":
+        currency = Currency.objects.filter(name=toCurrency).first()
+        toPCs = toPCs.filter(currency=currency)
+    filteredFrom = Exchange.objects.none()
+    for pc in toPCs:
+        filteredFrom = filteredFrom | exchanges.filter(to_currency = pc)
+    exchanges = filteredFrom
+
+    # Filter Mins and Maxes
+    if minRequested != "any":
+        exchanges = exchanges.filter(to_amount__gte=minRequested)
+    if maxRequested != "any":
+        exchanges = exchanges.filter(to_amount__lte=maxRequested)
+    if minGiven != "any":
+        exchanges = exchanges.filter(from_amount__gte=minGiven)
+    if maxGiven != "any":
+        exchanges = exchanges.filter(from_amount__lte=maxGiven)
+    return exchanges
+
     
-def exchanges(request):
+def exchanges(request, page):
     allowed_methods = ["GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     exchanges = Exchange.objects.filter(status="Open")
-    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
+    exchanges = filterExchanges(request, exchanges)
+
+    # Pagination
+    displayPerPage = 30
+    totalPages = math.ceil(len(exchanges) / displayPerPage)
+    startPagination = max(page - 2, 1) if page < totalPages else 1
+    endPagination = min(totalPages, page + 2) + 1
+    pages = [i for i in range(startPagination, endPagination)]
+    canNext = page < totalPages
+    canPrevious = page > 1
+    begin = displayPerPage * (page - 1)
+    end = displayPerPage * page
+    exchanges = exchanges.order_by('-created_at')[begin:end]
+
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
     return render(request, 'exchange/exchanges_list.html', context)
 
     
-def exchanges_history(request):
+def exchanges_history(request, page):
     allowed_methods = ["GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
-    exchanges = exchanges.order_by('-created_at')
-    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
+
+    exchanges = filterExchanges(request, exchanges)
+
+    # Pagination
+    displayPerPage = 30
+    totalPages = math.ceil(len(exchanges) / displayPerPage)
+    startPagination = max(page - 2, 1) if page < totalPages else 1
+    endPagination = min(totalPages, page + 2) + 1
+    pages = [i for i in range(startPagination, endPagination)]
+    canNext = page < totalPages
+    canPrevious = page > 1
+    begin = displayPerPage * (page - 1)
+    end = displayPerPage * page
+    exchanges = exchanges.order_by('-created_at')[begin:end]
+
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
     return render(request, 'exchange/exchanges_history.html', context)
 
     
@@ -632,6 +724,7 @@ def exchange_page(request, exchange_id):
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     exchange = Exchange.objects.filter(eid=exchange_id).first()
+
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange}

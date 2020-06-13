@@ -131,7 +131,7 @@ class ExchangeStatusSerializer(serializers.HyperlinkedModelSerializer):
 class ExchangeTaxPeerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ExchangeTaxPeer
-        fields = ['url', 'minAmount', 'maxamount', 'percentage', 'currency']
+        fields = ['url', 'minAmount', 'maxAmount', 'percentage', 'currency']
 
 
 class ExchangeSerializer(serializers.HyperlinkedModelSerializer):

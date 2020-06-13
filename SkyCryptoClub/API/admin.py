@@ -116,7 +116,7 @@ admin.site.register(FoundDeposit, FoundDepositAdmin)
 
 
 class ExchangeTaxPeerAdmin(admin.ModelAdmin):
-    fields = ['minAmount', 'maxamount', 'percentage', 'currency']
+    fields = ['minAmount', 'maxAmount', 'percentage', 'currency']
 
 admin.site.register(ExchangeTaxPeer, ExchangeTaxPeerAdmin)
 

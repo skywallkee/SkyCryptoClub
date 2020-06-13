@@ -82,9 +82,11 @@ urlpatterns = [
 
     # EXCHANGES
     path(r'exchanges/', WEBviews.exchanges, name='exchanges'),
+    path(r'exchanges/create/', WEBviews.requestExchange, name='request-exchange'),
     path(r'exchanges/history/', WEBviews.exchanges_history, name='exchanges-history'),
     path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
     path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
     path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),
     path(r'pay-exchange/', APIviews.payExchange, name='pay-exchange'),
+    path(r'get-exchange-amount/', APIviews.exchangeAmount, name='get-exchange-amount'),
 ]

@@ -321,12 +321,12 @@ class ExchangeStatus(models.Model):
 
 class ExchangeTaxPeer(models.Model):
     minAmount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-    maxamount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    maxAmount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
     percentage = models.DecimalField(max_digits=6, decimal_places=4, default=0)
     currency = models.ForeignKey(Currency, null=False, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "[" + str(self.minAmount) + "; " + str(self.maxamount) + "] " + str(self.percentage) + "% " + self.currency.name
+        return "[" + str(self.minAmount) + "; " + str(self.maxAmount) + "] " + str(self.percentage) + "% " + self.currency.name
 
 
 class Exchange(models.Model):

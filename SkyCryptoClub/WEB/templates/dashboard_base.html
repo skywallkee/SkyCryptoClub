@@ -78,8 +78,8 @@
             </a>
             <div class="collapse show" id="exchanges">
               <ul class="nav">
-                <li class="nav-item {% if request.path == '/exchange/request/' %}active{% endif %}">
-                  <a class="nav-link" href="exchange_request.html">
+                <li class="nav-item {% if request.path == '/exchange/create/' %}active{% endif %}">
+                  <a class="nav-link" href="{% url 'request-exchange'%}">
                     <span class="sidebar-mini"> RE </span>
                     <span class="sidebar-normal"> Request Exchange </span>
                   </a>

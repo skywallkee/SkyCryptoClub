@@ -1,5 +1,5 @@
 # RESPONSES
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.template import loader
@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, Statistics, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
-                         Role, PublicityBanners, Exchange
+                         Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer
 from django.contrib.auth import get_user_model
 
 # EMAIL
@@ -46,6 +46,8 @@ import string
 import random
 
 import os
+
+from decimal import *
 
 
 # Functionality: User Log Out Function
@@ -552,19 +554,69 @@ def linked(request):
     return render(request, 'settings/linked.html', context)
 
     
-def exchanges(request):
+def requestExchange(request):
     allowed_methods = ["POST", "GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    exchanges = Exchange.objects.filter(status="Open").order_by('-created_at')
+    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
+    if request.method == "POST":
+        getcontext().prec = 20
+        data = get_json_data(request.POST, ("requestFrom", "fromPlatform", "fromCurrency", "fromAmount", "toPlatform", "toCurrency", "toAmount"))
+        peer, fromPlatform, fromCurrency, fromAmount, toPlatform, toCurrency, toAmount = data
+        fcurrency = Currency.objects.filter(name=fromCurrency).first()
+        tcurrency = Currency.objects.filter(name=toCurrency).first()
+
+        creator = Profile.objects.filter(user=request.user).first()
+
+        fromPlatform = Platform.objects.filter(id=fromPlatform).first()
+        fromCurrency = PlatformCurrency.objects.filter(platform=fromPlatform, currency=fcurrency).first()
+        fromAmount = Decimal(fromAmount)
+
+        creatorWallet = Wallet.objects.filter(profile=creator, store=fromCurrency).first()
+        if creatorWallet.amount < fromAmount:
+            context['insufficient'] = {"title": "Insufficient funds!"}
+            return render(request, 'exchange/exchange_request.html', context)
+        else:
+            creatorWallet.amount -= fromAmount
+            creatorWallet.save()
+
+        toPlatform = Platform.objects.filter(id=toPlatform).first()
+        toCurrency = PlatformCurrency.objects.filter(platform=toPlatform, currency=tcurrency).first()
+        toAmount = Decimal(toAmount)
+
+        ratio = toAmount / fromAmount
+        status = ExchangeStatus.objects.filter(status="Pending").first()
+
+        if peer == "user":
+            taxCreator = ExchangeTaxPeer.objects.filter(currency=fcurrency).filter(minAmount__lte=fromAmount).filter(maxAmount__gte=fromAmount).first()
+            taxExchanger = ExchangeTaxPeer.objects.filter(currency=tcurrency).filter(minAmount__lte=toAmount).filter(maxAmount__gte=toAmount).first()
+        
+        creatorAmount = (Decimal(1) - taxCreator.percentage / Decimal(100)) * toAmount
+        exchangerAmount = (Decimal(1) - taxExchanger.percentage / Decimal(100)) * fromAmount
+
+        exchange = Exchange.objects.create(creator=creator, from_currency=fromCurrency, from_amount=fromAmount,
+                                to_currency=toCurrency, to_amount=toAmount, ratio=ratio, status=status, 
+                                creator_amount=creatorAmount, exchanger_amount=exchangerAmount,
+                                taxCreator=taxCreator, taxExchanger=taxExchanger)
+        return redirect('/exchange/' + str(exchange.eid) + "/")
+    return render(request, 'exchange/exchange_request.html', context)
+
+    
+def exchanges(request):
+    allowed_methods = ["GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    exchanges = Exchange.objects.filter(status="Open")
     context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
     return render(request, 'exchange/exchanges_list.html', context)
 
     
 def exchanges_history(request):
-    allowed_methods = ["POST", "GET"]
+    allowed_methods = ["GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
@@ -576,7 +628,7 @@ def exchanges_history(request):
 
     
 def exchange_page(request, exchange_id):
-    allowed_methods = ["POST", "GET"]
+    allowed_methods = ["GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     exchange = Exchange.objects.filter(eid=exchange_id).first()

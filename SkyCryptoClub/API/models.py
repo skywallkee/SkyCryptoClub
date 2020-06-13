@@ -239,9 +239,20 @@ class Platform(models.Model):
         return self.name
 
 
+def currency_icon_upload(instance, filename):
+    currency_name = instance.name + "." + filename.split(".")[-1]
+    full_path = os.path.join(settings.MEDIA_ROOT, currency_name)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+    return currency_name
+
+
 class Currency(models.Model):
     name = models.CharField(max_length=10, primary_key=True)
-    largeName = models.CharField(max_length=35, null=False)
+    largeName = models.CharField(max_length=35, blank=False)
+    color = models.CharField(max_length=7, blank=False, default="#000000")
+    icon = models.ImageField(default="default_crypto.png", upload_to=currency_icon_upload)
+
     
     def __str__(self):
         return self.largeName
@@ -300,14 +311,39 @@ class FoundDeposit(models.Model):
         return self.account.username + " | " + self.profile.user.username + " | " + self.platform.name + " | " + self.tipId
 
 
+class ExchangeStatus(models.Model):
+    status = models.CharField(max_length=40, primary_key=True)
+    color = models.CharField(max_length=7, default="#a8a8a8")
+
+    def __str__(self):
+        return self.status
+
+
+class ExchangeTaxPeer(models.Model):
+    minAmount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    maxamount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    percentage = models.DecimalField(max_digits=6, decimal_places=4, default=0)
+    currency = models.ForeignKey(Currency, null=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "[" + str(self.minAmount) + "; " + str(self.maxamount) + "] " + str(self.percentage) + "% " + self.currency.name
+
+
 class Exchange(models.Model):
-    id = models.AutoField(primary_key=True)
+    eid = models.AutoField(primary_key=True)
     creator = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="creator_user")
     from_currency = models.ForeignKey(PlatformCurrency, on_delete=models.CASCADE, related_name="from_currency")
     from_amount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
     to_currency = models.ForeignKey(PlatformCurrency, on_delete=models.CASCADE, related_name="target_currency")
     to_amount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-    exchanged_by = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL, related_name="exchanger_user")
+    exchanged_by = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="exchanger_user")
+    creator_amount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    exchanger_amount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    ratio = models.DecimalField(max_digits=20, decimal_places = 8, default=0)
+    status = models.ForeignKey(ExchangeStatus, null=True, on_delete=models.CASCADE)
+    taxCreator = models.ForeignKey(ExchangeTaxPeer, null=True, on_delete=models.SET_NULL, related_name="creator_tax")
+    taxExchanger = models.ForeignKey(ExchangeTaxPeer, null=True, on_delete=models.SET_NULL, related_name="exchanger_tax")
+    created_at = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return self.creator.user.username + " | " + self.from_currency.currency.name + " -> " + self.to_currency.currency.name

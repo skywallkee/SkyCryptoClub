@@ -25,7 +25,7 @@ def send_mail(receiver_email, subject, plain_message, html_message):
     tries = 10
     while tries > 0:
         try:
-            with smtplib.SMTP_SSL("mail.privateemail.com", 465, context=context) as server:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
                 server.login(gEMAIL, gPASSWORD)
                 server.sendmail(gEMAIL, receiver_email, message.as_string())
                 print("Mail sent to: " + receiver_email)

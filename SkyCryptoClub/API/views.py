@@ -5,15 +5,15 @@ from rest_framework import viewsets
 from rest_framework import permissions
 from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, UserRoleSerializer, RoleSerializer, \
                                           ProfileBanSerializer, PlatformSerializer, PlatformCurrencySerializer, \
-                                          CurrencySerializer, WalletSerializer, AccountSerializer, \
-                                          PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, \
+                                          CurrencySerializer, WalletSerializer, AccountSerializer, ExchangeTaxPeerSerializer, \
+                                          PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, ExchangeStatusSerializer, \
                                           FAQCategorySerializer, QuestionSerializer, StatisticsSerializer, PublicityBannersSerializer
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
-                    Account, PasswordToken, Exchange, TwoFactorLogin, \
+                    Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
                     FAQCategory, Question, Statistics, FoundDeposit, PublicityBanners
 import json
 
@@ -140,6 +140,24 @@ class AccountViewSet(viewsets.ModelViewSet):
     """
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class ExchangeStatusViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows exchanges to be viewed or edited.
+    """
+    queryset = ExchangeStatus.objects.all()
+    serializer_class = ExchangeStatusSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class ExchangeTaxPeerViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows exchanges to be viewed or edited.
+    """
+    queryset = ExchangeTaxPeer.objects.all()
+    serializer_class = ExchangeTaxPeerSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
@@ -383,8 +401,65 @@ def withdraw(request):
         wallet = Wallet.objects.filter(profile=profile, store=store).first()
         if wallet.amount > amount:
             if do_withdraw(platform, currency, amount, username) == 200:
-                print(1)
                 wallet.amount -= amount
                 wallet.save()
                 return HttpResponse(200)
     return HttpResponse(400)
+
+def closeExchange(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        exchange = Exchange.objects.filter(eid=data["eid"]).first()
+        if exchange.creator.user == request.user:
+            closed = ExchangeStatus.objects.filter(status="Closed").first()
+            exchange.status = closed
+            exchange.save()
+            return HttpResponse(200)
+    return HttpResponse(400)
+
+def openExchange(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        exchange = Exchange.objects.filter(eid=data["eid"]).first()
+        if exchange.creator.user == request.user:
+            open = ExchangeStatus.objects.filter(status="Open").first()
+            exchange.status = open
+            exchange.save()
+            return HttpResponse(200)
+    return HttpResponse(400)
+
+def payExchange(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(403)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        exchange = Exchange.objects.filter(eid=data["eid"]).first()
+        if exchange.status.status != "Open":
+            return HttpResponse(403)
+        profile = Profile.objects.filter(user=request.user).first()
+        wallet = Wallet.objects.filter(profile=profile, store=exchange.to_currency).first()
+        # Check if exchanger has enough balance and extract it
+        if wallet.amount < exchange.to_amount:
+            return HttpResponse(400)
+        wallet.amount -= exchange.to_amount
+        wallet.save()
+        # Add to exchanger the promised balance
+        wallet = Wallet.objects.filter(profile=profile, store=exchange.from_currency).first()
+        wallet.amount += exchange.exchanger_amount
+        wallet.save()
+        # Add to creator the promised balance
+        wallet = Wallet.objects.filter(profile=exchange.creator, store=exchange.to_currency).first()
+        wallet.amount += exchange.creator_amount
+        wallet.save()
+        # Set exchanger to the exchange and close it
+        exchanger = Profile.objects.filter(user=request.user).first()
+        completed = ExchangeStatus.objects.filter(status="Completed").first()
+        exchange.exchanged_by = exchanger
+        exchange.status = completed
+        exchange.save()
+        return HttpResponse(200)
+    return HttpResponse(403)

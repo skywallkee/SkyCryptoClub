@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
-                    Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, \
-                    Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
+                    Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
+                    ExchangeTaxPeer, Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -92,7 +92,7 @@ admin.site.register(PlatformCurrency, PlatformCurrencyAdmin)
 
 
 class CurrencyAdmin(admin.ModelAdmin):
-    fields = ['name', 'largeName']
+    fields = ['name', 'largeName', 'color', 'icon']
 
 admin.site.register(Currency, CurrencyAdmin)
 
@@ -115,8 +115,20 @@ class FoundDepositAdmin(admin.ModelAdmin):
 admin.site.register(FoundDeposit, FoundDepositAdmin)
 
 
+class ExchangeTaxPeerAdmin(admin.ModelAdmin):
+    fields = ['minAmount', 'maxamount', 'percentage', 'currency']
+
+admin.site.register(ExchangeTaxPeer, ExchangeTaxPeerAdmin)
+
+
+class ExchangeStatusAdmin(admin.ModelAdmin):
+    fields = ['status', 'color']
+
+admin.site.register(ExchangeStatus, ExchangeStatusAdmin)
+
+
 class ExchangeAdmin(admin.ModelAdmin):
-    fields = ['creator', 'from_currency', 'from_amount', 'to_currency', 'to_amount', 'exchanged_by']
+    fields = ['creator', 'from_currency', 'from_amount', 'to_currency', 'to_amount', 'exchanged_by', 'ratio', 'status', 'creator_amount', 'exchanger_amount', 'taxCreator', 'taxExchanger']
 
 admin.site.register(Exchange, ExchangeAdmin)
 

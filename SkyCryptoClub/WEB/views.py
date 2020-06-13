@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, Statistics, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
-                         Role, PublicityBanners
+                         Role, PublicityBanners, Exchange
 from django.contrib.auth import get_user_model
 
 # EMAIL
@@ -550,3 +550,37 @@ def linked(request):
         if 'addAccount' in request.POST:
             context = confirm_linked_account(request, context)
     return render(request, 'settings/linked.html', context)
+
+    
+def exchanges(request):
+    allowed_methods = ["POST", "GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    exchanges = Exchange.objects.filter(status="Open").order_by('-created_at')
+    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
+    return render(request, 'exchange/exchanges_list.html', context)
+
+    
+def exchanges_history(request):
+    allowed_methods = ["POST", "GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
+    exchanges = exchanges.order_by('-created_at')
+    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
+    return render(request, 'exchange/exchanges_history.html', context)
+
+    
+def exchange_page(request, exchange_id):
+    allowed_methods = ["POST", "GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    exchange = Exchange.objects.filter(eid=exchange_id).first()
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    context = {'profile': profile, 'platforms': platforms, "exchange": exchange}
+    return render(request, 'exchange/exchange.html', context)

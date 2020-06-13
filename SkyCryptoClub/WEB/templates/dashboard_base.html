@@ -91,7 +91,7 @@
                   </a>
                 </li>
                 <li class="nav-item {% if request.path == '/exchange/history/' %}active{% endif %}">
-                  <a class="nav-link" href="{% url 'exchanges-history' %}">
+                  <a class="nav-link" href="{% url 'exchanges-history' 1 %}">
                     <span class="sidebar-mini"> EH </span>
                     <span class="sidebar-normal"> Exchange History </span>
                   </a>
@@ -143,7 +143,7 @@
             {% endif %}
             <ul class="navbar-nav d-block d-lg-none">
               <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
+                <a class="nav-link" href="" id="navbarDropdownMenuLink" data-toggle="modal" data-target="#depositWithdraw">
                   <i class="material-icons">account_balance</i>
                 </a>
               </li>

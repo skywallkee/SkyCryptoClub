@@ -416,6 +416,10 @@ def closeExchange(request):
             closed = ExchangeStatus.objects.filter(status="Closed").first()
             exchange.status = closed
             exchange.save()
+
+            creatorWallet = Wallet.objects.filter(profile=exchange.creator, store=exchange.from_currency).first()
+            creatorWallet.amount += exchange.from_amount
+            creatorWallet.save()
             return HttpResponse(200)
     return HttpResponse(400)
 
@@ -463,3 +467,38 @@ def payExchange(request):
         exchange.save()
         return HttpResponse(200)
     return HttpResponse(403)
+
+def exchangeAmount(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        try:
+            givenAmount = Decimal(data["givenAmount"])
+        except:
+            givenAmount = Decimal(0)
+
+        try:
+            receivedAmount = Decimal(data["receivedAmount"])
+        except:
+            receivedAmount = Decimal(0)
+
+        currency = Currency.objects.filter(name=data["currency"]).first()
+
+        if not currency:
+            return HttpResponse(400)
+        if data["backwards"]:
+            toCompare = receivedAmount
+        else:
+            toCompare = givenAmount
+        tax = Decimal(1) - ExchangeTaxPeer.objects.filter(currency=currency).filter().filter(minAmount__lte=toCompare).filter(maxAmount__gte=toCompare).first().percentage / Decimal(100)
+
+        if data["backwards"]:
+            givenAmount = receivedAmount / tax
+        else:
+            receivedAmount = givenAmount * tax
+
+    return JsonResponse({"givenAmount": "{0:.8f}".format(givenAmount),
+                         "receivedAmount": "{0:.8f}".format(receivedAmount),}, 
+                         safe=False)

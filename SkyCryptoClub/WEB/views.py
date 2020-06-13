@@ -603,19 +603,8 @@ def requestExchange(request):
         return redirect('/exchange/' + str(exchange.eid) + "/")
     return render(request, 'exchange/exchange_request.html', context)
 
-    
-def exchanges(request):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
-    profile = Profile.objects.filter(user=request.user).first()
-    platforms = Platform.objects.all()
-    exchanges = Exchange.objects.filter(status="Open")
-    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
-    return render(request, 'exchange/exchanges_list.html', context)
 
-
-def filterExchangesHistory(request, exchanges):
+def filterExchanges(request, exchanges):
     # Retrieve GET parameters
     fromPlatform = request.GET["fromPlatform"] if "fromPlatform" in request.GET and request.GET["fromPlatform"] != "" else "any"
     fromCurrency = request.GET["fromCurrency"] if "fromCurrency" in request.GET and request.GET["fromCurrency"] != "" else "any"
@@ -675,15 +664,14 @@ def filterExchangesHistory(request, exchanges):
     return exchanges
 
     
-def exchanges_history(request, page):
+def exchanges(request, page):
     allowed_methods = ["GET"]
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
-
-    exchanges = filterExchangesHistory(request, exchanges)
+    exchanges = Exchange.objects.filter(status="Open")
+    exchanges = filterExchanges(request, exchanges)
 
     # Pagination
     displayPerPage = 30
@@ -697,7 +685,37 @@ def exchanges_history(request, page):
     end = displayPerPage * page
     exchanges = exchanges.order_by('-created_at')[begin:end]
 
-    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
+    return render(request, 'exchange/exchanges_list.html', context)
+
+    
+def exchanges_history(request, page):
+    allowed_methods = ["GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
+
+    exchanges = filterExchanges(request, exchanges)
+
+    # Pagination
+    displayPerPage = 30
+    totalPages = math.ceil(len(exchanges) / displayPerPage)
+    startPagination = max(page - 2, 1) if page < totalPages else 1
+    endPagination = min(totalPages, page + 2) + 1
+    pages = [i for i in range(startPagination, endPagination)]
+    canNext = page < totalPages
+    canPrevious = page > 1
+    begin = displayPerPage * (page - 1)
+    end = displayPerPage * page
+    exchanges = exchanges.order_by('-created_at')[begin:end]
+
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
     return render(request, 'exchange/exchanges_history.html', context)
 
     
@@ -706,6 +724,7 @@ def exchange_page(request, exchange_id):
     if not request.user.is_authenticated or request.method not in allowed_methods:
         return HttpResponseRedirect(reverse('index'))
     exchange = Exchange.objects.filter(eid=exchange_id).first()
+
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange}

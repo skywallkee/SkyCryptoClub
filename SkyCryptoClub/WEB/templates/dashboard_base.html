@@ -84,14 +84,14 @@
                     <span class="sidebar-normal"> Request Exchange </span>
                   </a>
                 </li>
-                <li class="nav-item {% if request.path == '/exchange/list/' %}active{% endif %}">
-                  <a class="nav-link" href="exchange_list.html">
+                <li class="nav-item {% if request.path == '/exchanges/' %}active{% endif %}">
+                  <a class="nav-link" href="{% url 'exchanges' %}">
                     <span class="sidebar-mini"> VEL </span>
                     <span class="sidebar-normal"> View Exchange List </span>
                   </a>
                 </li>
                 <li class="nav-item {% if request.path == '/exchange/history/' %}active{% endif %}">
-                  <a class="nav-link" href="exchange_history.html">
+                  <a class="nav-link" href="{% url 'exchanges-history' %}">
                     <span class="sidebar-mini"> EH </span>
                     <span class="sidebar-normal"> Exchange History </span>
                   </a>

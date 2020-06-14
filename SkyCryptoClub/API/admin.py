@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
-                    ExchangeTaxPeer, Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
+                    ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
+                    SupportTicket, SupportCategory, SupportTicketMessage
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -26,19 +27,6 @@ class ProfileAdmin(admin.ModelAdmin):
     fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName']
 
 admin.site.register(Profile, ProfileAdmin)
-
-
-class StatisticsAdmin(admin.ModelAdmin):
-    fields = ['profile', 'numberBTCSent', 'amountBTCSent', 'numberBTCReceived', 'amountBTCReceived', 
-            'numberETHSent', 'amountETHSent', 'numberETHReceived', 'amountETHReceived', 
-            'numberLTCSent', 'amountLTCSent', 'numberLTCReceived', 'amountLTCReceived', 
-            'numberXDGSent', 'amountXDGSent', 'numberXDGReceived', 'amountXDGReceived', 
-            'numberBCHSent', 'amountBCHSent', 'numberBCHReceived', 'amountBCHReceived', 
-            'numberXRPSent', 'amountXRPSent', 'numberXRPReceived', 'amountXRPReceived', 
-            'numberTRXSent', 'amountTRXSent', 'numberTRXReceived', 'amountTRXReceived'
-            ]
-
-admin.site.register(Statistics, StatisticsAdmin)
 
 
 class UserRoleAdmin(admin.ModelAdmin):
@@ -149,3 +137,21 @@ class PublicityBannersAdmin(admin.ModelAdmin):
     fields = ['image', 'imageType']
 
 admin.site.register(PublicityBanners, PublicityBannersAdmin)
+
+
+class SupportTicketAdmin(admin.ModelAdmin):
+    fields = ['creator', 'title', 'category', 'last_replied', 'created_at', 'closed']
+
+admin.site.register(SupportTicket, SupportTicketAdmin)
+
+
+class SupportCategoryAdmin(admin.ModelAdmin):
+    fields = ['order', 'name']
+
+admin.site.register(SupportCategory, SupportCategoryAdmin)
+
+
+class SupportTicketMessageAdmin(admin.ModelAdmin):
+    fields = ['ticket', 'sender', 'message', 'sent_at']
+
+admin.site.register(SupportTicketMessage, SupportTicketMessageAdmin)

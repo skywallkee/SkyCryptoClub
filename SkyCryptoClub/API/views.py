@@ -7,14 +7,15 @@ from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, Use
                                           ProfileBanSerializer, PlatformSerializer, PlatformCurrencySerializer, \
                                           CurrencySerializer, WalletSerializer, AccountSerializer, ExchangeTaxPeerSerializer, \
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, ExchangeStatusSerializer, \
-                                          FAQCategorySerializer, QuestionSerializer, StatisticsSerializer, PublicityBannersSerializer
+                                          FAQCategorySerializer, QuestionSerializer, PublicityBannersSerializer
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
                     Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
-                    FAQCategory, Question, Statistics, FoundDeposit, PublicityBanners
+                    FAQCategory, Question, FoundDeposit, PublicityBanners, \
+                    SupportTicket, SupportTicketMessage, SupportCategory
 import json
 
 
@@ -59,15 +60,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAdminUser]
-
-
-class StatisticsViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows profile statistics to be viewed or edited.
-    """
-    queryset = Statistics.objects.all()
-    serializer_class = StatisticsSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
@@ -502,3 +494,75 @@ def exchangeAmount(request):
     return JsonResponse({"givenAmount": "{0:.8f}".format(givenAmount),
                          "receivedAmount": "{0:.8f}".format(receivedAmount),}, 
                          safe=False)
+
+
+def closeTicket(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if "tid" not in data:
+            return HttpResponse(400)
+        profile = Profile.objects.filter(user=request.user).first()
+        userRoles = UserRole.objects.filter(profile=profile)
+        canClose = False
+        for uRole in userRoles:
+            if uRole.role.closeTickets:
+                canClose = True
+        ticket = SupportTicket.objects.filter(ticketId=data["tid"]).first()
+        if not ticket or ticket.closed:
+            return HttpResponse(400)
+        if not canClose and ticket.creator != profile:
+            return HttpResponse(400)
+        closingMessage = SupportTicketMessage.objects.create(ticket=ticket, sender=profile, message="Closed the ticket!")
+        ticket.closed = True
+        ticket.save()
+    return HttpResponse(200)
+
+
+def openTicket(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if "tid" not in data:
+            return HttpResponse(400)
+        profile = Profile.objects.filter(user=request.user).first()
+        userRoles = UserRole.objects.filter(profile=profile)
+        canOpen = False
+        for uRole in userRoles:
+            if uRole.role.closeTickets:
+                canOpen = True
+        ticket = SupportTicket.objects.filter(ticketId=data["tid"]).first()
+        if not ticket or not ticket.closed:
+            return HttpResponse(400)
+        if not canOpen and ticket.creator != profile:
+            return HttpResponse(400)
+        openingMessage = SupportTicketMessage.objects.create(ticket=ticket, sender=profile, message="Opened the ticket!")
+        ticket.closed = False
+        ticket.save()
+    return HttpResponse(200)
+
+
+def replyTicket(request):
+    if not request.user.is_authenticated:
+        return HttpResponse(400)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        if "tid" not in data and "message" not in data:
+            return HttpResponse(400)
+        profile = Profile.objects.filter(user=request.user).first()
+        userRoles = UserRole.objects.filter(profile=profile)
+        canReply = False
+        for uRole in userRoles:
+            if uRole.role.respondTickets:
+                canReply = True
+        ticket = SupportTicket.objects.filter(ticketId=data["tid"]).first()
+        if not ticket or ticket.closed:
+            return HttpResponse(400)
+        if not canReply and ticket.creator != profile:
+            return HttpResponse(400)
+        ticket.last_replied = profile
+        ticket.save()
+        newMessage = SupportTicketMessage.objects.create(ticket=ticket, sender=profile, message=data["message"])
+    return HttpResponse(200)

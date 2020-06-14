@@ -99,8 +99,8 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="contact_support.html">
+          <li class="nav-item {% if 'support' in request.path %}active{% endif %}">
+            <a class="nav-link" href="{% url 'support' %}">
               <i class="material-icons">contact_support</i>
               <p> Support </p>
             </a>

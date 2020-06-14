@@ -1,6 +1,6 @@
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, ExchangeTaxPeer, \
-                    FAQCategory, Question, Statistics, PublicityBanners, ExchangeStatus
+                    FAQCategory, Question, PublicityBanners, ExchangeStatus
 from rest_framework import serializers
 
 
@@ -34,20 +34,6 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Profile
         fields = ['url', 'user', 'avatar', 'xp', 'publicStats', 'publicLevel', 'publicXP', 'publicName']
-
-
-class StatisticsSerializer(serializers.HyperlinkedModelSerializer):
-    profile = serializers.HyperlinkedRelatedField(view_name='profile-detail', queryset=Profile.objects.all())
-    class Meta:
-        model = Statistics
-        fields = ['profile', 'numberBTCSent', 'amountBTCSent', 'numberBTCReceived', 'amountBTCReceived', 
-            'numberETHSent', 'amountETHSent', 'numberETHReceived', 'amountETHReceived', 
-            'numberLTCSent', 'amountLTCSent', 'numberLTCReceived', 'amountLTCReceived', 
-            'numberXDGSent', 'amountXDGSent', 'numberXDGReceived', 'amountXDGReceived', 
-            'numberBCHSent', 'amountBCHSent', 'numberBCHReceived', 'amountBCHReceived', 
-            'numberXRPSent', 'amountXRPSent', 'numberXRPReceived', 'amountXRPReceived', 
-            'numberTRXSent', 'amountTRXSent', 'numberTRXReceived', 'amountTRXReceived'
-            ]
 
 
 class UserRoleSerializer(serializers.HyperlinkedModelSerializer):

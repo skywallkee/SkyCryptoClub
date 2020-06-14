@@ -23,7 +23,7 @@
 - - - promoting reusability for other methods
 - - - describing methods with appropriate comments for better understanding
 
-- [ ] Create Exchanges
+- [x] Create Exchanges
 - - Request Exchange
 - - - Users can make a new request and set the wanted rate
 - - View Exchange List
@@ -32,11 +32,21 @@
 - - Exchange History
 - - - Users can view all their past exchanges
 
-- [ ] Create Support Page
+- [x] Create Support Page
 - - Support Ticket
 - - - Users can open/close/reply to their support tickets regarding a given problem
-- - - Support staff can reply to support tickets assigned to their field of expertise
-- - - Support staff can mark a ticket as answered
+
+- [ ] Create Support Staff Panel
+- - Support staff can reply to support tickets assigned to their field of expertise
+- - Support staff can mark a ticket as answered
+- - Support staff can view other users profile and balance using a special pin provided by ticket creation in order to solve the issues
+
+- [ ] Create Moderator Staff Panel
+- - Moderators can view a list of all users
+- - Moderators can ban/unban users from different areas
+- - Moderators can review transactions
+- - Moderators can bypass users privacy settings and see their profiles
+- - Moderators can view other user's balances
 
 - [ ] User Language @soon
 - - add language field to User model with English as default

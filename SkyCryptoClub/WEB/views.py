@@ -11,9 +11,10 @@ import time
 # MODELS
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, Statistics, \
+from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
-                         Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer
+                         Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
+                         SupportTicket, SupportTicketMessage, SupportCategory
 from django.contrib.auth import get_user_model
 
 # EMAIL
@@ -341,7 +342,9 @@ def dashboard_user(request, username):
     is_owner = user.username == request.user.username
 
     profile = Profile.objects.filter(user=user).first()
-    statistics = Statistics.objects.filter(profile=profile).first() if profile.publicStats == True or is_owner else None
+    statistics = {}
+    statistics["totalExchangesStarted"] = len(Exchange.objects.filter(creator=profile))
+    statistics["totalExchanges"] = len(Exchange.objects.filter(exchanged_by=profile))
     
     title = ""
     if profile.publicLevel or is_owner:
@@ -666,7 +669,7 @@ def filterExchanges(request, exchanges):
     
 def exchanges(request, page):
     allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
+    if not request.user.is_authenticated or request.method not in allowed_methods or page <= 0:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -690,12 +693,17 @@ def exchanges(request, page):
                "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
     return render(request, 'exchange/exchanges_list.html', context)
 
-    
+
 def exchanges_history(request, page):
+    return HttpResponseRedirect('/exchanges/history/{}/page={}/'.format(request.user.username, page))
+    
+
+def exchanges_history_user(request, username, page):
     allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
+    if not request.user.is_authenticated or request.method not in allowed_methods or not request.user.username == username or page <= 0:
         return HttpResponseRedirect(reverse('index'))
-    profile = Profile.objects.filter(user=request.user).first()
+    user = get_user_model().objects.filter(username=username).first()
+    profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
     exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
 
@@ -729,3 +737,71 @@ def exchange_page(request, exchange_id):
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange}
     return render(request, 'exchange/exchange.html', context)
+
+    
+def support(request):
+    allowed_methods = ["GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+
+    tickets = SupportTicket.objects.filter(creator=profile).order_by('-created_at')
+
+    context = {'profile': profile, 'platforms': platforms, 'tickets': tickets}
+    return render(request, 'support/contact_support.html', context)
+
+    
+def ticket(request, tid):
+    allowed_methods = ["GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+
+    ticket = SupportTicket.objects.filter(ticketId=tid).first()
+    messages = SupportTicketMessage.objects.filter(ticket=ticket)
+
+    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'messages': messages}
+    return render(request, 'support/ticket.html', context)
+
+    
+def createTicket(request):
+    allowed_methods = ["POST", "GET"]
+    if not request.user.is_authenticated or request.method not in allowed_methods:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    categories = SupportCategory.objects.all().order_by('order')
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories}
+
+    if request.method == "POST":
+        if "title" not in request.POST:
+            context["titleError"] = {"title": "Please input a title!", "message": ""}
+            return render(request, 'support/create_ticket.html', context)
+        if not (8 < len(request.POST["title"]) and len(request.POST["title"]) < 60):
+            context["titleError"] = {"title": "Title length error!", "message": "Please give a suggestive title with no more than 60 characters!"}
+            return render(request, 'support/create_ticket.html', context)
+        if "category" not in request.POST or request.POST["category"] == "":
+            context["categoryError"] = {"title": "Please choose a category!", "message": "The category should match your problem, if no category is appropiate, choose \"Others\"."}
+            return render(request, 'support/create_ticket.html', context)
+        if not SupportCategory.objects.filter(order=request.POST["category"]).first():
+            context["categoryError"] = {"title": "Please choose a valid category!", "message": "The category should match your problem, if no category is appropiate, choose \"Others\"."}
+            return render(request, 'support/create_ticket.html', context)
+        if "message" not in request.POST:
+            context["messageError"] = {"title": "Please input a message!", "message": "The message should describe your problem as detailed as possible."}
+            return render(request, 'support/create_ticket.html', context)
+        if len(request.POST["message"]) < 10:
+            context["messageError"] = {"title": "Please input a more detailed message!", "message": "The message should describe your problem as detailed as possible."}
+            return render(request, 'support/create_ticket.html', context)
+        title = request.POST["title"]
+        category = SupportCategory.objects.filter(order=request.POST["category"]).first()
+        message = request.POST["message"]
+        creator = profile
+        ticket = SupportTicket.objects.create(creator=creator, title=title, category=category)
+        SupportTicketMessage.objects.create(ticket=ticket, sender=creator, message=message)
+        return redirect('/support/ticket/' + str(ticket.ticketId) + "/")
+
+    return render(request, 'support/create_ticket.html', context)

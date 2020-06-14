@@ -27,7 +27,6 @@ router.register(r'users', APIviews.UserViewSet)
 router.register(r'passwordtokens', APIviews.PasswordTokenViewSet)
 router.register(r'twofactors', APIviews.TwoFactorLoginViewSet)
 router.register(r'profiles', APIviews.ProfileViewSet)
-router.register(r'statistics', APIviews.StatisticsViewSet)
 router.register(r'userroles', APIviews.UserRoleViewSet)
 router.register(r'roles', APIviews.RoleViewSet)
 router.register(r'profilebans', APIviews.ProfileBanViewSet)
@@ -84,9 +83,18 @@ urlpatterns = [
     path(r'exchanges/page=<int:page>/', WEBviews.exchanges, name='exchanges'),
     path(r'exchanges/create/', WEBviews.requestExchange, name='request-exchange'),
     path(r'exchanges/history/page=<int:page>/', WEBviews.exchanges_history, name='exchanges-history'),
+    path(r'exchanges/history/<str:username>/page=<int:page>/', WEBviews.exchanges_history_user, name='exchanges-history-user'),
     path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
     path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
     path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),
     path(r'pay-exchange/', APIviews.payExchange, name='pay-exchange'),
     path(r'get-exchange-amount/', APIviews.exchangeAmount, name='get-exchange-amount'),
+
+    # SUPPORT
+    path(r'support/', WEBviews.support, name='support'),
+    path(r'support/ticket/create/', WEBviews.createTicket, name='create-ticket'),
+    path(r'support/ticket/<int:tid>/', WEBviews.ticket, name='ticket'),
+    path(r'close-ticket/', APIviews.closeTicket, name='close-ticket'),
+    path(r'open-ticket/', APIviews.openTicket, name='open-ticket'),
+    path(r'reply-ticket/', APIviews.replyTicket, name='reply-ticket'),
 ]

@@ -10,12 +10,15 @@ import time
 
 # MODELS
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
                          SupportTicket, SupportTicketMessage, SupportCategory
 from django.contrib.auth import get_user_model
+
+# DJANGO DECORATORS
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 
 # EMAIL
 import smtplib, ssl
@@ -50,21 +53,6 @@ import os
 
 from decimal import *
 import math
-
-# Functionality: User Log Out Function
-# Description: If the user is logged in, the function
-#              will log him out and redirect to the index 
-@login_required
-def user_logout(request):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
-
-    # Check if user is authenticated to log out
-    if request.user.is_authenticated:
-        logout(request)
-    # Redirect  the user to index
-    return HttpResponseRedirect(reverse('index'))
 
 
 # Functionality: Banner Link Return
@@ -142,10 +130,10 @@ def user_login_form(request):
 #              log in page; when the data is sent, process it
 #              and log the user. If the user is authenticated
 #              then redirect him to the index page.
+@require_http_methods(["GET", "POST"])
 def user_login(request):
     # If user is authenticated redirect him to index
-    allowed_methods = ["POST", "GET"]
-    if request.user.is_authenticated or request.method not in allowed_methods:
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
 
     if request.method == 'GET':
@@ -193,10 +181,10 @@ def user_register_form(request):
 #              create a password and send it through email. 
 #              If the user is authenticated then redirect him to 
 #              the index page.
+@require_http_methods(["GET", "POST"])
 def user_register(request):
     # If user is authenticated redirect him to index
-    allowed_methods = ["POST", "GET"]
-    if request.user.is_authenticated or request.method not in allowed_methods:
+    if request.user.is_authenticateds:
         return HttpResponseRedirect(reverse('index'))
 
     # Load the register template and the context
@@ -217,9 +205,9 @@ def user_register(request):
 #              method is GET then display the password recovery
 #              page. If the request method is POST, then check
 #              if the user's username and email exist and are matching
+@require_http_methods(["GET", "POST"])
 def recover_password(request):
-    allowed_methods = ["POST", "GET"]
-    if request.user.is_authenticated or request.method not in allowed_methods:
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
 
     if request.method == 'GET':
@@ -259,10 +247,8 @@ def recover_password(request):
 # Functionality: FAQ Page
 # Description: Displays all the categories, questions and
 #              answers in the FAQ template
+@require_http_methods(["GET"])
 def faq(request):
-    allowed_methods = ["GET"]
-    if request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     categories = FAQCategory.objects.all()
     answers = Question.objects.filter(accepted=True)
@@ -272,11 +258,8 @@ def faq(request):
 
 # Functionality: Terms & Conditions Page
 # Description: Displays the terms template
+@require_http_methods(["GET"])
 def terms(request):
-    allowed_methods = ["GET"]
-    if request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
-
     context = {}
     return render(request, 'WEB/terms.html', context)
 
@@ -311,10 +294,8 @@ def contact_send_mail(request):
 
 # Functionality: Contact Page
 # Description: Returns the contact page and gathers form data
+@require_http_methods(["GET", "POST"])
 def contact(request):
-    allowed_methods = ["GET", "POST"]
-    if request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
     if request.method == "GET":
         return contact_template(request, {})
     else:
@@ -329,10 +310,9 @@ def dashboard(request):
 
 # Functionality: Dashboard User Profile Page
 # Description: Displays another user's profile page
+@login_required
+@require_http_methods(["GET"])
 def dashboard_user(request, username):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     user = get_user_model().objects.filter(username=username).first()
 
@@ -428,10 +408,9 @@ def settings_update_credentials(request, context):
 #              If the method is POST then check if the user
 #              tried modifying his avatar or password/email.
 #              If the modified data is valid, then change it
+@login_required
+@require_http_methods(["GET", "POST"])
 def settings(request):
-    allowed_methods = ["POST", "GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -464,10 +443,9 @@ def change_privacy(request, profile):
 #              displays the privacy template. If the method is
 #              POST then get the user's given privacy settings and
 #              set them
+@login_required
+@require_http_methods(["GET", "POST"])
 def privacy(request):
-    allowed_methods = ["POST", "GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -541,10 +519,9 @@ def confirm_linked_account(request, context):
 #              on the given platform to the account; Confirming a
 #              token will check the unique token in the database and
 #              erase it if matching
+@login_required
+@require_http_methods(["GET", "POST"])
 def linked(request):
-    allowed_methods = ["POST", "GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     linked = Account.objects.filter(profile=profile)
@@ -557,10 +534,9 @@ def linked(request):
     return render(request, 'settings/linked.html', context)
 
     
+@login_required
+@require_http_methods(["GET", "POST"])
 def requestExchange(request):
-    allowed_methods = ["POST", "GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
@@ -667,9 +643,10 @@ def filterExchanges(request, exchanges):
     return exchanges
 
     
+@login_required
+@require_http_methods(["GET"])
 def exchanges(request, page):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods or page <= 0:
+    if page <= 0:
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -698,9 +675,10 @@ def exchanges_history(request, page):
     return HttpResponseRedirect('/exchanges/history/{}/page={}/'.format(request.user.username, page))
     
 
+@login_required
+@require_http_methods(["GET", "POST"])
 def exchanges_history_user(request, username, page):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods or not request.user.username == username or page <= 0:
+    if not request.user.username == username or page <= 0:
         return HttpResponseRedirect(reverse('index'))
     user = get_user_model().objects.filter(username=username).first()
     profile = Profile.objects.filter(user=user).first()
@@ -727,10 +705,9 @@ def exchanges_history_user(request, username, page):
     return render(request, 'exchange/exchanges_history.html', context)
 
     
+@login_required
+@require_http_methods(["GET"])
 def exchange_page(request, exchange_id):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
     exchange = Exchange.objects.filter(eid=exchange_id).first()
 
     profile = Profile.objects.filter(user=request.user).first()
@@ -738,11 +715,10 @@ def exchange_page(request, exchange_id):
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange}
     return render(request, 'exchange/exchange.html', context)
 
-    
+  
+@login_required
+@require_http_methods(["GET"])
 def support(request):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -753,10 +729,9 @@ def support(request):
     return render(request, 'support/contact_support.html', context)
 
     
+@login_required
+@require_http_methods(["GET"])
 def ticket(request, tid):
-    allowed_methods = ["GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
@@ -768,10 +743,9 @@ def ticket(request, tid):
     return render(request, 'support/ticket.html', context)
 
     
+@login_required
+@require_http_methods(["GET", "POST"])
 def createTicket(request):
-    allowed_methods = ["POST", "GET"]
-    if not request.user.is_authenticated or request.method not in allowed_methods:
-        return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     categories = SupportCategory.objects.all().order_by('order')

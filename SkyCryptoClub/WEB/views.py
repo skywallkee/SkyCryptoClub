@@ -31,14 +31,10 @@ from multiprocessing import Process
 # GLOBALS
 from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN, LEVEL_TITLES
 from ..APIS import send_mail, api_request
-from ..MESSAGES import RECOVERY_SUBJECT, RECOVERY_TEXT, RECOVERY_HTML, \
-                       REGISTER_SUBJECT, REGISTER_TEXT, REGISTER_HTML, \
-                       REGISTER_ERROR, REGISTER_SUCCESS, \
-                       PASSWORD_RESET_SUCCESS_TITLE, PASSWORD_RESET_SUCCESS_MESSAGE, \
-                       PASSWORD_RESET_FAIL_TITLE, PASSWORD_RESET_FAIL_MESSAGE, \
-                       ACCOUNT_UNLINK_TITLE_SUCCESS, ACCOUNT_UNLINK_MESSAGE_SUCCESS, \
-                       ACCOUNT_UNLINK_TITLE_FAIL, ACCOUNT_UNLINK_MESSAGE_FAIL
+from ..MESSAGES import MESSAGES
 from ..METHODS import get_json_data, generate_password
+
+from ..API.views import get_user_language
 
 # VALIDATION
 from .validator import valid_login, valid_tfa, valid_register, image_size, image_dimensions
@@ -151,7 +147,7 @@ def user_login(request):
 def user_register_form(request):
     data    = get_json_data(request.POST, ['username', 'email'])
     if len(data) != 2:
-        return REGISTER_ERROR
+        return {"messages": [MESSAGES[get_user_language(request)]["REGISTER"]["FAIL"]]}
 
     # Get the username and email
     username    = request.POST.get('username')
@@ -159,7 +155,7 @@ def user_register_form(request):
 
     # Validate the username and email
     if not valid_register(username, email):
-        return REGISTER_ERROR
+        return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["FAIL"]]}
 
     # Create a random password
     password = generate_password()
@@ -168,11 +164,12 @@ def user_register_form(request):
     User.objects.create_user(username, email, password)
 
     # Send the generated password through email on a different process
-    text                = REGISTER_TEXT.format(email, username, password)
-    html                = REGISTER_HTML.format(email, username, password)
-    send_mail_process   = Process(target=send_mail, args=(email, REGISTER_SUBJECT, text, html))
+    subject             = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["SUBJECT"]
+    text                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["MESSAGE"].format(email, username, password)
+    html                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["HTML"].format(email, username, password)
+    send_mail_process   = Process(target=send_mail, args=(email, subject, text, html))
     send_mail_process.start()
-    return REGISTER_SUCCESS
+    return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["SUCCESS"]]}
 
 
 # Functionality: Register Page
@@ -184,7 +181,7 @@ def user_register_form(request):
 @require_http_methods(["GET", "POST"])
 def user_register(request):
     # If user is authenticated redirect him to index
-    if request.user.is_authenticateds:
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
 
     # Load the register template and the context
@@ -213,35 +210,25 @@ def recover_password(request):
     if request.method == 'GET':
         return render(request, 'registration/recover_password.html', {})
 
-    fail = {
-        'found': 'False',
-        'title': PASSWORD_RESET_FAIL_TITLE,
-        'message': PASSWORD_RESET_FAIL_MESSAGE,
-        'type': 'danger'
-    }
-    success = {
-        'found': 'True',
-        'title': PASSWORD_RESET_SUCCESS_TITLE,
-        'message': PASSWORD_RESET_SUCCESS_MESSAGE,
-        'type': 'success'
-    }
-
     data = get_json_data(request.POST, ['username', 'email'])
     if len(data) != 2:
-        return render(request, 'registration/recover_password.html', fail)
+        return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["FAIL"]]})
 
     username, email = data
     user = User.objects.filter(username=username, email=email)
     if len(user) < 1:
-        return render(request, 'registration/recover_password.html', fail)
+        return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["FAIL"]]})
         
     user = user.first()
     password = generate_password()
     user.set_password(password)
     user.save()
-    send_mail_process = Process(target=send_mail, args=(user.email, user.username, password, password))
+    subject = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["SUBJECT"]
+    text = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["MESSAGE"].format(user.email, user.username, user.password)
+    html = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["HTML"].format(user.email, user.username, user.password)
+    send_mail_process = Process(target=send_mail, args=(user.email, subject, text, html))
     send_mail_process.start()
-    return render(request, 'registration/recover_password.html', success)
+    return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["SUCCESS"]]})
 
 
 # Functionality: FAQ Page
@@ -277,7 +264,7 @@ def contact_template(request, context):
 def contact_send_mail(request):
     data    = get_json_data(request.POST, ['email', 'subject', 'message'])
     if len(data) != 3:
-        return {"error": {"title": "Invalid Data", "message": "Please input an email, subject and message"}}
+        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
 
     # Get the username and email
     email, subject, message = data
@@ -289,7 +276,7 @@ def contact_send_mail(request):
     send_mail_process.start()
     send_mail_process   = Process(target=send_mail, args=(email, subject, message, message))
     send_mail_process.start()
-    return {"success": {"title": "Message sent!", "message": "The message has been sent! <br/>We will try to respond as soon as possible!"}}
+    return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["SUCCESS"]]}
 
 
 # Functionality: Contact Page
@@ -352,20 +339,20 @@ def dashboard_user(request, username):
 # Description: Gets the avatar, validates it and updates it
 def settings_update_avatar(request, context, profile):
     avatar = request.FILES['newAvatar']
+    context["messages"] = []
 
     ok = True
     if image_size(avatar) == 400:
-        context["sizeError"] = {'title': 'File too large!', 'message': 'Size should not exceed 3 MiB.'}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["LARGE_IMAGE"])
         ok = False
     if image_dimensions(avatar) == 400:
-        context["dimensionsError"] = {'title': 'Incorrect dimensions!', 'message': 'Image width and height must be equal. \
-                                                            The image should be at least 150x150 and not more than 500x500'}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["DIMENSIONS"])
         ok = False
 
     if ok:
         profile.avatar = avatar
         profile.save()
-        context["changedAvatar"] = {"title": "Success!", "message": "The Avatar has been changed successfully!"}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["SUCCESS"])
     return context
 
 
@@ -377,27 +364,27 @@ def settings_update_credentials(request, context):
 
     error = False
     if not request.user.check_password(password):
-        context["passError"] = {"title": "Invalid password", "message": "The given password is not corect!"}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["INCORRECT"])
         error = True
     if 0 < len(newpass) and len(newpass) < 6:
-        context["newPassError"] = {"title": "Password too weak", "message": "The new password must have at least 6 characters!"}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["SHORT"])
         error = True
     elif newpass != newpassconfirm:
-        context["newPassError"] = {"title": "Incorrect New Password", "message": "The new password doesn't match with the confirmation!"}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["NOT_MATCHING"])
         error = True
     elif len(User.objects.filter(email=email)) > 0:
-        context["existingMailError"] = {"title": "Existing E-Mail", "message": "The given E-Mail address is already in use by another user!"}
+        context["messages"].append(MESSAGES[get_user_language(request).name]["EMAIL"]["FAIL"]["EXISTING"])
         error = True
     
     if not error:
         if email != request.user.email:
             request.user.email = email
             request.user.save()
-            context["changedEmail"] = {"title": "Success!", "message": "The E-Mail has been changed successfully!"}
+            context["messages"].append(MESSAGES[get_user_language(request).name]["EMAIL"]["SUCCESS"])
         if len(newpass) > 0:
             request.user.set_password(newpass)
             request.user.save()
-            context["changedPassword"] = {"title": "Success!", "message": "The Password has been changed successfully!"}
+            context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["SUCCESS"])
     return context
 
 
@@ -465,10 +452,16 @@ def remove_linked_account(request, context):
     id = request.POST.get('accountId')
     if id:
         account = Account.objects.filter(id=id)
-        account.delete()
-        context["success"] = {"title": ACCOUNT_UNLINK_TITLE_SUCCESS, "message": ACCOUNT_UNLINK_MESSAGE_SUCCESS}
+        if account:
+            try:
+                account.delete()
+                context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["SUCCESS"]]
+            except:
+                context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
+        else:
+            context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
     else:
-        context["danger"] = {"title": ACCOUNT_UNLINK_TITLE_FAIL, "message": ACCOUNT_UNLINK_MESSAGE_FAIL}
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
     return context
 
 
@@ -500,11 +493,11 @@ def confirm_linked_account(request, context):
             platform = Platform.objects.filter(id=platform).first()
             profile = Profile.objects.filter(user=request.user).first()
             Account.objects.create(username=username, platform=platform, profile=profile, active=True)
-            context["success"] = {"title": "Account linked successfully!", "message": "The given account has been successfully linked!"}
+            context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["SUCCESS"]]
         else:
-            context["danger"] = {"title": "Account wasn't linked", "message": "The given API Key doesn't match the provided username!"}
+            context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
     else:
-        context["danger"] = {"title": "Account wasn't linked", "message": "The given account is already linked!"}
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["ALREADY_LINKED"]]
     return context
 
 
@@ -524,13 +517,14 @@ def confirm_linked_account(request, context):
 def linked(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    linked = Account.objects.filter(profile=profile)
-    context = {'profile': profile, 'linked': linked, 'platforms': platforms}
+    context = {'profile': profile, 'platforms': platforms}
     if request.method == "POST":
         if 'removeAccount' in request.POST:
             context = remove_linked_account(request, context)
         if 'addAccount' in request.POST:
             context = confirm_linked_account(request, context)
+    linked = Account.objects.filter(profile=profile)
+    context["linked"] = linked
     return render(request, 'settings/linked.html', context)
 
     
@@ -555,7 +549,7 @@ def requestExchange(request):
 
         creatorWallet = Wallet.objects.filter(profile=creator, store=fromCurrency).first()
         if creatorWallet.amount < fromAmount:
-            context['insufficient'] = {"title": "Insufficient funds!"}
+            context["messages"] = [MESSAGES[get_user_language(request).name]["EXCHANGE_REQUEST"]["FAIL"]]
             return render(request, 'exchange/exchange_request.html', context)
         else:
             creatorWallet.amount -= fromAmount
@@ -567,7 +561,8 @@ def requestExchange(request):
 
         ratio = toAmount / fromAmount
         status = ExchangeStatus.objects.filter(status="Pending").first()
-
+        if peer != "user":
+            peer = "user"
         if peer == "user":
             taxCreator = ExchangeTaxPeer.objects.filter(currency=fcurrency).filter(minAmount__lte=fromAmount).filter(maxAmount__gte=fromAmount).first()
             taxExchanger = ExchangeTaxPeer.objects.filter(currency=tcurrency).filter(minAmount__lte=toAmount).filter(maxAmount__gte=toAmount).first()
@@ -749,27 +744,24 @@ def createTicket(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     categories = SupportCategory.objects.all().order_by('order')
-    context = {'profile': profile, 'platforms': platforms, 'categories': categories}
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 'messages': []}
 
     if request.method == "POST":
         if "title" not in request.POST:
-            context["titleError"] = {"title": "Please input a title!", "message": ""}
-            return render(request, 'support/create_ticket.html', context)
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_TITLE"])
         if not (8 < len(request.POST["title"]) and len(request.POST["title"]) < 60):
-            context["titleError"] = {"title": "Title length error!", "message": "Please give a suggestive title with no more than 60 characters!"}
-            return render(request, 'support/create_ticket.html', context)
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["TITLE_LENGTH"])
         if "category" not in request.POST or request.POST["category"] == "":
-            context["categoryError"] = {"title": "Please choose a category!", "message": "The category should match your problem, if no category is appropiate, choose \"Others\"."}
-            return render(request, 'support/create_ticket.html', context)
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_CATEGORY"])
         if not SupportCategory.objects.filter(order=request.POST["category"]).first():
-            context["categoryError"] = {"title": "Please choose a valid category!", "message": "The category should match your problem, if no category is appropiate, choose \"Others\"."}
-            return render(request, 'support/create_ticket.html', context)
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["INVALID_CATEGORY"])
         if "message" not in request.POST:
-            context["messageError"] = {"title": "Please input a message!", "message": "The message should describe your problem as detailed as possible."}
-            return render(request, 'support/create_ticket.html', context)
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_MESSAGE"])
         if len(request.POST["message"]) < 10:
-            context["messageError"] = {"title": "Please input a more detailed message!", "message": "The message should describe your problem as detailed as possible."}
+            context["messages"].append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["SHORT_MESSAGE"])
+        if len(context["messages"]) > 0:
             return render(request, 'support/create_ticket.html', context)
+
         title = request.POST["title"]
         category = SupportCategory.objects.filter(order=request.POST["category"]).first()
         message = request.POST["message"]

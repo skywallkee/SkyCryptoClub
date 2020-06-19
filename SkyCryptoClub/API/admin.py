@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
                     ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportCategory, SupportTicketMessage
+                    SupportTicket, SupportCategory, SupportTicketMessage, Languages
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -23,8 +23,14 @@ class TwoFactorLoginAdmin(admin.ModelAdmin):
 admin.site.register(TwoFactorLogin, TwoFactorLoginAdmin)
 
 
+class LanguagesAdmin(admin.ModelAdmin):
+    fields = ['name', 'long_name', 'flag']
+
+admin.site.register(Languages, LanguagesAdmin)
+
+
 class ProfileAdmin(admin.ModelAdmin):
-    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName']
+    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName', "language"]
 
 admin.site.register(Profile, ProfileAdmin)
 
@@ -38,25 +44,18 @@ admin.site.register(UserRole, UserRoleAdmin)
 class RoleAdmin(admin.ModelAdmin):
     fields = ['id', 'name', 'color', 'isDefault',
               'adminPanel', 'adminStatistics',
-              'editMemberships', 'createMemberships',
-              'deleteMemberships', 'addPlatform',
+              'addPlatform',
               'editPlatform', 'deletePlatform', 'banUser',
-              'permanentBan', 'editXP', 'editUserMembership',
+              'permanentBan',
               'addCurrency', 'editCurrency', 'deleteCurrency',
-              'addBorrowStatus', 'editBorrowStatus',
-              'removeBorrowStatus', 'editBorrow', 
-              'addExchangeStatus', 'editExchangeStatus',
-              'removeExchangeStatus', 'editExchange',
+              'editExchange',
               'addFAQCategory', 'editFAQCategory',
               'removeFAQCategory', 'approveFAQ',
-              'addAccount', 'editAccount', 'createRole',
-              'editRole', 'removeRole', 'assignRole',
-              'moderationPanel', 'banExchange', 'banBorrow',
-              'banLend', 'closeExchange', 'closeBorrow',
+              'editAccount',
+              'moderationPanel', 'banExchange',
+              'closeExchange',
               'viewTickets', 'respondTickets', 'closeTickets',
-              'addFAQ', 'editFAQ', 'removeFAQ', 'viewUserBorrows',
-              'viewUserLendings', 'viewUserProfile', 'viewUserExchanges',
-              'viewExchange', 'viewBorrow', 'viewUserBalance']
+              'addFAQ', 'editFAQ', 'removeFAQ']
 
 admin.site.register(Role, RoleAdmin)
 

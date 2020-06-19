@@ -17,13 +17,13 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
                     Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
                     FAQCategory, Question, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportTicketMessage, SupportCategory
+                    SupportTicket, SupportTicketMessage, SupportCategory, Languages
 import json
 
 
 from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN, TOTP
 from ..APIS import send_mail
-from ..MESSAGES import TFA_HTML, TFA_TEXT, TFA_SUBJECT
+from ..MESSAGES import MESSAGES
 from ..METHODS import get_json_data
 from multiprocessing import Process
 import time
@@ -191,6 +191,15 @@ class PublicityBannersViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
+def get_user_language(request):
+    if request.user.is_authenticated:
+        profile = Profile.objects.filter(user=request.user).first()
+        language = profile.language
+    else:
+        language = Languages.objects.filter(name="en").first()
+    return language
+    
+
 @require_http_methods(["POST"])
 def user_login(request):
     data = get_json_data(json.loads(request.body), ["username", "password"])
@@ -204,7 +213,7 @@ def user_login(request):
     if not TFA:
         TFA = TwoFactorLogin.objects.create(user=user)
     key = TFA.key
-    send_TFA_mail = Process(target=send_mail, args=(user.email, TFA_SUBJECT, TFA_TEXT.format(key), TFA_HTML.format(key)))
+    send_TFA_mail = Process(target=send_mail, args=(user.email, MESSAGES[get_user_language(request).name]["TFA_MAIL"]["SUBJECT"], MESSAGES[get_user_language(request).name]["TFA_MAIL"]["MESSAGE"].format(key), MESSAGES[get_user_language(request).name]["TFA_MAIL"]["HTML"].format(key)))
     send_TFA_mail.start()
     return HttpResponse(200)
 
@@ -299,9 +308,7 @@ def reload_stake(accounts, platform, profile):
                     store = PlatformCurrency.objects.filter(currency=currency, platform=platform).first()
                     amount = tip['amount']
                     wallet = Wallet.objects.filter(profile=profile, store=store).first()
-                    print(wallet.amount)
                     wallet.amount += Decimal(amount)
-                    print(wallet.amount)
                     wallet.save()
                     FoundDeposit.objects.create(tipId=tip['id'], profile=profile, platform=platform, account=account)
         offset += limit

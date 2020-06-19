@@ -66,11 +66,27 @@ class TwoFactorLogin(models.Model):
 
 def avatar_upload(instance, filename):
     avatar_name = instance.user.username + "." + filename.split(".")[-1]
-    full_path = os.path.join(settings.MEDIA_ROOT, avatar_name)
+    full_path = os.path.join(settings.MEDIA_ROOT, "avatars/", avatar_name)
     if os.path.exists(full_path):
         os.remove(full_path)
     return avatar_name
 
+
+def flag_upload(instance, filename):
+    flag_name = instance.name + "." + filename.split(".")[-1]
+    full_path = os.path.join(settings.MEDIA_ROOT, "flags/", flag_name)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+    return flag_name
+
+
+class Languages(models.Model):
+    name = models.CharField(max_length=3, primary_key=True)
+    long_name = models.CharField(max_length=30)
+    flag = models.ImageField(null=True, upload_to=flag_upload)
+
+    def __str__(self):
+        return self.long_name
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -81,6 +97,7 @@ class Profile(models.Model):
     publicLevel = models.BooleanField(default=True)
     publicXP = models.BooleanField(default=True)
     publicName = models.BooleanField(default=True)
+    language = models.ForeignKey(Languages, null=True, default="en", on_delete=models.SET_DEFAULT)
     
     def __str__(self):
         return self.user.username
@@ -223,7 +240,7 @@ class Account(models.Model):
         unique_together = ("profile", "platform", "username")
     
     def __str__(self):
-        return self.profile.user.username + " | " + self.platform.name + " | " + str(self.active)
+        return self.username + " | " + self.platform.name + " | " + str(self.active)
 
 
 class FoundDeposit(models.Model):
@@ -359,17 +376,11 @@ def create_profile_wallet(sender, instance, created, **kwargs):
         Wallet.objects.create(profile=profile, store=store, amount=0)
 
 
-def create_profile_statistics(sender, instance, created, **kwargs):
-    profile = Profile.objects.filter(user=instance).first()
-    Statistics.objects.create(profile=profile)
-
-
 def create_user(sender, instance, created, **kwargs):
     if created:
         create_user_profile(sender, instance, created, **kwargs)
         create_profile_role(sender, instance, created, **kwargs)
         create_profile_wallet(sender, instance, created, **kwargs)
-        create_profile_statistics(sender, instance, created, **kwargs)
 
 
 def create_wallets(sender, instance, created, **kwargs):

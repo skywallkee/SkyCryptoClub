@@ -46,6 +46,23 @@
 <script src="{% static 'assets/js/material-dashboard.js' %}" type="text/javascript"></script>
 
 <body>
+{% if messages %}
+{% for message in messages %}
+<script>
+  $.notify({
+            title: '<strong>{{ message.title }}</strong>',
+            message: '{{ message.message }}'
+        },{
+            type: '{{ message.type }}',
+            delay: 5000,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+</script>
+{% endfor %}
+{% endif %}
   <div class="wrapper ">
     <div class="sidebar" data-color="rose" data-background-color="black" data-image="{% static 'assets/img/sidebar-1.jpg' %}">
       <!--

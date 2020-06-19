@@ -6,55 +6,6 @@
 {% block page %}Support Ticket{% endblock %}
 
 {% block content %}
-
-{% if titleError %}
-<script>
-  $.notify({
-            title: '<strong>{{ titleError.title }}</strong>',
-            message: '{{ titleError.message }}'
-        },{
-            type: 'danger',
-            delay: 5000,
-            placement: {
-                from: 'top',
-                align: 'center'
-            }
-        });
-</script>
-{% endif %}
-
-{% if categoryError %}
-<script>
-  $.notify({
-            title: '<strong>{{ categoryError.title }}</strong>',
-            message: '{{ categoryError.message }}'
-        },{
-            type: 'danger',
-            delay: 5000,
-            placement: {
-                from: 'top',
-                align: 'center'
-            }
-        });
-</script>
-{% endif %}
-
-{% if messageError %}
-<script>
-  $.notify({
-            title: '<strong>{{ messageError.title }}</strong>',
-            message: '{{ messageError.message }}'
-        },{
-            type: 'danger',
-            delay: 5000,
-            placement: {
-                from: 'top',
-                align: 'center'
-            }
-        });
-</script>
-{% endif %}
-
       <div class="content">
         <div class="container-fluid">
           <div class="card">

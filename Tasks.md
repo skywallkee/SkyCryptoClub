@@ -48,12 +48,12 @@
 - - Moderators can bypass users privacy settings and see their profiles
 - - Moderators can view other user's balances
 
-- [ ] User Language @soon
+- [x] User Language
 - - add language field to User model with English as default
 - - make mesages in a GLOBAL messages file
 - - each language message should be of the form: VARIABLE_TITLLE = {"LANGUAGE": {"message": message}}
 - - EXAMPLE: HELLO_WORLD = {"en": {"message": "Hello World"}, "de": {"message": "Hello Welt"}}
 
-- [ ] Create Messages File @soon
+- [x] Create Messages File
 - - create a MESSAGES.py that contains dictionaries with each messages that are being sent
 - - this will allow messages to be modified easily from one file (allowing translation too)

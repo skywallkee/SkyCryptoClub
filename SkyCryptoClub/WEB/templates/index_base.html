@@ -199,6 +199,23 @@
 
 <body class="off-canvas-sidebar header-filter" filter-color="black  " style="background-image: url('{% static 'assets/img/lock.jpg' %}'); background-size: cover; background-attachment: fixed;">
     <!--   you can change the color of the filter page using: data-color="blue | green | orange | red | purple" -->
+{% if messages %}
+{% for message in messages %}
+<script>
+  $.notify({
+            title: '<strong>{{ message.title }}</strong>',
+            message: '{{ message.message }}'
+        },{
+            type: '{{ message.type }}',
+            delay: 5000,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+</script>
+{% endfor %}
+{% endif %}
     <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top text-white">
     <div class="container">

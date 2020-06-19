@@ -6,38 +6,6 @@
 
 {% block content %}
 
-{% if created %}
-<script>
-  $.notify({
-            title: '<strong>{{ created.title }}</strong>',
-            message: '{{ created.message }}'
-        },{
-            type: 'success',
-            delay: 5000,
-            placement: {
-                from: 'top',
-                align: 'center'
-            }
-        });
-</script>
-{% endif %}
-
-{% if error %}
-<script>
-  $.notify({
-            title: '<strong>{{ error.title }}</strong>',
-            message: '{{ error.message }}'
-        },{
-            type: 'danger',
-            delay: 5000,
-            placement: {
-                from: 'top',
-                align: 'center'
-            }
-        });
-</script>
-{% endif %}
-
 <div class="login-page">
 <form class="form" method="POST" id="registerForm">{% csrf_token %}
   <div class="container">

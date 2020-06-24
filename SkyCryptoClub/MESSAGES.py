@@ -89,8 +89,26 @@ MESSAGES = {
                     "title": "Incorrect dimensions!",
                     "message": "Image width and height must be equal. \
                                 The image should be at least 150x150 and not more than 500x500."
+                },
+                "NO_IMAGE": {
+                    "type": "danger",
+                    "title": "No image!",
+                    "message": "You must provide an image to set as an avatar."
                 }
             }
+        },
+        "PRIVACY": {
+            "SUCCESS": {
+                "type": "success",
+                "title": "Success!",
+                "message": "The Privacy settings have been changed successfully."
+            }
+        },
+        "EMPTY_EXCHANGE_TABLE": "There are no opened Exchange Requests",
+        "INVALID_PAGE": {
+            "type": "danger",
+            "title": "Invalid Page!",
+            "message": "The requested page does not exist."
         },
         "PASSWORD": {
             "SUCCESS": {

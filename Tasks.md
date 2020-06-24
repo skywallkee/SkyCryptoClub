@@ -23,7 +23,7 @@
 - - - promoting reusability for other methods
 - - - describing methods with appropriate comments for better understanding
 
-- [ ] Create Exchanges
+- [x] Create Exchanges
 - - Request Exchange
 - - - Users can make a new request and set the wanted rate
 - - View Exchange List
@@ -32,18 +32,28 @@
 - - Exchange History
 - - - Users can view all their past exchanges
 
-- [ ] Create Support Page
+- [x] Create Support Page
 - - Support Ticket
 - - - Users can open/close/reply to their support tickets regarding a given problem
-- - - Support staff can reply to support tickets assigned to their field of expertise
-- - - Support staff can mark a ticket as answered
 
-- [ ] User Language @soon
+- [ ] Create Support Staff Panel
+- - Support staff can reply to support tickets assigned to their field of expertise
+- - Support staff can mark a ticket as answered
+- - Support staff can view other users profile and balance using a special pin provided by ticket creation in order to solve the issues
+
+- [ ] Create Moderator Staff Panel
+- - Moderators can view a list of all users
+- - Moderators can ban/unban users from different areas
+- - Moderators can review transactions
+- - Moderators can bypass users privacy settings and see their profiles
+- - Moderators can view other user's balances
+
+- [x] User Language
 - - add language field to User model with English as default
 - - make mesages in a GLOBAL messages file
 - - each language message should be of the form: VARIABLE_TITLLE = {"LANGUAGE": {"message": message}}
 - - EXAMPLE: HELLO_WORLD = {"en": {"message": "Hello World"}, "de": {"message": "Hello Welt"}}
 
-- [ ] Create Messages File @soon
+- [x] Create Messages File
 - - create a MESSAGES.py that contains dictionaries with each messages that are being sent
 - - this will allow messages to be modified easily from one file (allowing translation too)

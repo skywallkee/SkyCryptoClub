@@ -1,5 +1,5 @@
 # SkyCryptoClub
-[Preview](https://www.skycrypto.club) (user: test ; password: Qwerty1234)
+[Preview](https://www.skycrypto.club) (user: test ; password: test)
 
 ![Presentation of the index page for SkyCrypto Club](https://i.imgur.com/E0FWZ3p.png)
 

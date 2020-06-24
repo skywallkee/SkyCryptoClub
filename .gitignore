@@ -1,2 +1,3 @@
 setEnv.sh
 db.sqlite3
+.env

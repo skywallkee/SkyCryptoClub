@@ -66,11 +66,27 @@ class TwoFactorLogin(models.Model):
 
 def avatar_upload(instance, filename):
     avatar_name = instance.user.username + "." + filename.split(".")[-1]
-    full_path = os.path.join(settings.MEDIA_ROOT, avatar_name)
+    full_path = os.path.join(settings.MEDIA_ROOT, "avatars/", avatar_name)
     if os.path.exists(full_path):
         os.remove(full_path)
     return avatar_name
 
+
+def flag_upload(instance, filename):
+    flag_name = instance.name + "." + filename.split(".")[-1]
+    full_path = os.path.join(settings.MEDIA_ROOT, "flags/", flag_name)
+    if os.path.exists(full_path):
+        os.remove(full_path)
+    return flag_name
+
+
+class Languages(models.Model):
+    name = models.CharField(max_length=3, primary_key=True)
+    long_name = models.CharField(max_length=30)
+    flag = models.ImageField(null=True, upload_to=flag_upload)
+
+    def __str__(self):
+        return self.long_name
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
@@ -81,53 +97,10 @@ class Profile(models.Model):
     publicLevel = models.BooleanField(default=True)
     publicXP = models.BooleanField(default=True)
     publicName = models.BooleanField(default=True)
+    language = models.ForeignKey(Languages, null=True, default="en", on_delete=models.SET_DEFAULT)
     
     def __str__(self):
         return self.user.username
-
-
-class Statistics(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True)
-    totalExchangesStarted = models.BigIntegerField(default=0)
-    totalExchangesSent = models.BigIntegerField(default=0)
-
-    numberBTCSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountBTCSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    numberBTCReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountBTCReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-
-    numberETHSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountETHSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    numberETHReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountETHReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-
-    numberLTCSent = models.DecimalField(max_digits=16, decimal_places=8, default=0)
-    amountLTCSent = models.DecimalField(max_digits=16, decimal_places=8, default=0)
-    numberLTCReceived = models.DecimalField(max_digits=16, decimal_places=8, default=0)
-    amountLTCReceived = models.DecimalField(max_digits=16, decimal_places=8, default=0)
-
-    numberXDGSent = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-    amountXDGSent = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-    numberXDGReceived = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-    amountXDGReceived = models.DecimalField(max_digits=20, decimal_places=8, default=0)
-
-    numberBCHSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountBCHSent = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    numberBCHReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-    amountBCHReceived = models.DecimalField(max_digits=15, decimal_places=8, default=0)
-
-    numberXRPSent = models.DecimalField(max_digits=19, decimal_places=8, default=0)
-    amountXRPSent = models.DecimalField(max_digits=19, decimal_places=8, default=0)
-    numberXRPReceived = models.DecimalField(max_digits=19, decimal_places=8, default=0)
-    amountXRPReceived = models.DecimalField(max_digits=19, decimal_places=8, default=0)
-
-    numberTRXSent = models.DecimalField(max_digits=18, decimal_places=8, default=0)
-    amountTRXSent = models.DecimalField(max_digits=18, decimal_places=8, default=0)
-    numberTRXReceived = models.DecimalField(max_digits=18, decimal_places=8, default=0)
-    amountTRXReceived = models.DecimalField(max_digits=18, decimal_places=8, default=0)
-    
-    def __str__(self):
-        return self.profile.user.username
 
 
 class Role(models.Model):
@@ -146,45 +119,25 @@ class Role(models.Model):
     # Admin
     adminPanel = models.BooleanField(default=False)
     adminStatistics = models.BooleanField(default=False)
-    editMemberships = models.BooleanField(default=False)
-    createMemberships = models.BooleanField(default=False)
-    deleteMemberships = models.BooleanField(default=False)
     addPlatform = models.BooleanField(default=False)
     editPlatform = models.BooleanField(default=False)
     deletePlatform = models.BooleanField(default=False)
     banUser = models.BooleanField(default=False)
     permanentBan = models.BooleanField(default=False)
-    editXP = models.BooleanField(default=False)
-    editUserMembership = models.BooleanField(default=False)
     addCurrency = models.BooleanField(default=False)
     editCurrency = models.BooleanField(default=False)
     deleteCurrency = models.BooleanField(default=False)
-    addBorrowStatus = models.BooleanField(default=False)
-    editBorrowStatus = models.BooleanField(default=False)
-    removeBorrowStatus = models.BooleanField(default=False)
-    editBorrow = models.BooleanField(default=False)
-    addExchangeStatus = models.BooleanField(default=False)
-    editExchangeStatus = models.BooleanField(default=False)
-    removeExchangeStatus = models.BooleanField(default=False)
     editExchange = models.BooleanField(default=False)
     addFAQCategory = models.BooleanField(default=False)
     editFAQCategory = models.BooleanField(default=False)
     removeFAQCategory = models.BooleanField(default=False)
     approveFAQ = models.BooleanField(default=False)
-    addAccount = models.BooleanField(default=False)
     editAccount = models.BooleanField(default=False)
-    createRole = models.BooleanField(default=False)
-    editRole = models.BooleanField(default=False)
-    removeRole = models.BooleanField(default=False)
-    assignRole = models.BooleanField(default=False)
 
     # Moderator
     moderationPanel = models.BooleanField(default=False)
     banExchange = models.BooleanField(default=False)
-    banBorrow = models.BooleanField(default=False)
-    banLend = models.BooleanField(default=False)
     closeExchange = models.BooleanField(default=False)
-    closeBorrow = models.BooleanField(default=False)
 
     # Support
     viewTickets = models.BooleanField(default=False)
@@ -193,13 +146,6 @@ class Role(models.Model):
     addFAQ = models.BooleanField(default=False)
     editFAQ = models.BooleanField(default=False)
     removeFAQ = models.BooleanField(default=False)
-    viewUserBorrows = models.BooleanField(default=False)
-    viewUserLendings = models.BooleanField(default=False)
-    viewUserProfile = models.BooleanField(default=False)
-    viewUserExchanges = models.BooleanField(default=False)
-    viewExchange = models.BooleanField(default=False)
-    viewBorrow = models.BooleanField(default=False)
-    viewUserBalance = models.BooleanField(default=False)
     
     def __str__(self):
         return self.name
@@ -294,7 +240,7 @@ class Account(models.Model):
         unique_together = ("profile", "platform", "username")
     
     def __str__(self):
-        return self.profile.user.username + " | " + self.platform.name + " | " + str(self.active)
+        return self.username + " | " + self.platform.name + " | " + str(self.active)
 
 
 class FoundDeposit(models.Model):
@@ -381,6 +327,37 @@ class PublicityBanners(models.Model):
         return self.image.name
 
 
+class SupportCategory(models.Model):
+    name = models.CharField(max_length = 35, primary_key=True)
+    order = models.IntegerField(unique=True, null=True)
+
+    def __str__(self):
+        return str(self.order) + ". " + self.name
+
+
+class SupportTicket(models.Model):
+    ticketId = models.AutoField(primary_key=True)
+    creator = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL, related_name="creator")
+    title = models.CharField(max_length = 60, null=False, blank=False, default="Title")
+    category = models.ForeignKey(SupportCategory, null=True, on_delete=models.SET_NULL)
+    created_at = models.DateTimeField(default=timezone.now)
+    last_replied = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL, related_name="last_replier")
+    closed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.creator.user.username + " | " + self.title + " | " + self.category.name
+
+
+class SupportTicketMessage(models.Model):
+    ticket = models.ForeignKey(SupportTicket, on_delete=models.CASCADE)
+    sender = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL)
+    message = models.TextField(blank=False, null=False, default="Message")
+    sent_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.sender.user.username + " -> " + self.ticket.title
+
+
 def create_user_profile(sender, instance, created, **kwargs):
     Profile.objects.create(user=instance)
 
@@ -399,17 +376,11 @@ def create_profile_wallet(sender, instance, created, **kwargs):
         Wallet.objects.create(profile=profile, store=store, amount=0)
 
 
-def create_profile_statistics(sender, instance, created, **kwargs):
-    profile = Profile.objects.filter(user=instance).first()
-    Statistics.objects.create(profile=profile)
-
-
 def create_user(sender, instance, created, **kwargs):
     if created:
         create_user_profile(sender, instance, created, **kwargs)
         create_profile_role(sender, instance, created, **kwargs)
         create_profile_wallet(sender, instance, created, **kwargs)
-        create_profile_statistics(sender, instance, created, **kwargs)
 
 
 def create_wallets(sender, instance, created, **kwargs):

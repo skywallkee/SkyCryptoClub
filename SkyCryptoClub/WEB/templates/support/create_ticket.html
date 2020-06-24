@@ -1,0 +1,53 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Open Ticket | SkyCrypto Club{% endblock %}
+
+{% block page %}Support Ticket{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-header card-header-icon card-header-success">
+              <div class="card-icon">
+                <i class="material-icons">contact_support</i>
+              </div>
+              <h4 class="card-title">Open Support Ticket</h4>
+            </div>
+            <div class="card-body">
+              <form method="post" class="form-horizontal">{% csrf_token %}
+                <br />
+                <div class="row">
+                  <div class="col-sm-12">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Ticket Title (Choose a short and suggestive title to describe your problem)</label>
+                      <input type="text" class="form-control" name="title" maxlength=60>
+                    </div>
+                  </div>
+                <select class="selectpicker col-sm-12" data-style="select-with-transition" title="Category" name="category" data-size="5">
+                  {% for category in categories%}
+                  <option value="{{ category.order }}">{{ category.name }}</option>
+                  {% endfor %}
+                </select>
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label for="description">Describe your problem as detailed as possible</label>
+                      <textarea class="form-control" id="message" name="message" rows="5"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" style="margin-left: auto; margin-right: auto;">
+                  <div class="col-md-8" style="margin-left: auto; margin-right: auto;"> 
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-round col-lg-3 col-md-3 col-sm-12">
+                    <i class="material-icons">add</i> Submit Ticket
+                  </button>
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endblock %}

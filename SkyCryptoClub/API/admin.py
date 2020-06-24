@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
-                    ExchangeTaxPeer, Question, FAQCategory, Statistics, FoundDeposit, PublicityBanners
+                    ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
+                    SupportTicket, SupportCategory, SupportTicketMessage, Languages
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -22,23 +23,16 @@ class TwoFactorLoginAdmin(admin.ModelAdmin):
 admin.site.register(TwoFactorLogin, TwoFactorLoginAdmin)
 
 
+class LanguagesAdmin(admin.ModelAdmin):
+    fields = ['name', 'long_name', 'flag']
+
+admin.site.register(Languages, LanguagesAdmin)
+
+
 class ProfileAdmin(admin.ModelAdmin):
-    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName']
+    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName', "language"]
 
 admin.site.register(Profile, ProfileAdmin)
-
-
-class StatisticsAdmin(admin.ModelAdmin):
-    fields = ['profile', 'numberBTCSent', 'amountBTCSent', 'numberBTCReceived', 'amountBTCReceived', 
-            'numberETHSent', 'amountETHSent', 'numberETHReceived', 'amountETHReceived', 
-            'numberLTCSent', 'amountLTCSent', 'numberLTCReceived', 'amountLTCReceived', 
-            'numberXDGSent', 'amountXDGSent', 'numberXDGReceived', 'amountXDGReceived', 
-            'numberBCHSent', 'amountBCHSent', 'numberBCHReceived', 'amountBCHReceived', 
-            'numberXRPSent', 'amountXRPSent', 'numberXRPReceived', 'amountXRPReceived', 
-            'numberTRXSent', 'amountTRXSent', 'numberTRXReceived', 'amountTRXReceived'
-            ]
-
-admin.site.register(Statistics, StatisticsAdmin)
 
 
 class UserRoleAdmin(admin.ModelAdmin):
@@ -50,25 +44,18 @@ admin.site.register(UserRole, UserRoleAdmin)
 class RoleAdmin(admin.ModelAdmin):
     fields = ['id', 'name', 'color', 'isDefault',
               'adminPanel', 'adminStatistics',
-              'editMemberships', 'createMemberships',
-              'deleteMemberships', 'addPlatform',
+              'addPlatform',
               'editPlatform', 'deletePlatform', 'banUser',
-              'permanentBan', 'editXP', 'editUserMembership',
+              'permanentBan',
               'addCurrency', 'editCurrency', 'deleteCurrency',
-              'addBorrowStatus', 'editBorrowStatus',
-              'removeBorrowStatus', 'editBorrow', 
-              'addExchangeStatus', 'editExchangeStatus',
-              'removeExchangeStatus', 'editExchange',
+              'editExchange',
               'addFAQCategory', 'editFAQCategory',
               'removeFAQCategory', 'approveFAQ',
-              'addAccount', 'editAccount', 'createRole',
-              'editRole', 'removeRole', 'assignRole',
-              'moderationPanel', 'banExchange', 'banBorrow',
-              'banLend', 'closeExchange', 'closeBorrow',
+              'editAccount',
+              'moderationPanel', 'banExchange',
+              'closeExchange',
               'viewTickets', 'respondTickets', 'closeTickets',
-              'addFAQ', 'editFAQ', 'removeFAQ', 'viewUserBorrows',
-              'viewUserLendings', 'viewUserProfile', 'viewUserExchanges',
-              'viewExchange', 'viewBorrow', 'viewUserBalance']
+              'addFAQ', 'editFAQ', 'removeFAQ']
 
 admin.site.register(Role, RoleAdmin)
 
@@ -149,3 +136,21 @@ class PublicityBannersAdmin(admin.ModelAdmin):
     fields = ['image', 'imageType']
 
 admin.site.register(PublicityBanners, PublicityBannersAdmin)
+
+
+class SupportTicketAdmin(admin.ModelAdmin):
+    fields = ['creator', 'title', 'category', 'last_replied', 'created_at', 'closed']
+
+admin.site.register(SupportTicket, SupportTicketAdmin)
+
+
+class SupportCategoryAdmin(admin.ModelAdmin):
+    fields = ['order', 'name']
+
+admin.site.register(SupportCategory, SupportCategoryAdmin)
+
+
+class SupportTicketMessageAdmin(admin.ModelAdmin):
+    fields = ['ticket', 'sender', 'message', 'sent_at']
+
+admin.site.register(SupportTicketMessage, SupportTicketMessageAdmin)

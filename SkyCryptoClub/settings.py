@@ -53,6 +53,7 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'API.User'
+LOGIN_URL = '/login/'
 
 MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',

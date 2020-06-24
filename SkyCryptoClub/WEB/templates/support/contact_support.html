@@ -1,0 +1,179 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Support | SkyCrypto Club{% endblock %}
+
+{% block page %}Contact Support{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card ">
+            <div class="card-header card-header-rose card-header-icon">
+              <div class="card-icon">
+                <i class="material-icons">contact_support</i>
+              </div>
+              <h4 class="card-title">Contact Support</h4>
+            </div>
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-md-8">
+                </div>
+                <div class="col-md-4 col-sm-12 text-center">
+                  <a class="btn btn-primary btn-round col-lg-11 col-md-12 col-sm-8" href="{% url 'create-ticket' %}">
+                    <i class="material-icons">add</i> Create new ticket
+                  </a>
+                </div>
+              </div>
+              <br /><br />
+              <div class="toolbar">
+                <!--        Here you can write extra buttons/actions for the toolbar              -->
+              </div>
+              <div class="material-datatables col-sm-12">
+                <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+                  <thead>
+                    <tr>
+                      <th>Ticket Title</th>
+                      <th>Ticket Category</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th class="disabled-sorting text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for ticket in tickets %}
+                    <tr>
+                      <td>{{ ticket.title }}</td>
+                      <td>{{ ticket.category.name }}</td>
+                      <td>{% if ticket.closed == True %}
+                            Completed
+                          {% elif ticket.last_replied == profile %}
+                            Open
+                          {% else %}
+                            Responded
+                          {% endif %}</td>
+                      <td>{{ ticket.created_at }}</td>
+                      <td class="text-right">
+                        <a href="{% url 'ticket' ticket.ticketId %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
+                        {% if ticket.closed == False %}
+                        <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="closeTicket({{ ticket.ticketId }})"><i class="material-icons">close</i></span>
+                        </span>
+                        {% else %}
+                        <span class="btn btn-link btn-info btn-just-icon remove" style="cursor:pointer;" onclick="openTicket({{ ticket.ticketId }})"><i class="material-icons">refresh</i></span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  <script>
+  function sendClosureTicket(ticketId) {
+      $.ajax({
+            type: "POST",
+            url: "/close-ticket/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "tid": ticketId,
+            }),
+            success: function(data){
+                if (data != 200) {
+                    $.notify({
+                        title: '<strong>You can\'t close this ticket!</strong>',
+                        message: ''
+                    },{
+                        type: 'danger',
+                        delay: 900,
+                        placement: {
+                            from: 'top',
+                            align: 'center'
+                        }
+                    });
+                }
+                else {
+                    location.reload();
+                }
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
+    function closeTicket(tid) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'The ticket will be closed without being checked anymore.',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!'
+      }).then((result) => {
+        if (result.value) {
+          sendClosureTicket(tid);
+        }
+      })
+    }
+  function sendOpeningTicket(ticketId) {
+      $.ajax({
+            type: "POST",
+            url: "/open-ticket/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "tid": ticketId,
+            }),
+            success: function(data){
+                if (data != 200) {
+                    $.notify({
+                        title: '<strong>You can\'t open this ticket!</strong>',
+                        message: ''
+                    },{
+                        type: 'danger',
+                        delay: 900,
+                        placement: {
+                            from: 'top',
+                            align: 'center'
+                        }
+                    });
+                }
+                else {
+                    location.reload();
+                }
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
+    function openTicket(tid) {
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'The ticket will be reopened for further informations to be added.',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes!'
+      }).then((result) => {
+        if (result.value) {
+          sendOpeningTicket(tid);
+        }
+      })
+    }
+  </script>
+
+      {% endblock %}

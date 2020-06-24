@@ -1,11 +1,19 @@
 from django.contrib.auth import get_user_model
-from ..API.models import TwoFactorLogin
+from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
+                         Platform, PlatformCurrency, Wallet, Account, UserRole, \
+                         Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
+                         SupportTicket, SupportTicketMessage, SupportCategory
 from django.core.files.images import get_image_dimensions
-
+from ..API.views import get_user_language
+from ..MESSAGES import MESSAGES
 from django.utils import timezone
 import time
 import string
 import re
+
+# /login/ VALIDATORS
+
+
 
 # Functionality: Check Username and Password
 def valid_login(username, password):
@@ -50,7 +58,6 @@ def valid_register(username, email):
     # Username must not contain invalid symbols
     admitted_symbols = string.ascii_letters + string.digits + "._"
     check_username = re.sub('[{}]'.format(admitted_symbols), '', username)
-    print(check_username)
     if len(check_username) != 0:
         return False
     
@@ -65,21 +72,60 @@ def valid_register(username, email):
 #              the specified limit
 # Data input: 
 # Data output: 
-def image_size(value):
+def valid_image_size(value):
     limit = 3 * 1024 * 1024
     if value.size > limit:
-        return 400
-    return 200
+        return False
+    return True
 
 
 # Functionality: Validate Image Dimensions
 # Description: Checks if the image is between the
 #              minimum and maximum dimensions with
 #              equal length and height
-def image_dimensions(value):
+def valid_file_dimensions(value):
     minLength = 150
     maxLength = 500
     width, height = get_image_dimensions(value)
     if width != height or width < minLength or width > maxLength:
-        return 400
-    return 200
+        return False
+    return True
+
+
+def get_settings_update_errors(request, email, password, newpass, newpassconfirm):
+    errors = []
+    if not request.user.check_password(password):
+        errors.append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["INCORRECT"])
+    if 0 < len(newpass) and len(newpass) < 6:
+        errors.append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["SHORT"])
+    elif newpass != newpassconfirm:
+        errors.append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["NOT_MATCHING"])
+    if len(User.objects.filter(email=email)) > 0 and User.objects.filter(email=email).first() != request.user:
+        errors.append(MESSAGES[get_user_language(request).name]["EMAIL"]["FAIL"]["EXISTING"])
+    return errors
+
+
+def get_settings_update_avatar_errors(avatar):
+    errors = []
+    if not valid_image_size(avatar):
+        errors.append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["LARGE_IMAGE"])
+    if not valid_file_dimensions(avatar):
+        errors.append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["DIMENSIONS"])
+    return context
+
+
+def get_support_create_errors(request):
+    errors = []
+    if "title" not in request.POST:
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_TITLE"])
+    if not (8 < len(request.POST["title"]) and len(request.POST["title"]) < 60):
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["TITLE_LENGTH"])
+    if "category" not in request.POST or request.POST["category"] == "":
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_CATEGORY"])
+    if not SupportCategory.objects.filter(order=request.POST["category"]).first():
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["INVALID_CATEGORY"])
+    if "message" not in request.POST:
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["MISSING_MESSAGE"])
+    if len(request.POST["message"]) < 10:
+        errors.append(MESSAGES[get_user_language(request).name]["CREATE_TICKET"]["FAIL"]["SHORT_MESSAGE"])
+    return errors

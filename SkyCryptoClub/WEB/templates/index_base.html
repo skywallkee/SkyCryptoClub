@@ -199,6 +199,23 @@
 
 <body class="off-canvas-sidebar header-filter" filter-color="black  " style="background-image: url('{% static 'assets/img/lock.jpg' %}'); background-size: cover; background-attachment: fixed;">
     <!--   you can change the color of the filter page using: data-color="blue | green | orange | red | purple" -->
+{% if messages %}
+{% for message in messages %}
+<script>
+  $.notify({
+            title: '<strong>{{ message.title }}</strong>',
+            message: '{{ message.message }}'
+        },{
+            type: '{{ message.type }}',
+            delay: 5000,
+            placement: {
+                from: 'top',
+                align: 'center'
+            }
+        });
+</script>
+{% endfor %}
+{% endif %}
     <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top text-white">
     <div class="container">
@@ -229,13 +246,6 @@
               <i class="material-icons">dashboard</i> Dashboard ({{ user.username }})
             </a>
           </li>
-          {% if user.is_superuser %}
-          <li class="nav-item ">
-            <a href="{% url 'admin:index' %}" class="nav-link">
-              <i class="material-icons">admin_panel_settings</i> Admin Panel
-            </a>
-          </li>
-          {% endif %}
           <li class="nav-item ">
             <a href="{% url 'logout' %}" class="nav-link">
               <i class="material-icons">highlight_off</i> Log-Out
@@ -289,7 +299,7 @@
         <script>
           document.write(new Date().getFullYear())
         </script>, made with <i class="material-icons">favorite</i> by
-        <a href="" target="_blank">Skywallkee</a> for the crypto community. <br />
+        <a href="{% if user.is_superuser %}{% url 'admin:index' %}{% endif %}" target="_blank">Skywallkee</a> for the crypto community. <br />
       </div>
       <div class="float-center">
         All exchanges take place on this platform. This website is not affiliated with Stake, PrimeDice, or any of their respective partners.

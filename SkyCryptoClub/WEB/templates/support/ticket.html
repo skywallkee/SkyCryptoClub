@@ -31,7 +31,7 @@
             <div class="card-body">
               <div class="ps-child" style="overflow-y: scroll; height:550px;">
                 <ul class="messenger">
-                  {% for message in messages %}
+                  {% for message in ticket_messages %}
                   {% if message.sender == profile %}
                   <li class="me text-right">
                     {{ message.message }}<br/>

@@ -205,7 +205,7 @@ MESSAGES = {
                     """
         },
         "REGISTER_MAIL": {
-            "SUBJECCT": "Account Registration",
+            "SUBJECT": "Account Registration",
             "MESSAGE": """Your Account is:\n\
                           Email: {}\
                           Username: {}\

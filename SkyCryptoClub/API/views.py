@@ -9,7 +9,8 @@ from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, Use
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, ExchangeStatusSerializer, \
                                           FAQCategorySerializer, QuestionSerializer, PublicityBannersSerializer
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
@@ -22,12 +23,15 @@ import json
 
 
 from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN, TOTP
-from ..APIS import send_mail
+from ..APIS import send_mail, get_user_language, api_request
 from ..MESSAGES import MESSAGES
-from ..METHODS import get_json_data
+from ..METHODS import get_json_data, generate_password
 from multiprocessing import Process
 import time
 from decimal import *
+import os
+from .validator import valid_login, valid_tfa, valid_register, get_settings_update_errors, \
+                       get_settings_update_avatar_errors, get_support_create_errors
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -189,15 +193,6 @@ class PublicityBannersViewSet(viewsets.ModelViewSet):
     queryset = PublicityBanners.objects.all()
     serializer_class = PublicityBannersSerializer
     permission_classes = [permissions.IsAdminUser]
-
-
-def get_user_language(request):
-    if request.user.is_authenticated:
-        profile = Profile.objects.filter(user=request.user).first()
-        language = profile.language
-    else:
-        language = Languages.objects.filter(name="en").first()
-    return language
     
 
 @require_http_methods(["POST"])
@@ -217,6 +212,31 @@ def user_login(request):
     send_TFA_mail.start()
     return HttpResponse(200)
 
+
+def user_login_form(request):
+    data    = get_json_data(request.POST, ["username", "password", "2FA"])
+    if len(data) != 3:
+        return HttpResponseRedirect(reverse('login'))
+
+    username, password, tfa = data
+
+    if not valid_login(username, password):
+        return HttpResponseRedirect(reverse('login'))
+    
+    user = authenticate(username=username, password=password)
+
+    if user is None or not valid_tfa(user, tfa):
+        return HttpResponseRedirect(reverse('login'))
+
+    login(request, user)
+    try:
+        TwoFactorLogin.objects.filter(user=user).delete()
+    except:
+        pass
+
+    return HttpResponseRedirect(reverse('index'))
+
+
 @require_http_methods(["POST"])
 def check_tfa(request):
     data = json.loads(request.body)
@@ -231,6 +251,47 @@ def check_tfa(request):
     print("Someone tried to login and failed.")
     print("They used username: {} and password: {} with 2FA: {}".format(username,password, tfa))
     return HttpResponse(400)
+
+
+def user_register_form(request):
+    data    = get_json_data(request.POST, ['username', 'email'])
+    if len(data) != 2:
+        return {"messages": [MESSAGES[get_user_language(request)]["REGISTER"]["FAIL"]]}
+
+    username, email = data
+
+    if not valid_register(username, email):
+        return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["FAIL"]]}
+
+    password = generate_password()
+    User.objects.create_user(username, email, password)
+
+    subject             = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["SUBJECT"]
+    text                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["MESSAGE"].format(email, username, password)
+    html                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["HTML"].format(email, username, password)
+    send_mail_process   = Process(target=send_mail, args=(email, subject, text, html))
+    send_mail_process.start()
+    return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["SUCCESS"]]}
+
+
+def contact_send_mail(request):
+    data    = get_json_data(request.POST, ['email', 'subject', 'message'])
+    if len(data) != 3:
+        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
+
+    email, subject, message = data
+
+    if email == "" or subject == "" or message == "":
+        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
+
+    message = email + ": " + message
+
+    send_mail_process   = Process(target=send_mail, args=(os.environ["EMAIL"], "CONTACT FORM: " + subject, message, message))
+    send_mail_process.start()
+    send_mail_process   = Process(target=send_mail, args=(email, subject, message, message))
+    send_mail_process.start()
+    return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["SUCCESS"]]}
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -295,13 +356,13 @@ def reload_stake(accounts, platform, profile):
         }
         response = requests.request("POST", url, headers=headers, data = payload)
         tipList = response.json()['data']['user']['tipList']
+        print(response.json())
         if len(tipList) < 1:
             searching = False
         for tip in tipList:
-            account = accounts.filter(username=tip['sendBy']['name'])
-            if len(account) > 0:
-                account = account.first()
-                if len(FoundDeposit.objects.filter(tipId=tip['id'], platform=platform)) > 0:
+            account = accounts.filter(username=tip['sendBy']['name']).first()
+            if account:
+                if FoundDeposit.objects.filter(tipId=tip['id'], platform=platform).first():
                     searching = False
                 else:
                     currency = Currency.objects.filter(name=tip['currency']).first()
@@ -311,7 +372,7 @@ def reload_stake(accounts, platform, profile):
                     wallet.amount += Decimal(amount)
                     wallet.save()
                     FoundDeposit.objects.create(tipId=tip['id'], profile=profile, platform=platform, account=account)
-        offset += limit
+        offset += limit - 1
 
 @login_required
 @require_http_methods(["POST"])
@@ -532,6 +593,8 @@ def replyTicket(request):
     data = json.loads(request.body)
     if "tid" not in data and "message" not in data:
         return HttpResponse(400)
+    if data["tid"] == "" or type(data["tid"]) != int or data["message"] == "":
+        return HttpResponse(400)
     profile = Profile.objects.filter(user=request.user).first()
     userRoles = UserRole.objects.filter(profile=profile)
     canReply = False
@@ -547,3 +610,171 @@ def replyTicket(request):
     ticket.save()
     newMessage = SupportTicketMessage.objects.create(ticket=ticket, sender=profile, message=data["message"])
     return HttpResponse(200)
+
+def settings_update_avatar(request, context, profile):
+    if 'newAvatar' not in request.FILES:
+        return context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["NO_IMAGE"])
+    avatar = request.FILES['newAvatar']
+    context["messages"] = get_settings_update_avatar_errors(request, avatar)
+
+    if len(context["messages"]) == 0:
+        profile.avatar = avatar
+        profile.save()
+        context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["SUCCESS"])
+    return context
+
+
+def settings_update_credentials(request, context):
+    data = get_json_data(request.POST, ('email', 'password', 'newpass', 'newpassconfirm'))
+    if len(data) != 4:
+        return context
+    email, password, newpass, newpassconfirm = data
+
+    context["messages"] = get_settings_update_errors(request, email, password, newpass, newpassconfirm)
+    
+    if len(context["messages"]) == 0:
+        if email != request.user.email:
+            request.user.email = email
+            request.user.save()
+            context["messages"].append(MESSAGES[get_user_language(request).name]["EMAIL"]["SUCCESS"])
+        if len(newpass) > 0:
+            request.user.set_password(newpass)
+            request.user.save()
+            context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["SUCCESS"])
+    return context
+
+
+def change_privacy(request, profile):
+    data = get_json_data(request.POST, ("publicStats", "publicLevel", "publicXP", "publicName"))
+    publicStats, publicLevel, publicXP, publicName = data
+    profile.publicStats = publicStats == "true"
+    profile.publicLevel = publicLevel == "true"
+    profile.publicXP = publicXP == "true"
+    profile.publicName = publicName == "true"
+    profile.save()
+    return [MESSAGES[get_user_language(request).name]["PRIVACY"]["SUCCESS"]]
+
+
+def remove_linked_account(request, context):
+    if "accountId" not in request.POST:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
+    id = request.POST.get('accountId')
+    account = Account.objects.filter(id=id)
+    if account is None:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
+    try:
+        account.delete()
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["SUCCESS"]]
+    except:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
+    return context
+
+
+def find_user_stake(api):
+    import requests
+    url = "https://api.stake.com/graphql"
+    payload = "{\"query\":\"query {\\n user {\\n name\\n}\\n}\"}"
+    headers = {'x-access-token': api,}
+    data = api_request(url, payload, headers, "POST")
+    if "data" not in data:
+        return None
+    if "user" not in data["data"]:
+        return None
+    if "name" not in data["data"]["user"]:
+        return None
+    return data["data"]["user"]["name"]
+
+
+def confirm_stake_account(request, username, key, platform):
+    if find_user_stake(key) == username:
+        profile = Profile.objects.filter(user=request.user).first()
+        Account.objects.create(username=username, platform=platform, profile=profile, active=True)
+        messages = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["SUCCESS"]]
+    else:
+        messages = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
+    return messages
+
+
+def confirm_linked_account(request, context):
+    data = get_json_data(request.POST, ("accountUsername", "accountPlatform", "apiKey"))
+    if len(data) != 3:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
+        return context
+    username, platform, key = data
+    if username == "" or platform == "" or key == "":
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
+        return context
+    account = Account.objects.filter(username=username).first()
+    if account is not None:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["ALREADY_LINKED"]]
+        return context
+    
+    platform = Platform.objects.filter(id=platform).first()
+    if platform is None:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
+        return context
+
+    if platform.name == "Stake":
+        context["messages"] = confirm_stake_account(request, username, key, platform)
+    return context
+
+
+def filterExchanges(request, exchanges):
+    fromPlatform = request.GET["fromPlatform"] if "fromPlatform" in request.GET and request.GET["fromPlatform"] != "" else "any"
+    fromCurrency = request.GET["fromCurrency"] if "fromCurrency" in request.GET and request.GET["fromCurrency"] != "" else "any"
+    toPlatform = request.GET["toPlatform"] if "toPlatform" in request.GET and request.GET["toPlatform"] != "" else "any"
+    toCurrency = request.GET["toCurrency"] if "toCurrency" in request.GET and request.GET["toCurrency"] != "" else "any"
+    try:
+        minRequested = Decimal(request.GET["minRequested"])
+    except:
+        minRequested = "any"
+    try:
+        maxRequested = Decimal(request.GET["maxRequested"])
+    except:
+        maxRequested = "any"
+    try:
+        minGiven = Decimal(request.GET["minGiven"])
+    except:
+        minGiven = "any"
+    try:
+        maxGiven = Decimal(request.GET["maxGiven"])
+    except:
+        maxGiven = "any"
+
+    fromPCs = PlatformCurrency.objects.all()
+    if fromPlatform != "any":
+        platform = Platform.objects.filter(id=fromPlatform).first()
+        if platform is not None:
+            fromPCs = fromPCs.filter(platform=platform)
+    if fromCurrency != "any":
+        currency = Currency.objects.filter(name=fromCurrency).first()
+        if currency is not None:
+            fromPCs = fromPCs.filter(currency=currency)
+    filteredFrom = Exchange.objects.none()
+    for pc in fromPCs:
+        filteredFrom = filteredFrom | exchanges.filter(from_currency = pc)
+    toPCs = PlatformCurrency.objects.all()
+    if toPlatform != "any":
+        platform = Platform.objects.filter(id=toPlatform).first()
+        if platform is not None:
+            toPCs = toPCs.filter(platform=platform)
+    if toCurrency != "any":
+        currency = Currency.objects.filter(name=toCurrency).first()
+        if currency is not None:
+            toPCs = toPCs.filter(currency=currency)
+    filteredTo = Exchange.objects.none()
+    for pc in toPCs:
+        filteredTo = filteredTo | exchanges.filter(to_currency = pc)
+    exchanges = filteredTo & filteredFrom
+
+    if minRequested != "any":
+        exchanges = exchanges.filter(to_amount__gte=minRequested)
+    if maxRequested != "any":
+        exchanges = exchanges.filter(to_amount__lte=maxRequested)
+    if minGiven != "any":
+        exchanges = exchanges.filter(from_amount__gte=minGiven)
+    if maxGiven != "any":
+        exchanges = exchanges.filter(from_amount__lte=maxGiven)
+    return exchanges
+
+    

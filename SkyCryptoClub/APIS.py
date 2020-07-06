@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 import time
 from .GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD
 import requests
+from .API.models import Languages, Profile
 
 def send_mail(receiver_email, subject, plain_message, html_message):
     # Send Email
@@ -50,3 +51,12 @@ def api_request(url, payload, special_headers, request_method):
 
     response = requests.request(request_method, url, headers=headers, data=payload)
     return response.json()
+
+
+def get_user_language(request):
+    if request.user.is_authenticated:
+        profile = Profile.objects.filter(user=request.user).first()
+        language = profile.language
+    else:
+        language = Languages.objects.filter(name="en").first()
+    return language

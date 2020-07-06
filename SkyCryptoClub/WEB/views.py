@@ -17,12 +17,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from multiprocessing import Process
 from ..GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD, STAKE_TOKEN, LEVEL_TITLES
-from ..APIS import send_mail, api_request
+from ..APIS import send_mail
 from ..MESSAGES import MESSAGES
 from ..METHODS import get_json_data, generate_password
-from ..API.views import get_user_language
-from .validator import valid_login, valid_tfa, valid_register, get_settings_update_errors, \
-                       get_settings_update_avatar_errors, get_support_create_errors
+from ..API.views import get_user_language, user_login_form, user_register_form, contact_send_mail, \
+                        settings_update_avatar, settings_update_credentials, change_privacy, \
+                        remove_linked_account, find_user_stake, confirm_stake_account, confirm_linked_account, \
+                        filterExchanges
+from ..API.validator import get_support_create_errors
 import string
 import random
 import os
@@ -54,76 +56,29 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 
-def user_login_template(request):
-    template    = loader.get_template('registration/login.html')
-    context     = {}
-    return HttpResponse(template.render(context, request))
-
-
-def user_login_form(request):
-    data    = get_json_data(request.POST, ["username", "password", "2FA"])
-    if len(data) != 3:
-        return HttpResponseRedirect(reverse('login'))
-
-    username, password, tfa = data
-
-    if not valid_login(username, password):
-        return HttpResponseRedirect(reverse('login'))
-    
-    user = authenticate(username=username, password=password)
-
-    if user is None or not valid_tfa(user, tfa):
-        return HttpResponseRedirect(reverse('login'))
-
-    login(request, user)
-    try:
-        TwoFactorLogin.objects.filter(user=user).delete()
-    except:
-        pass
-
-    return HttpResponseRedirect(reverse('index'))
-
-
 @require_http_methods(["GET", "POST"])
 def user_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
 
-    if request.method == 'GET':
-        return user_login_template(request)
-    else:
+    if request.method == "POST":
         return user_login_form(request)
 
-
-def user_register_form(request):
-    data    = get_json_data(request.POST, ['username', 'email'])
-    if len(data) != 2:
-        return {"messages": [MESSAGES[get_user_language(request)]["REGISTER"]["FAIL"]]}
-
-    username, email = data
-
-    if not valid_register(username, email):
-        return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["FAIL"]]}
-
-    password = generate_password()
-    User.objects.create_user(username, email, password)
-
-    subject             = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["SUBJECT"]
-    text                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["MESSAGE"].format(email, username, password)
-    html                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["HTML"].format(email, username, password)
-    send_mail_process   = Process(target=send_mail, args=(email, subject, text, html))
-    send_mail_process.start()
-    return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["SUCCESS"]]}
+    template    = loader.get_template('registration/login.html')
+    return HttpResponse(template.render({}, request))
 
 
 @require_http_methods(["GET", "POST"])
 def user_register(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
+
     template    = loader.get_template('registration/register.html')
     context     = {}
+
     if request.method == 'POST':
         context = user_register_form(request)
+
     return HttpResponse(template.render(context, request))
 
 
@@ -148,8 +103,8 @@ def recover_password(request):
     user.set_password(password)
     user.save()
     subject = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["SUBJECT"]
-    text = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["MESSAGE"].format(user.email, user.username, user.password)
-    html = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["HTML"].format(user.email, user.username, user.password)
+    text = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["MESSAGE"].format(user.email, user.username, password)
+    html = MESSAGES[get_user_language(request).name]["RECOVERY_MAIL"]["HTML"].format(user.email, user.username, password)
     send_mail_process = Process(target=send_mail, args=(user.email, subject, text, html))
     send_mail_process.start()
     return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["SUCCESS"]]})
@@ -169,34 +124,15 @@ def terms(request):
     return render(request, 'WEB/terms.html', context)
 
 
-def contact_template(request, context):
-    template    = loader.get_template('WEB/contact.html')
-    return HttpResponse(template.render(context, request))
-
-
-def contact_send_mail(request):
-    data    = get_json_data(request.POST, ['email', 'subject', 'message'])
-    if len(data) != 3:
-        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
-
-    email, subject, message = data
-
-    message = email + ": " + message
-
-    send_mail_process   = Process(target=send_mail, args=(os.environ["EMAIL"], "CONTACT FORM: " + subject, message, message))
-    send_mail_process.start()
-    send_mail_process   = Process(target=send_mail, args=(email, subject, message, message))
-    send_mail_process.start()
-    return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["SUCCESS"]]}
-
-
 @require_http_methods(["GET", "POST"])
 def contact(request):
-    if request.method == "GET":
-        return contact_template(request, {})
+    context = {}
 
-    context =  contact_send_mail(request)
-    return contact_template(request, context)
+    if request.method == "POST":
+        context =  contact_send_mail(request)
+
+    template    = loader.get_template('WEB/contact.html')
+    return HttpResponse(template.render(context, request))
 
 @login_required
 @require_http_methods(["GET"])
@@ -243,39 +179,6 @@ def dashboard_user(request, username):
     return render(request, 'dashboard/profile.html', context)
 
 
-def settings_update_avatar(request, context, profile):
-    if 'newAvatar' not in request.FILES:
-        return context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["FAIL"]["NO_IMAGE"])
-    avatar = request.FILES['newAvatar']
-    context["messages"] = get_settings_update_avatar_errors(avatar)
-
-    if len(context["messages"]) == 0:
-        profile.avatar = avatar
-        profile.save()
-        context["messages"].append(MESSAGES[get_user_language(request).name]["AVATAR"]["SUCCESS"])
-    return context
-
-
-def settings_update_credentials(request, context):
-    data = get_json_data(request.POST, ('email', 'password', 'newpass', 'newpassconfirm'))
-    if len(data) != 4:
-        return context
-    email, password, newpass, newpassconfirm = data
-
-    context["messages"] = get_settings_update_errors(request, email, password, newpass, newpassconfirm)
-    
-    if len(context["messages"]) == 0:
-        if email != request.user.email:
-            request.user.email = email
-            request.user.save()
-            context["messages"].append(MESSAGES[get_user_language(request).name]["EMAIL"]["SUCCESS"])
-        if len(newpass) > 0:
-            request.user.set_password(newpass)
-            request.user.save()
-            context["messages"].append(MESSAGES[get_user_language(request).name]["PASSWORD"]["SUCCESS"])
-    return context
-
-
 @login_required
 @require_http_methods(["GET", "POST"])
 def settings(request):
@@ -292,17 +195,6 @@ def settings(request):
     return render(request, 'settings/settings.html', context)
 
 
-def change_privacy(request, profile):
-    data = get_json_data(request.POST, ("publicStats", "publicLevel", "publicXP", "publicName"))
-    publicStats, publicLevel, publicXP, publicName = data
-    profile.publicStats = publicStats == "true"
-    profile.publicLevel = publicLevel == "true"
-    profile.publicXP = publicXP == "true"
-    profile.publicName = publicName == "true"
-    profile.save()
-    return [MESSAGES[get_user_language(request).name]["PRIVACY"]["SUCCESS"]]
-
-
 @login_required
 @require_http_methods(["GET", "POST"])
 def privacy(request):
@@ -315,67 +207,6 @@ def privacy(request):
         context["messages"] = change_privacy(request, profile)
 
     return render(request, 'settings/privacy.html', context)
-
-
-def remove_linked_account(request, context):
-    if "accountId" not in request.POST:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
-    id = request.POST.get('accountId')
-    account = Account.objects.filter(id=id)
-    if account is None:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
-    try:
-        account.delete()
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["SUCCESS"]]
-    except:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_UNLINK"]["FAIL"]]
-    return context
-
-
-def find_user_stake(api):
-    import requests
-    url = "https://api.stake.com/graphql"
-    payload = "{\"query\":\"query {\\n user {\\n name\\n}\\n}\"}"
-    headers = {'x-access-token': api,}
-    data = api_request(url, payload, headers, "POST")
-    if "data" not in data:
-        return None
-    if "user" not in data["data"]:
-        return None
-    if "name" not in data["data"]["user"]:
-        return None
-    return data["data"]["user"]["name"]
-
-
-def confirm_stake_account(request, username, key, platform)
-    if find_user_stake(key) == username:
-        profile = Profile.objects.filter(user=request.user).first()
-        Account.objects.create(username=username, platform=platform, profile=profile, active=True)
-        messages = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["SUCCESS"]]
-    else:
-        messages = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
-    return messages
-
-
-def confirm_linked_account(request, context):
-    data = get_json_data(request.POST, ("accountUsername", "accountPlatform", "apiKey"))
-    if len(data) != 3:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
-        return context
-    username, platform, key = data
-    account = Account.objects.filter(username=username).first()
-    if account is not None:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["ALREADY_LINKED"]]
-        return context
-    
-    platform = Platform.objects.filter(id=platform).first()
-    if platform is None:
-        context["messages"] = [MESSAGES[get_user_language(request).name]["ACCOUNT_LINK"]["FAIL"]["INVALID_API"]]
-        return context
-
-    if platform.name == "Stake":
-        context["messages"] = confirm_stake_account(request, username, key, platform)
-    return context
 
 
 @login_required
@@ -479,65 +310,6 @@ def requestExchange(request):
     return render(request, 'exchange/exchange_request.html', context)
 
 
-def filterExchanges(request, exchanges):
-    fromPlatform = request.GET["fromPlatform"] if "fromPlatform" in request.GET and request.GET["fromPlatform"] != "" else "any"
-    fromCurrency = request.GET["fromCurrency"] if "fromCurrency" in request.GET and request.GET["fromCurrency"] != "" else "any"
-    toPlatform = request.GET["toPlatform"] if "toPlatform" in request.GET and request.GET["toPlatform"] != "" else "any"
-    toCurrency = request.GET["toCurrency"] if "toCurrency" in request.GET and request.GET["toCurrency"] != "" else "any"
-    try:
-        minRequested = Decimal(request.GET["minRequested"])
-    except:
-        minRequested = "any"
-    try:
-        maxRequested = Decimal(request.GET["maxRequested"])
-    except:
-        maxRequested = "any"
-    try:
-        minGiven = Decimal(request.GET["minGiven"])
-    except:
-        minGiven = "any"
-    try:
-        maxGiven = Decimal(request.GET["maxGiven"])
-    except:
-        maxGiven = "any"
-
-    fromPCs = PlatformCurrency.objects.all()
-    if fromPlatform != "any":
-        platform = Platform.objects.filter(id=fromPlatform).first()
-        if platform is not None:
-            fromPCs = fromPCs.filter(platform=platform)
-    if fromCurrency != "any":
-        currency = Currency.objects.filter(name=fromCurrency).first()
-        if currency is not None:
-            fromPCs = fromPCs.filter(currency=currency)
-    filteredFrom = Exchange.objects.none()
-    for pc in fromPCs:
-        filteredFrom = filteredFrom | exchanges.filter(from_currency = pc)
-    toPCs = PlatformCurrency.objects.all()
-    if toPlatform != "any":
-        platform = Platform.objects.filter(id=toPlatform).first()
-        if platform is not None:
-            toPCs = toPCs.filter(platform=platform)
-    if toCurrency != "any":
-        currency = Currency.objects.filter(name=toCurrency).first()
-        if currency is not None:
-            toPCs = toPCs.filter(currency=currency)
-    filteredTo = Exchange.objects.none()
-    for pc in toPCs:
-        filteredTo = filteredTo | exchanges.filter(to_currency = pc)
-    exchanges = filteredTo & filteredFrom
-
-    if minRequested != "any":
-        exchanges = exchanges.filter(to_amount__gte=minRequested)
-    if maxRequested != "any":
-        exchanges = exchanges.filter(to_amount__lte=maxRequested)
-    if minGiven != "any":
-        exchanges = exchanges.filter(from_amount__gte=minGiven)
-    if maxGiven != "any":
-        exchanges = exchanges.filter(from_amount__lte=maxGiven)
-    return exchanges
-
-    
 @login_required
 @require_http_methods(["GET"])
 def exchanges(request, page):
@@ -644,7 +416,7 @@ def ticket(request, tid):
     if ticket is None:
         return HttpResponseRedirect(reverse('index'))
     messages = SupportTicketMessage.objects.filter(ticket=ticket)
-    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'messages': messages}
+    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'ticket_messages': messages}
     return render(request, 'support/ticket.html', context)
 
     

@@ -14,6 +14,7 @@ import pyotp
 TOTP = pyotp.TOTP(os.environ['STAKE_TFA'])
 
 # SETTINGS
+REGISTRATION_STATUS = os.environ['REGISTRATION_STATUS']
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # PROFILE

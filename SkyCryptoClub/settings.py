@@ -15,7 +15,8 @@ from .GLOBAL import SECRET_KEY as gSECRET, \
     AWS_ACCESS_KEY_ID as AWS_ID, \
     AWS_SECRET_ACCESS_KEY as AWS_SECRET, \
     AWS_STORAGE_BUCKET_NAME as AWS_BUCKET, \
-    HOSTS, EMAIL as gEMAIL, PASSWORD as gPASSWORD
+    HOSTS, EMAIL as gEMAIL, PASSWORD as gPASSWORD, \
+    REGISTRATION_STATUS
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -163,6 +164,7 @@ STATICFILES_DIRS = (
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+CLOSED_REGISTRATION = REGISTRATION_STATUS == "Closed"
 
 # S3
 AWS_ACCESS_KEY_ID = AWS_ID

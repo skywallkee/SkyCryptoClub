@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
                     ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportCategory, SupportTicketMessage, Languages
+                    SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -33,6 +33,12 @@ class ProfileAdmin(admin.ModelAdmin):
     fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName', "language"]
 
 admin.site.register(Profile, ProfileAdmin)
+
+
+class InvitationAdmin(admin.ModelAdmin):
+    fields = ['code', 'creator', 'clicks', 'registrations', 'limit']
+
+admin.site.register(Invitation, InvitationAdmin)
 
 
 class UserRoleAdmin(admin.ModelAdmin):

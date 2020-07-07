@@ -1,6 +1,6 @@
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, TwoFactorLogin, ExchangeTaxPeer, \
-                    FAQCategory, Question, PublicityBanners, ExchangeStatus
+                    FAQCategory, Question, PublicityBanners, ExchangeStatus, Invitation
 from rest_framework import serializers
 
 
@@ -34,6 +34,12 @@ class ProfileSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Profile
         fields = ['url', 'user', 'avatar', 'xp', 'publicStats', 'publicLevel', 'publicXP', 'publicName']
+
+
+class InvitationSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ['url', 'code', 'creator', 'clicks', 'registrations', 'limit']
 
 
 class UserRoleSerializer(serializers.HyperlinkedModelSerializer):

@@ -27,7 +27,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-
 class PasswordToken(models.Model):
     def setValid():
         return timezone.now() + timezone.timedelta(minutes=15)
@@ -101,6 +100,16 @@ class Profile(models.Model):
     
     def __str__(self):
         return self.user.username
+
+class Invitation(models.Model):
+    code = models.CharField(max_length=64, primary_key=True)
+    creator = models.ForeignKey(Profile, on_delete=models.CASCADE, unique=False)
+    clicks = models.BigIntegerField(default=0)
+    registrations = models.BigIntegerField(default=0)
+    limit = models.BigIntegerField(default=-1)
+
+    def __str__(self):
+        return self.creator.user.username + " | " + self.code
 
 
 class Role(models.Model):

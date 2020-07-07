@@ -7,7 +7,7 @@ from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, Use
                                           ProfileBanSerializer, PlatformSerializer, PlatformCurrencySerializer, \
                                           CurrencySerializer, WalletSerializer, AccountSerializer, ExchangeTaxPeerSerializer, \
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, ExchangeStatusSerializer, \
-                                          FAQCategorySerializer, QuestionSerializer, PublicityBannersSerializer
+                                          FAQCategorySerializer, QuestionSerializer, PublicityBannersSerializer, InvitationSerializer
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
@@ -18,7 +18,7 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
                     Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
                     FAQCategory, Question, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportTicketMessage, SupportCategory, Languages
+                    SupportTicket, SupportTicketMessage, SupportCategory, Languages, Invitation
 import json
 
 
@@ -66,6 +66,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class InvitationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows profiles to be viewed or edited.
+    """
+    queryset = Invitation.objects.all()
+    serializer_class = InvitationSerializer
     permission_classes = [permissions.IsAdminUser]
 
 
@@ -256,12 +265,12 @@ def check_tfa(request):
 def user_register_form(request):
     data    = get_json_data(request.POST, ['username', 'email'])
     if len(data) != 2:
-        return {"messages": [MESSAGES[get_user_language(request)]["REGISTER"]["FAIL"]]}
+        return {"success": False, "messages": [MESSAGES[get_user_language(request)]["REGISTER"]["FAIL"]]}
 
     username, email = data
 
     if not valid_register(username, email):
-        return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["FAIL"]]}
+        return {"success": False, "messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["FAIL"]]}
 
     password = generate_password()
     User.objects.create_user(username, email, password)
@@ -271,7 +280,7 @@ def user_register_form(request):
     html                = MESSAGES[get_user_language(request).name]["REGISTER_MAIL"]["HTML"].format(email, username, password)
     send_mail_process   = Process(target=send_mail, args=(email, subject, text, html))
     send_mail_process.start()
-    return {"messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["SUCCESS"]]}
+    return {"success": True, "messages": [MESSAGES[get_user_language(request).name]["REGISTER"]["SUCCESS"]]}
 
 
 def contact_send_mail(request):

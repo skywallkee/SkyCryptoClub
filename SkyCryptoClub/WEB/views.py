@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
-                         SupportTicket, SupportTicketMessage, SupportCategory
+                         SupportTicket, SupportTicketMessage, SupportCategory, Invitation
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -32,6 +32,7 @@ from decimal import *
 import math
 from django.core.paginator import Paginator
 from .filters import ExchangeFilter
+from django.conf import settings as DjangoSettings
 
 def get_banners():
     banners = {}
@@ -76,11 +77,33 @@ def user_register(request):
 
     template    = loader.get_template('registration/register.html')
     context     = {}
+    invitation = None
+
+    if "SCC_Invitation_Code" in request.COOKIES:
+        invitation = Invitation.objects.filter(code=request.COOKIES["SCC_Invitation_Code"]).first()
+    
+    if (not invitation or (invitation.registrations >= invitation.limit and invitation.limit != -1)) and DjangoSettings.CLOSED_REGISTRATION:
+        return HttpResponseRedirect(reverse('index'))
+    
+    invitation.clicks += 1
+    invitation.save()
 
     if request.method == 'POST':
         context = user_register_form(request)
+        if context["success"]:
+            invitation.registrations += 1
+            invitation.save()
 
     return HttpResponse(template.render(context, request))
+
+
+@require_http_methods(["GET"])
+def user_register_invitation(request, invitation):
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('index'))
+    response = HttpResponseRedirect(reverse('register'))
+    response.set_cookie(key="SCC_Invitation_Code", value=invitation, max_age=None)
+    return response
 
 
 @require_http_methods(["GET", "POST"])

@@ -64,6 +64,7 @@ urlpatterns = [
     path(r'login/', WEBviews.user_login, name='login'),
     path(r'logout/', auth_views.LogoutView.as_view(), name='logout'),
     path(r'register/', WEBviews.user_register, name='register'),
+    path(r'register/<str:invitation>/', WEBviews.user_register_invitation, name='register'),
     path(r'recover/', WEBviews.recover_password, name='recover-password'),
 
     # FAQ & TERMS

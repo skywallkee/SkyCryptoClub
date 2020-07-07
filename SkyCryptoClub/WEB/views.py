@@ -31,7 +31,7 @@ import os
 from decimal import *
 import math
 from django.core.paginator import Paginator
-
+from .filters import ExchangeFilter
 
 def get_banners():
     banners = {}
@@ -316,7 +316,10 @@ def requestExchange(request):
 def exchanges(request, page):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    exchanges = filterExchanges(request, Exchange.objects.filter(status="Open")).order_by('eid')
+
+    exchanges = Exchange.objects.filter(status="Open").order_by('eid')
+    exchangeFilter = ExchangeFilter(request.GET, exchanges)
+    exchanges = exchangeFilter.qs
 
     displayPerPage = 30
     paginator = Paginator(exchanges, displayPerPage)
@@ -327,7 +330,8 @@ def exchanges(request, page):
         context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
                 'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                 "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
-                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]]}
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
+                "exchangeFilter": exchangeFilter}
         return render(request, 'exchange/exchanges_list.html', context)
 
     startPagination = max(page - 2, 1)
@@ -339,7 +343,8 @@ def exchanges(request, page):
 
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
-               "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges}
+               "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges,
+                "exchangeFilter": exchangeFilter}
     return render(request, 'exchange/exchanges_list.html', context)
 
 
@@ -357,7 +362,10 @@ def exchanges_history_user(request, username, page):
         return HttpResponseRedirect('/exchanges/history/{}/page=1/'.format(request.user.username))
     profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
-    exchanges = filterExchanges(request, Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)).order_by('eid')
+    
+    exchanges = Exchange.objects.filter(status="Open").order_by('eid')
+    exchangeFilter = ExchangeFilter(request.GET, exchanges)
+    exchanges = exchangeFilter.qs
 
     displayPerPage = 30
     paginator = Paginator(exchanges, displayPerPage)
@@ -368,7 +376,8 @@ def exchanges_history_user(request, username, page):
         context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
-                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]]}
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
+                "exchangeFilter": exchangeFilter}
         return render(request, 'exchange/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -380,7 +389,8 @@ def exchanges_history_user(request, username, page):
 
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
-               "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges}
+               "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges,
+                "exchangeFilter": exchangeFilter}
     return render(request, 'exchange/exchanges_history.html', context)
 
     

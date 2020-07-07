@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'SkyCryptoClub.WEB',
     'storages',
     'robots',
+    'django_filters',
 ]
 
 SITE_ID = 2

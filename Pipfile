@@ -18,6 +18,7 @@ boto3 = "*"
 django-storages = "*"
 django-heroku = "*"
 django-robots = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.6"

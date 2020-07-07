@@ -23,50 +23,32 @@
                       <div class="card-body">
                         <form id="filterForm" method="get" class="form-horizontal">
                           <div class="row">
-                            <select class="selectpicker col-12 col-xl-3" id="fromPlatform" name="fromPlatform" data-style="select-with-transition" title="From Platform" data-size="5" onchange="updateCurrency('fromPlatform', 'fromCurrency')">
-                              <option value="any" select>Any Platform</option>
-                              {% for platform in platforms %}
-                                <option value="{{ platform.id }}">
-                                  {{ platform.name }}
-                                </option>
-                              {% endfor %}
-                            </select>
-                            <select class="selectpicker col-12 col-xl-3" id="fromCurrency" name="fromCurrency" data-style="select-with-transition" title="From Currency" data-size="5">
-                            </select>
-                            <select class="selectpicker col-12 col-xl-3" id="toPlatform" name="toPlatform" data-style="select-with-transition" title="To Platform" data-size="5" onchange="updateCurrency('toPlatform', 'toCurrency')">
-                              <option value="any" select>Any Platform</option>
-                              {% for platform in platforms %}
-                                <option value="{{ platform.id }}">
-                                  {{ platform.name }}
-                                </option>
-                              {% endfor %}
-                            </select>
-                            <select class="selectpicker col-12 col-xl-3" id="toCurrency" name="toCurrency" data-style="select-with-transition" title="To Currency" data-size="5">
-                            </select>
+                            {{ exchangeFilter.form.from_currency }}
+                            {{ exchangeFilter.form.to_currency }}
                           </div>
                           <div class="row">
-                            <div class="col-12 col-xl-3">
+                            <div class="col-12 col-xl-6">
                               <div class="form-group col-12">
                                 <label class="bmd-label-static">Min Requested</label>
-                                <input type="number" step="0.00000001" id="minRequested" name="minRequested" min="0" class="form-control">
+                                {{ exchangeFilter.form.min_requested }}
                               </div>
                             </div>
-                            <div class="col-12 col-xl-3">
+                            <div class="col-12 col-xl-6">
                               <div class="form-group col-12">
                                 <label class="bmd-label-static">Max Requested</label>
-                                <input type="number" step="0.00000001" id="maxRequested" name="maxRequested" min="0" class="form-control">
+                                {{ exchangeFilter.form.max_requested }}
                               </div>
                             </div>
-                            <div class="col-12 col-xl-3">
+                            <div class="col-12 col-xl-6">
                               <div class="form-group col-12">
                                 <label class="bmd-label-static">Min Given</label>
-                                <input type="number" step="0.00000001" id="minGiven" name="minGiven" min="0" class="form-control">
+                                {{ exchangeFilter.form.min_given }}
                               </div>
                             </div>
-                            <div class="col-12 col-xl-3">
+                            <div class="col-12 col-xl-6">
                               <div class="form-group col-12">
                                 <label class="bmd-label-static">Max Given</label>
-                                <input type="number" step="0.00000001" id="maxGiven" name="maxGiven" min="0" class="form-control">
+                                {{ exchangeFilter.form.max_given }}
                               </div>
                             </div>
                           </div>
@@ -103,7 +85,7 @@
                     {% for exchange in exchanges %}
                     <tr>
                       <td><img src="{{ exchange.from_currency.currency.icon.url }}" width="15" height="15"> 1:{{ exchange.ratio }} <img src="{{ exchange.to_currency.currency.icon.url }}" width="15" height="15"></td>
-                      <td>{{ exchange.exchanger_amount }} <span style="color: {{exchange.from_currency.currency.color }};">{{ exchange.from_currency.currency.name }}</span> {{ exchange.from_currency.platform.name }}</td>
+                      <td>{{ exchange.from_amount }} <span style="color: {{exchange.from_currency.currency.color }};">{{ exchange.from_currency.currency.name }}</span> {{ exchange.from_currency.platform.name }}</td>
                       <td>{{ exchange.to_amount }} <span style="color: {{exchange.to_currency.currency.color }};">{{ exchange.to_currency.currency.name }}</span> {{ exchange.to_currency.platform.name }}</td>
                       <td class="text-right">
                         <a href="{% url 'exchange-page' exchange.eid %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>

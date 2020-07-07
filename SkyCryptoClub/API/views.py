@@ -519,15 +519,23 @@ def payExchange(request):
     wallet.amount += exchange.exchanger_amount
     wallet.save()
     # Add profit from exchanger to vault
-    profit_from_exchanger = exchange.from_amount - exchange.exchanger_amount
-    add_vault(exchange.from_currency.platform, exchange.from_currency.currency.name, profit_from_exchanger)
+    remaining_from_exchanger = exchange.from_amount - exchange.exchanger_amount
+    to_vault = round_down(Decimal(0.9) * remaining_from_exchanger, 8)
+    to_xp = round_down(Decimal(0.1) * remaining_from_exchanger, 8)
+    add_vault(exchange.from_currency.platform, exchange.from_currency.currency.name, to_vault)
+    profile.xp += to_xp
+    profile.save()
     # Add to creator the promised balance
     wallet = Wallet.objects.filter(profile=exchange.creator, store=exchange.to_currency).first()
     wallet.amount += exchange.creator_amount
     wallet.save()
     # Add profit from creator to vault
-    profit_from_creator = exchange.to_amount - exchange.creator_amount
-    add_vault(exchange.to_currency.platform, exchange.to_currency.currency.name, profit_from_creator)
+    remaining_from_creator = exchange.to_amount - exchange.creator_amount
+    to_vault = round_down(Decimal(0.9) * remaining_from_creator, 8)
+    to_xp = round_down(Decimal(0.1) * remaining_from_creator, 8)
+    add_vault(exchange.to_currency.platform, exchange.to_currency.currency.name, remaining_from_creator)
+    exchange.creator.xp += to_xp
+    exchange.creator.save()
     # Set exchanger to the exchange and close it
     exchanger = Profile.objects.filter(user=request.user).first()
     completed = ExchangeStatus.objects.filter(status="Completed").first()

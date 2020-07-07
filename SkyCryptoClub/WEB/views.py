@@ -30,6 +30,7 @@ import random
 import os
 from decimal import *
 import math
+from django.core.paginator import Paginator
 
 
 def get_banners():
@@ -315,26 +316,26 @@ def requestExchange(request):
 def exchanges(request, page):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    exchanges = Exchange.objects.filter(status="Open")
-    exchanges = filterExchanges(request, exchanges)
+    exchanges = filterExchanges(request, Exchange.objects.filter(status="Open")).order_by('eid')
+
     displayPerPage = 30
-    totalPages = math.ceil(len(exchanges) / displayPerPage)
+    paginator = Paginator(exchanges, displayPerPage)
+
+    totalPages = paginator.num_pages
 
     if page <= 0 or page > totalPages:
         context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
-               'currentPage': 0, 'pages': [], 'profile': profile, 'platforms': platforms, 
-               "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
-               "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]]}
+                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
+                "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]]}
         return render(request, 'exchange/exchanges_list.html', context)
 
     startPagination = max(page - 2, 1)
     endPagination = min(totalPages, startPagination + 4) + 1
     pages = [i for i in range(startPagination, endPagination)]
-    canNext = page < totalPages
-    canPrevious = page > 1
-    begin = displayPerPage * (page - 1)
-    end = displayPerPage * page
-    exchanges = exchanges.order_by('-created_at')[begin:end]
+    canNext = paginator.page(page).has_next()
+    canPrevious = paginator.page(page).has_previous()
+    exchanges = paginator.page(page).object_list
 
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
@@ -349,34 +350,33 @@ def exchanges_history(request, page):
 @login_required
 @require_http_methods(["GET", "POST"])
 def exchanges_history_user(request, username, page):
-    if not request.user.username == username or page <= 0:
+    if not request.user.username == username:
         return HttpResponseRedirect('/exchanges/history/{}/page=1/'.format(request.user.username))
     user = get_user_model().objects.filter(username=username).first()
     if user is None:
         return HttpResponseRedirect('/exchanges/history/{}/page=1/'.format(request.user.username))
     profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
-    exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
-
-    exchanges = filterExchanges(request, exchanges)
+    exchanges = filterExchanges(request, Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)).order_by('eid')
 
     displayPerPage = 30
-    totalPages = math.ceil(len(exchanges) / displayPerPage)
+    paginator = Paginator(exchanges, displayPerPage)
+
+    totalPages = paginator.num_pages
 
     if page <= 0 or page > totalPages:
         context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
-               'currentPage': 0, 'pages': [], 'profile': profile, 'platforms': platforms, 
-               "emptyTableMessage": "You have no exchanges in your history", "exchanges": []}
+               'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]]}
         return render(request, 'exchange/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
     endPagination = min(totalPages, startPagination + 4) + 1
     pages = [i for i in range(startPagination, endPagination)]
-    canNext = page < totalPages
-    canPrevious = page > 1
-    begin = displayPerPage * (page - 1)
-    end = displayPerPage * page
-    exchanges = exchanges.order_by('-created_at')[begin:end]
+    canNext = paginator.page(page).has_next()
+    canPrevious = paginator.page(page).has_previous()
+    exchanges = paginator.page(page).object_list
 
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 

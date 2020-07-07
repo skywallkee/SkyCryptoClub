@@ -1,6 +1,4 @@
-import smtplib, ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from django.core.mail import send_mail as djMail
 import time
 from .GLOBAL import EMAIL as gEMAIL, PASSWORD as gPASSWORD
 import requests
@@ -8,28 +6,17 @@ from .API.models import Languages, Profile
 
 def send_mail(receiver_email, subject, plain_message, html_message):
     # Send Email
-    message = MIMEMultipart("alternative")
-    message["Subject"] = subject
-    message["From"] = gEMAIL
-    message["To"] = receiver_email
-
-    text = plain_message
-    html = html_message
-
-    part1 = MIMEText(text, "plain")
-    part2 = MIMEText(html, "html")
-    message.attach(part1)
-    message.attach(part2)
-
-    # Create secure connection with server and send email
-    context = ssl.create_default_context()
     tries = 10
     while tries > 0:
         try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                server.login(gEMAIL, gPASSWORD)
-                server.sendmail(gEMAIL, receiver_email, message.as_string())
-                print("Mail sent to: " + receiver_email)
+            djMail(
+                subject,
+                plain_message,
+                gEMAIL,
+                [receiver_email],
+                fail_silently = False,
+                html_message = html_message,
+            )
         except Exception as e:
             print("Couldn't send mail: ", e)
             time.sleep(5)

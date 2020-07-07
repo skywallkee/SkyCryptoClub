@@ -15,7 +15,7 @@ from .GLOBAL import SECRET_KEY as gSECRET, \
     AWS_ACCESS_KEY_ID as AWS_ID, \
     AWS_SECRET_ACCESS_KEY as AWS_SECRET, \
     AWS_STORAGE_BUCKET_NAME as AWS_BUCKET, \
-    HOSTS
+    HOSTS, EMAIL as gEMAIL, PASSWORD as gPASSWORD
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -190,3 +190,9 @@ GZIP_CONTENT_TYPES = (
 if not DEBUG:
     import django_heroku
     django_heroku.settings(locals())
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 465
+EMAIL_HOST_USER = gEMAIL
+EMAIL_HOST_PASSWORD = gPASSWORD
+EMAIL_USE_SSL = True

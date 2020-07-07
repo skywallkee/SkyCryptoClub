@@ -49,6 +49,7 @@ urlpatterns = [
     path(r'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path(r'check-login/', APIviews.user_login, name='check-login'),
     path(r'check-tfa/', APIviews.check_tfa, name='check-tfa'),
+    path(r'has-tfa/', APIviews.has_tfa, name='has-tfa'),
     path(r'get-balances/', APIviews.get_balances, name='get-balances'),
     path(r'get-platform-currencies/', APIviews.get_platform_currencies, name='get-platform-currencies'),
     path(r'get-available-balance/', APIviews.get_available_balance, name='get-available-balance'),

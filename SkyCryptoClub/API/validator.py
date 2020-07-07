@@ -98,7 +98,7 @@ def valid_file_dimensions(value):
     return True
 
 
-def get_settings_update_errors(request, email, password, newpass, newpassconfirm):
+def get_settings_update_errors(request, email, password, newpass, newpassconfirm, twofactor):
     errors = []
     if not request.user.check_password(password):
         errors.append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["INCORRECT"])
@@ -108,6 +108,8 @@ def get_settings_update_errors(request, email, password, newpass, newpassconfirm
         errors.append(MESSAGES[get_user_language(request).name]["PASSWORD"]["FAIL"]["NOT_MATCHING"])
     if len(User.objects.filter(email=email)) > 0 and User.objects.filter(email=email).first() != request.user:
         errors.append(MESSAGES[get_user_language(request).name]["EMAIL"]["FAIL"]["EXISTING"])
+    if not (type(twofactor) == str and (twofactor == "True" or twofactor == "False")):
+        errors.append(MESSAGES[get_user_language(request).name]["TWO_FACTOR"]["FAIL"])
     return errors
 
 

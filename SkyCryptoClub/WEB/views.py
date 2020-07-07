@@ -219,14 +219,16 @@ def dashboard_user(request, username):
 def settings(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    context = {'profile': profile,
-               'platforms': platforms}
+    context = {}
 
     if request.method == "POST":
         if "updateAvatar" in request.POST:
             context = settings_update_avatar(request, context, profile)
         else:
             context = settings_update_credentials(request, context)
+        profile = Profile.objects.filter(user=request.user).first()
+    context['profile'] = profile
+    context['platforms'] = platforms
     return render(request, 'settings/settings.html', context)
 
 

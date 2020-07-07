@@ -104,12 +104,6 @@ MESSAGES = {
                 "message": "The Privacy settings have been changed successfully."
             }
         },
-        "EMPTY_EXCHANGE_TABLE": "There are no opened Exchange Requests",
-        "INVALID_PAGE": {
-            "type": "danger",
-            "title": "Invalid Page!",
-            "message": "The requested page does not exist."
-        },
         "PASSWORD": {
             "SUCCESS": {
                 "type": "success",
@@ -148,7 +142,30 @@ MESSAGES = {
                 },
             }
         },
+        "TWO_FACTOR": {
+            "SUCCESS": {
+                "type": "success",
+                "title": "Success!",
+                "message": "The Two Factor has been changed successfully."
+            },
+            "FAIL": {
+                "type": "danger",
+                "title": "Invalid Two Factor",
+                "message": "The value of the Two Factor input is invalid!"
+            }
+        },
+        "INVALID_INPUT": {
+            "type": "danger",
+            "title": "Invalid Input!",
+            "message": "Please send only the data available in the form and complete all inputs."
+        },
         # EXCHANGES
+        "EMPTY_EXCHANGE_TABLE": "There are no opened Exchange Requests",
+        "INVALID_PAGE": {
+            "type": "danger",
+            "title": "Invalid Page!",
+            "message": "The requested page does not exist."
+        },
         "EXCHANGE_REQUEST": {
             "FAIL": {
                 "type": "danger",

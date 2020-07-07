@@ -202,7 +202,18 @@ class PublicityBannersViewSet(viewsets.ModelViewSet):
     queryset = PublicityBanners.objects.all()
     serializer_class = PublicityBannersSerializer
     permission_classes = [permissions.IsAdminUser]
-    
+
+@require_http_methods(["POST"])
+def has_tfa(request):
+    data = get_json_data(json.loads(request.body), ["username"])
+    if len(data) != 1:
+        return JsonResponse({"response": 400}, safe=False)
+    username, = data
+    user = get_user_model().objects.filter(username=username).first()
+    if not user:
+        return JsonResponse({"response": 400}, safe=False)
+    profile = Profile.objects.filter(user=user).first()
+    return JsonResponse({"response": 200, "tfa": profile.twofactor})
 
 @require_http_methods(["POST"])
 def user_login(request):
@@ -213,12 +224,14 @@ def user_login(request):
     user = authenticate(username=username, password=password)
     if not user or not user.is_active:
         return HttpResponse(400)
-    TFA = TwoFactorLogin.objects.filter(user=user, valid_until__gt=timezone.now()).first()
-    if not TFA:
-        TFA = TwoFactorLogin.objects.create(user=user)
-    key = TFA.key
-    send_TFA_mail = Process(target=send_mail, args=(user.email, MESSAGES[get_user_language(request).name]["TFA_MAIL"]["SUBJECT"], MESSAGES[get_user_language(request).name]["TFA_MAIL"]["MESSAGE"].format(key), MESSAGES[get_user_language(request).name]["TFA_MAIL"]["HTML"].format(key)))
-    send_TFA_mail.start()
+    profile = Profile.objects.filter(user=user).first()
+    if profile.twofactor:
+        TFA = TwoFactorLogin.objects.filter(user=user, valid_until__gt=timezone.now()).first()
+        if not TFA:
+            TFA = TwoFactorLogin.objects.create(user=user)
+        key = TFA.key
+        send_TFA_mail = Process(target=send_mail, args=(user.email, MESSAGES[get_user_language(request).name]["TFA_MAIL"]["SUBJECT"], MESSAGES[get_user_language(request).name]["TFA_MAIL"]["MESSAGE"].format(key), MESSAGES[get_user_language(request).name]["TFA_MAIL"]["HTML"].format(key)))
+        send_TFA_mail.start()
     return HttpResponse(200)
 
 
@@ -234,7 +247,11 @@ def user_login_form(request):
     
     user = authenticate(username=username, password=password)
 
-    if user is None or not valid_tfa(user, tfa):
+    if user is None:
+        return HttpResponseRedirect(reverse('login'))
+
+    profile = Profile.objects.filter(user=user).first()
+    if not valid_tfa(user, tfa) and profile.twofactor == True:
         return HttpResponseRedirect(reverse('login'))
 
     login(request, user)
@@ -253,6 +270,8 @@ def check_tfa(request):
     password = data["password"]
     tfa = data["2FA"]
     user = authenticate(username=username, password=password)
+    if not user:
+        return HttpResponse(400)
     tfalist = TwoFactorLogin.objects.filter(user=user)
     for twfa in tfalist:
         if twfa.key == tfa and timezone.now() < twfa.valid_until:
@@ -671,14 +690,21 @@ def settings_update_avatar(request, context, profile):
 
 
 def settings_update_credentials(request, context):
-    data = get_json_data(request.POST, ('email', 'password', 'newpass', 'newpassconfirm'))
-    if len(data) != 4:
+    data = get_json_data(request.POST, ('email', 'password', 'newpass', 'newpassconfirm', 'twofactor'))
+    if len(data) != 5:
+        context["messages"] = [MESSAGES[get_user_language(request).name]["INVALID_INPUT"]]
         return context
-    email, password, newpass, newpassconfirm = data
+    email, password, newpass, newpassconfirm, twofactor = data
 
-    context["messages"] = get_settings_update_errors(request, email, password, newpass, newpassconfirm)
+    context["messages"] = get_settings_update_errors(request, email, password, newpass, newpassconfirm, twofactor)
     
     if len(context["messages"]) == 0:
+        twofactor = twofactor == "True"
+        profile = Profile.objects.filter(user=request.user).first()
+        if twofactor != profile.twofactor:
+            profile.twofactor = twofactor
+            profile.save()
+            context["messages"].append(MESSAGES[get_user_language(request).name]["TWO_FACTOR"]["SUCCESS"])
         if email != request.user.email:
             request.user.email = email
             request.user.save()

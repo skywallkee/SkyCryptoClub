@@ -97,6 +97,7 @@ class Profile(models.Model):
     publicXP = models.BooleanField(default=True)
     publicName = models.BooleanField(default=True)
     language = models.ForeignKey(Languages, null=True, default="en", on_delete=models.SET_DEFAULT)
+    twofactor = models.BooleanField(default=True)
     
     def __str__(self):
         return self.user.username

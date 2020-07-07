@@ -106,6 +106,34 @@
         return cookieValue;
     };
 
+    function hasTwoFactor(username) {
+
+        $.ajax({
+            type: "POST",
+            url: "/has-tfa/",
+            headers: {
+                "Content-Type": "application/json",
+                "HTTP_GROUP_NAME": "groups_name",
+                "X-CSRFToken": csrfcookie()
+            },
+            data: JSON.stringify({
+                "username": username,
+            }),
+            success: function(data){
+                if(data["response"] == 200) {
+                    if (data["tfa"] == true)
+                        $('#tfaModal').modal({show: true, backdrop: false});
+                    else
+                        document.getElementById("login-form").submit();
+                }
+                return false;
+            },
+            failure: function(data){
+                console.log(data);
+            },
+        });
+    }
+
     function checkLogin() {
         let username = document.getElementById("username").value;
         let password = document.getElementById("password").value;
@@ -136,9 +164,8 @@
                         }
                     });
                 }
-                else {
-                    $('#tfaModal').modal({show: true, backdrop: false});
-                }
+                else
+                    hasTwoFactor(username);
             },
             failure: function(data){
                 console.log(data);

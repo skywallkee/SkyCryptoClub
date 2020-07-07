@@ -19,6 +19,7 @@ django-storages = "*"
 django-heroku = "*"
 django-robots = "*"
 django-filter = "*"
+django-ratelimit = "*"
 
 [requires]
 python_version = "3.6"

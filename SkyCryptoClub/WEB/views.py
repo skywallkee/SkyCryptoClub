@@ -33,6 +33,7 @@ import math
 from django.core.paginator import Paginator
 from .filters import ExchangeFilter
 from django.conf import settings as DjangoSettings
+from ratelimit.decorators import ratelimit
 
 def get_banners():
     banners = {}
@@ -51,13 +52,14 @@ def get_banners():
         banners["stake_small"] = small[pickSmall].image.url
     return banners
 
-
+@ratelimit(block=True, key='ip', rate='20/m')
 def index(request):
     template    = loader.get_template('WEB/index.html')
     context     = {"banners": get_banners()}
     return HttpResponse(template.render(context, request))
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def user_login(request):
     if request.user.is_authenticated:
@@ -70,6 +72,7 @@ def user_login(request):
     return HttpResponse(template.render({}, request))
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def user_register(request):
     if request.user.is_authenticated:
@@ -97,6 +100,7 @@ def user_register(request):
     return HttpResponse(template.render(context, request))
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def user_register_invitation(request, invitation):
     if request.user.is_authenticated:
@@ -106,6 +110,7 @@ def user_register_invitation(request, invitation):
     return response
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def recover_password(request):
     if request.user.is_authenticated:
@@ -134,6 +139,7 @@ def recover_password(request):
     return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["SUCCESS"]]})
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def faq(request):
     categories = FAQCategory.objects.all()
@@ -142,12 +148,14 @@ def faq(request):
     return render(request, 'WEB/faq.html', context)
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def terms(request):
     context = {}
     return render(request, 'WEB/terms.html', context)
 
 
+@ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def contact(request):
     context = {}
@@ -159,12 +167,14 @@ def contact(request):
     return HttpResponse(template.render(context, request))
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def dashboard(request):
     return HttpResponseRedirect('/dashboard/{}'.format(request.user.username))
 
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def dashboard_user(request, username):
     user = get_user_model().objects.filter(username=username).first()
@@ -204,6 +214,7 @@ def dashboard_user(request, username):
 
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def settings(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -220,6 +231,7 @@ def settings(request):
 
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def privacy(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -234,6 +246,7 @@ def privacy(request):
 
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def linked(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -250,6 +263,7 @@ def linked(request):
 
     
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='10/m')
 @require_http_methods(["GET", "POST"])
 def requestExchange(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -335,6 +349,7 @@ def requestExchange(request):
 
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def exchanges(request, page):
     profile = Profile.objects.filter(user=request.user).first()
@@ -371,11 +386,13 @@ def exchanges(request, page):
     return render(request, 'exchange/exchanges_list.html', context)
 
 
+@ratelimit(block=True, key='ip', rate='15/m')
 def exchanges_history(request, page):
     return HttpResponseRedirect('/exchanges/history/{}/page={}/'.format(request.user.username, page))
     
 
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def exchanges_history_user(request, username, page):
     if not request.user.username == username:
@@ -418,6 +435,7 @@ def exchanges_history_user(request, username, page):
 
     
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def exchange_page(request, exchange_id):
     exchange = Exchange.objects.filter(eid=exchange_id).first()
@@ -431,6 +449,7 @@ def exchange_page(request, exchange_id):
 
   
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def support(request):
     profile = Profile.objects.filter(user=request.user).first()
@@ -441,6 +460,7 @@ def support(request):
 
     
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def ticket(request, tid):
     profile = Profile.objects.filter(user=request.user).first()
@@ -454,6 +474,7 @@ def ticket(request, tid):
 
     
 @login_required
+@ratelimit(block=True, key='user_or_ip', rate='10/m')
 @require_http_methods(["GET", "POST"])
 def createTicket(request):
     profile = Profile.objects.filter(user=request.user).first()

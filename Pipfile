@@ -17,6 +17,7 @@ gunicorn = "*"
 boto3 = "*"
 django-storages = "*"
 django-heroku = "*"
+django-robots = "*"
 
 [requires]
 python_version = "3.6"

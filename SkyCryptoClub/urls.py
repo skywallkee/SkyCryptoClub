@@ -42,6 +42,7 @@ router.register(r'questions', APIviews.QuestionViewSet)
 
 urlpatterns = [
     path('', WEBviews.index, name='index'),
+    path(r'robots.txt', include('robots.urls')),
 
     # API
     path(r'endpoints/', include(router.urls)),

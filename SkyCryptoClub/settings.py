@@ -47,10 +47,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'SkyCryptoClub.API',
     'SkyCryptoClub.WEB',
     'storages',
+    'robots',
 ]
+
+SITE_ID = 2
+ROBOTS_USE_HOST = True
+ROBOTS_USE_SITEMAP = False
+ROBOTS_CACHE_TIMEOUT = 60*60*24
 
 AUTH_USER_MODEL = 'API.User'
 LOGIN_URL = '/login/'

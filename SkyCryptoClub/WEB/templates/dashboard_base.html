@@ -63,7 +63,6 @@
 </script>
 {% endfor %}
 {% endif %}
-  <div class="wrapper ">
     <div class="sidebar" data-color="rose" data-background-color="black" data-image="{% static 'assets/img/sidebar-1.jpg' %}">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
@@ -183,7 +182,7 @@
     </div>
     <div class="main-panel">
       <!-- Navbar -->
-      <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+      <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top text-black">
         <div class="container-fluid">
           <div class="navbar-wrapper">
             {% if user.is_superuser %}
@@ -393,7 +392,6 @@
         </div>
       </footer>
     </div>
-  </div>
   <script>
     var csrfcookie = function() {
         var cookieValue = null,

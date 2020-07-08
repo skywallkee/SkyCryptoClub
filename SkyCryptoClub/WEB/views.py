@@ -8,7 +8,8 @@ from django.contrib.auth import authenticate, login, logout
 from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
-                         SupportTicket, SupportTicketMessage, SupportCategory, Invitation
+                         SupportTicket, SupportTicketMessage, SupportCategory, Invitation, FoundDeposit, \
+                         Withdrawal
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -31,7 +32,7 @@ import os
 from decimal import *
 import math
 from django.core.paginator import Paginator
-from .filters import ExchangeFilter
+from .filters import ExchangeFilter, DepositFilter, WithdrawFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
 
@@ -390,7 +391,8 @@ def exchanges(request, page):
 
 @ratelimit(block=True, key='ip', rate='15/m')
 def exchanges_history(request, page):
-    return HttpResponseRedirect('/exchanges/history/{}/page={}/'.format(request.user.username, page))
+    print(1)
+    return HttpResponseRedirect('/transactions/exchange/{}/page={}/'.format(request.user.username, page))
     
 
 @login_required
@@ -420,7 +422,7 @@ def exchanges_history_user(request, username, page):
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
                 "exchangeFilter": exchangeFilter}
-        return render(request, 'exchange/exchanges_history.html', context)
+        return render(request, 'transactions/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
     endPagination = min(totalPages, startPagination + 4) + 1
@@ -433,7 +435,107 @@ def exchanges_history_user(request, username, page):
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges,
                 "exchangeFilter": exchangeFilter}
-    return render(request, 'exchange/exchanges_history.html', context)
+    return render(request, 'transactions/exchanges_history.html', context)
+
+
+@ratelimit(block=True, key='ip', rate='15/m')
+def deposits_history(request, page):
+    print(1)
+    return HttpResponseRedirect('/transactions/deposit/{}/page={}/'.format(request.user.username, page))
+    
+
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
+@require_http_methods(["GET", "POST"])
+def deposits_history_user(request, username, page):
+    if not request.user.username == username:
+        return HttpResponseRedirect('/transactions/deposit/{}/page=1/'.format(request.user.username))
+    user = get_user_model().objects.filter(username=username).first()
+    if user is None:
+        return HttpResponseRedirect('/transactions/deposit/{}/page=1/'.format(request.user.username))
+    profile = Profile.objects.filter(user=user).first()
+    platforms = Platform.objects.all()
+
+    deposits = FoundDeposit.objects.filter(profile=profile).order_by('tipId')
+    
+    depositFilter = DepositFilter(request.GET, deposits, profile=profile)
+    deposits = depositFilter.qs
+
+    displayPerPage = 30
+    paginator = Paginator(deposits, displayPerPage)
+
+    totalPages = paginator.num_pages
+
+    if page <= 0 or page > totalPages:
+        context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
+               'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no deposits in your history", "deposits": [],
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
+                "depositFilter": depositFilter}
+        return render(request, 'transactions/deposits_history.html', context)
+
+    startPagination = max(page - 2, 1)
+    endPagination = min(totalPages, startPagination + 4) + 1
+    pages = [i for i in range(startPagination, endPagination)]
+    canNext = paginator.page(page).has_next()
+    canPrevious = paginator.page(page).has_previous()
+    deposits = paginator.page(page).object_list
+
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no deposits in your history", "deposits": deposits,
+                "depositFilter": depositFilter}
+    return render(request, 'transactions/deposits_history.html', context)
+
+
+@ratelimit(block=True, key='ip', rate='15/m')
+def withdraws_history(request, page):
+    print(1)
+    return HttpResponseRedirect('/transactions/withdraw/{}/page={}/'.format(request.user.username, page))
+    
+
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='15/m')
+@require_http_methods(["GET", "POST"])
+def withdraws_history_user(request, username, page):
+    if not request.user.username == username:
+        return HttpResponseRedirect('/transactions/withdraw/{}/page=1/'.format(request.user.username))
+    user = get_user_model().objects.filter(username=username).first()
+    if user is None:
+        return HttpResponseRedirect('/transactions/withdraw/{}/page=1/'.format(request.user.username))
+    profile = Profile.objects.filter(user=user).first()
+    platforms = Platform.objects.all()
+
+    withdraws = Withdrawal.objects.filter(profile=profile).order_by('tipId')
+    
+    withdrawFilter = WithdrawFilter(request.GET, withdraws, profile=profile)
+    withdraws = withdrawFilter.qs
+
+    displayPerPage = 30
+    paginator = Paginator(withdraws, displayPerPage)
+
+    totalPages = paginator.num_pages
+
+    if page <= 0 or page > totalPages:
+        context = {'totalPages': 0, 'canPrevious': False, 'canNext': False, 
+               'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no withdrawals in your history", "withdraws": [],
+                "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
+                "withdrawFilter": withdrawFilter}
+        return render(request, 'transactions/withdraws_history.html', context)
+
+    startPagination = max(page - 2, 1)
+    endPagination = min(totalPages, startPagination + 4) + 1
+    pages = [i for i in range(startPagination, endPagination)]
+    canNext = paginator.page(page).has_next()
+    canPrevious = paginator.page(page).has_previous()
+    withdraws = paginator.page(page).object_list
+
+    context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
+               'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
+               "emptyTableMessage": "You have no withdrawals in your history", "withdraws": withdraws,
+                "withdrawFilter": withdrawFilter}
+    return render(request, 'transactions/withdraws_history.html', context)
 
     
 @login_required

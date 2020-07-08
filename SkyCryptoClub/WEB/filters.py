@@ -1,5 +1,5 @@
 import django_filters
-from ..API.models import Exchange, PlatformCurrency
+from ..API.models import Exchange, PlatformCurrency, FoundDeposit, Account, Profile, Withdrawal
 from django import forms
 
 class ExchangeFilter(django_filters.FilterSet):
@@ -24,3 +24,35 @@ class ExchangeFilter(django_filters.FilterSet):
     class Meta:
         model = Exchange
         fields = []
+
+class DepositFilter(django_filters.FilterSet):
+
+    tipId = django_filters.CharFilter(field_name='tipId', widget=forms.TextInput(attrs={'class': 'form-control'}), lookup_expr='contains')
+
+    account = django_filters.ModelChoiceFilter(empty_label='Account', field_name='account', queryset=Account.objects.all(), 
+                                                widget=forms.Select(attrs={'class': 'col-12 col-xl-6 selectpicker', 'data-style':"select-with-transition", 'data-size':"5"}))
+
+    class Meta:
+        model = FoundDeposit
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.profile = kwargs.pop('profile')
+        super(DepositFilter, self).__init__(*args, **kwargs)
+        self.filters["account"].queryset = Account.objects.filter(profile=self.profile)
+
+
+class WithdrawFilter(django_filters.FilterSet):
+    tipId = django_filters.CharFilter(field_name='tipId', widget=forms.TextInput(attrs={'class': 'form-control'}), lookup_expr='contains')
+
+    account = django_filters.ModelChoiceFilter(empty_label='Account', field_name='account', queryset=Account.objects.all(), 
+                                                widget=forms.Select(attrs={'class': 'col-12 col-xl-6 selectpicker', 'data-style':"select-with-transition", 'data-size':"5"}))
+
+    class Meta:
+        model = Withdrawal
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        self.profile = kwargs.pop('profile')
+        super(WithdrawFilter, self).__init__(*args, **kwargs)
+        self.filters["account"].queryset = Account.objects.filter(profile=self.profile)

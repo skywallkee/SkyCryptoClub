@@ -244,27 +244,39 @@ class Account(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     platform = models.ForeignKey(Platform, null=False, on_delete=models.CASCADE)
     username = models.CharField(max_length=35, null=False)
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("profile", "platform", "username")
     
     def __str__(self):
-        return self.username + " | " + self.platform.name + " | " + str(self.active)
+        return self.username + " | " + self.platform.name
 
 
 class FoundDeposit(models.Model):
     id = models.AutoField(primary_key=True)
     tipId = models.CharField(max_length=40)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    platform = models.ForeignKey(Platform, on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("tipId", "account", "platform")
+        unique_together = ("tipId", "account")
     
     def __str__(self):
-        return self.account.username + " | " + self.profile.user.username + " | " + self.platform.name + " | " + self.tipId
+        return self.account.username + " | " + self.profile.user.username + " | " + self.tipId
+
+
+class Withdrawal(models.Model):
+    id = models.AutoField(primary_key=True)
+    tipId = models.CharField(max_length=40)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("tipId", "account")
+    
+    def __str__(self):
+        return self.account.username + " | " + self.profile.user.username + " | " + self.tipId
 
 
 class ExchangeStatus(models.Model):

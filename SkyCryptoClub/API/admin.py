@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
                     ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation
+                    SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation, Withdrawal
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -103,9 +103,15 @@ admin.site.register(Account, AccountAdmin)
 
 
 class FoundDepositAdmin(admin.ModelAdmin):
-    fields = ['tipId', 'profile', 'account', 'platform']
+    fields = ['tipId', 'profile', 'account']
 
 admin.site.register(FoundDeposit, FoundDepositAdmin)
+
+
+class WithdrawalAdmin(admin.ModelAdmin):
+    fields = ['tipId', 'profile', 'account']
+
+admin.site.register(Withdrawal, WithdrawalAdmin)
 
 
 class ExchangeTaxPeerAdmin(admin.ModelAdmin):

@@ -85,13 +85,19 @@ urlpatterns = [
     # EXCHANGES
     path(r'exchanges/page=<int:page>/', WEBviews.exchanges, name='exchanges'),
     path(r'exchanges/create/', WEBviews.requestExchange, name='request-exchange'),
-    path(r'exchanges/history/page=<int:page>/', WEBviews.exchanges_history, name='exchanges-history'),
-    path(r'exchanges/history/<str:username>/page=<int:page>/', WEBviews.exchanges_history_user, name='exchanges-history-user'),
     path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
     path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
     path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),
     path(r'pay-exchange/', APIviews.payExchange, name='pay-exchange'),
     path(r'get-exchange-amount/', APIviews.exchangeAmount, name='get-exchange-amount'),
+
+    # TRANSACTIONS
+    path(r'transactions/exchange/page=<int:page>/', WEBviews.exchanges_history, name='exchanges-history'),
+    path(r'transactions/exchange/<str:username>/page=<int:page>/', WEBviews.exchanges_history_user, name='exchanges-history-user'),
+    path(r'transactions/deposit/page=<int:page>/', WEBviews.deposits_history, name='deposits-history'),
+    path(r'transactions/deposit/<str:username>/page=<int:page>/', WEBviews.deposits_history_user, name='deposits-history-user'),
+    path(r'transactions/withdraw/page=<int:page>/', WEBviews.withdraws_history, name='withdraws-history'),
+    path(r'transactions/withdraw/<str:username>/page=<int:page>/', WEBviews.withdraws_history_user, name='withdraws-history-user'),
 
     # SUPPORT
     path(r'support/', WEBviews.support, name='support'),

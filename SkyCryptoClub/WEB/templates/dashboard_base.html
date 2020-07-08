@@ -135,12 +135,37 @@
               </ul>
             </div>
           </li>
-          <li class="nav-item {% if 'support' in request.path %}active{% endif %}">
-            <a class="nav-link" href="{% url 'support' %}">
-              <i class="material-icons">contact_support</i>
-              <p> Support </p>
-            </a>
-          </li>
+          {% if not is_support %}
+            <li class="nav-item {% if 'support' in request.path %}active{% endif %}">
+              <a class="nav-link" href="{% url 'support' %}">
+                <i class="material-icons">contact_support</i>
+                <p> Support </p>
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item {% if 'support' in request.path %}active{% endif %}">
+              <a class="nav-link" data-toggle="collapse" href="#support" aria-expanded="true">
+                <i class="material-icons">contact_support</i>
+                <p> Support
+                  <b class="caret"></b>
+                </p>
+              </a>
+              <div class="collapse show" id="support">
+                <ul class="nav">
+                  <li class="nav-item {% if 'support' in request.path and 'tickets' in request.path %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'support' %}">
+                      <span class="sidebar-normal"> Support Tickets </span>
+                    </a>
+                  </li>
+                  <li class="nav-item {% if 'support' in request.path and 'faq' in request.path %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'faq-panel' %}">
+                      <span class="sidebar-normal"> FAQ Panel </span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          {% endif %}
           <li class="nav-item d-block d-lg-none {% if 'settings' in request.path %}active{% endif %}">
             <a class="nav-link" href="{% url 'settings' %}">
               <i class="material-icons">settings</i>

@@ -24,7 +24,7 @@ from ..METHODS import get_json_data, generate_password
 from ..API.views import get_user_language, user_login_form, user_register_form, contact_send_mail, \
                         settings_update_avatar, settings_update_credentials, change_privacy, \
                         remove_linked_account, find_user_stake, confirm_stake_account, confirm_linked_account, \
-                        filterExchanges
+                        filterExchanges, isSupport
 from ..API.validator import get_support_create_errors
 import string
 import random
@@ -210,7 +210,8 @@ def dashboard_user(request, username):
                'title': title,
                'platforms': platforms,
                'owner': is_owner,
-               'name_color': name_color}
+               'name_color': name_color,
+               'is_support': isSupport(profile)}
     return render(request, 'dashboard/profile.html', context)
 
 
@@ -218,18 +219,18 @@ def dashboard_user(request, username):
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def settings(request):
-    profile = Profile.objects.filter(user=request.user).first()
-    platforms = Platform.objects.all()
     context = {}
-
     if request.method == "POST":
         if "updateAvatar" in request.POST:
             context = settings_update_avatar(request, context, profile)
         else:
             context = settings_update_credentials(request, context)
-        profile = Profile.objects.filter(user=request.user).first()
+
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
     context['profile'] = profile
     context['platforms'] = platforms
+    context['is_support'] = isSupport(profile)
     return render(request, 'settings/settings.html', context)
 
 
@@ -240,7 +241,8 @@ def privacy(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     context = {'profile': profile,
-               'platforms': platforms}
+               'platforms': platforms,
+               'is_support': isSupport(profile)}
 
     if request.method == "POST":
         context["messages"] = change_privacy(request, profile)
@@ -254,7 +256,8 @@ def privacy(request):
 def linked(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    context = {'profile': profile, 'platforms': platforms}
+    context = {'profile': profile, 'platforms': platforms,
+               'is_support': isSupport(profile)}
     if request.method == "POST":
         if 'removeAccount' in request.POST:
             context = remove_linked_account(request, context)
@@ -271,7 +274,8 @@ def linked(request):
 def requestExchange(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": MESSAGES[get_user_language(request).name]["EMPTY_EXCHANGE_TABLE"], "exchanges": exchanges}
+    context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": MESSAGES[get_user_language(request).name]["EMPTY_EXCHANGE_TABLE"], 
+               "exchanges": exchanges, 'is_support': isSupport(profile)}
     if request.method == "POST":
         getcontext().prec = 20
         data = get_json_data(request.POST, ("requestFrom", "fromPlatform", "fromCurrency", "fromAmount", "toPlatform", "toCurrency", "toAmount"))
@@ -372,7 +376,7 @@ def exchanges(request, page):
                 'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                 "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "exchangeFilter": exchangeFilter}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
         return render(request, 'exchange/exchanges_list.html', context)
 
     startPagination = max(page - 2, 1)
@@ -385,13 +389,12 @@ def exchanges(request, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges,
-                "exchangeFilter": exchangeFilter}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
     return render(request, 'exchange/exchanges_list.html', context)
 
 
 @ratelimit(block=True, key='ip', rate='15/m')
 def exchanges_history(request, page):
-    print(1)
     return HttpResponseRedirect('/transactions/exchange/{}/page={}/'.format(request.user.username, page))
     
 
@@ -421,7 +424,7 @@ def exchanges_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "exchangeFilter": exchangeFilter}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
         return render(request, 'transactions/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -434,13 +437,12 @@ def exchanges_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges,
-                "exchangeFilter": exchangeFilter}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
     return render(request, 'transactions/exchanges_history.html', context)
 
 
 @ratelimit(block=True, key='ip', rate='15/m')
 def deposits_history(request, page):
-    print(1)
     return HttpResponseRedirect('/transactions/deposit/{}/page={}/'.format(request.user.username, page))
     
 
@@ -471,7 +473,7 @@ def deposits_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no deposits in your history", "deposits": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "depositFilter": depositFilter}
+                "depositFilter": depositFilter, 'is_support': isSupport(profile)}
         return render(request, 'transactions/deposits_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -484,13 +486,12 @@ def deposits_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no deposits in your history", "deposits": deposits,
-                "depositFilter": depositFilter}
+                "depositFilter": depositFilter, 'is_support': isSupport(profile)}
     return render(request, 'transactions/deposits_history.html', context)
 
 
 @ratelimit(block=True, key='ip', rate='15/m')
 def withdraws_history(request, page):
-    print(1)
     return HttpResponseRedirect('/transactions/withdraw/{}/page={}/'.format(request.user.username, page))
     
 
@@ -521,7 +522,7 @@ def withdraws_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "withdrawFilter": withdrawFilter}
+                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile)}
         return render(request, 'transactions/withdraws_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -534,7 +535,7 @@ def withdraws_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": withdraws,
-                "withdrawFilter": withdrawFilter}
+                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile)}
     return render(request, 'transactions/withdraws_history.html', context)
 
     
@@ -548,7 +549,7 @@ def exchange_page(request, exchange_id):
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    context = {'profile': profile, 'platforms': platforms, "exchange": exchange}
+    context = {'profile': profile, 'platforms': platforms, "exchange": exchange, 'is_support': isSupport(profile)}
     return render(request, 'exchange/exchange.html', context)
 
   
@@ -559,7 +560,9 @@ def support(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     tickets = SupportTicket.objects.filter(creator=profile).order_by('-created_at')
-    context = {'profile': profile, 'platforms': platforms, 'tickets': tickets}
+    if isSupport(profile):
+        tickets = tickets | SupportTicket.objects.filter(closed=False)
+    context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 'is_support': isSupport(profile)}
     return render(request, 'support/contact_support.html', context)
 
     
@@ -573,7 +576,7 @@ def ticket(request, tid):
     if ticket is None:
         return HttpResponseRedirect(reverse('index'))
     messages = SupportTicketMessage.objects.filter(ticket=ticket)
-    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'ticket_messages': messages}
+    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'ticket_messages': messages, 'is_support': isSupport(profile)}
     return render(request, 'support/ticket.html', context)
 
     
@@ -584,7 +587,7 @@ def createTicket(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     categories = SupportCategory.objects.all().order_by('order')
-    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 'messages': []}
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 'messages': [], 'is_support': isSupport(profile)}
 
     if request.method == "POST":
         context["messages"] = get_support_create_errors(request)
@@ -602,3 +605,85 @@ def createTicket(request):
         return redirect('/support/ticket/' + str(ticket.ticketId) + "/")
 
     return render(request, 'support/create_ticket.html', context)
+
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def faqPanel(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    if not isSupport(profile):
+        return HttpResponseRedirect(reverse('index'))
+    platforms = Platform.objects.all()
+    categories = FAQCategory.objects.all()
+    questions = Question.objects.all()
+    canDelete = False
+    canEdit = False
+    canAdd = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.removeFAQ:
+            canDelete = True
+        if role.role.editFAQ:
+            canEdit = True
+        if role.role.addFAQ:
+            canAdd = True
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+               'questions': questions, 'messages': [], 'is_support': isSupport(profile),
+               'canDelete': canDelete, 'canEdit': canEdit, 'canAdd': canAdd}
+    return render(request, 'support/faq_panel.html', context)
+
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def faqEdit(request, question_id):
+    profile = Profile.objects.filter(user=request.user).first()
+    if not isSupport(profile):
+        return HttpResponseRedirect(reverse('index'))
+    platforms = Platform.objects.all()
+    categories = FAQCategory.objects.all()
+    question = Question.objects.filter(id=question_id).first()
+    if not question:
+         return redirect('/support/faq/')
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+               'messages': [], 'is_support': isSupport(profile),
+               'question': question}
+
+    if request.method == "POST":
+        data = get_json_data(request.POST, ['category', 'question', 'answer'])
+        if len(data) != 3:
+            return render(request, 'support/edit_faq.html', context)
+        newCategory, newQuestion, newAnswer = data
+        newCategory = FAQCategory.objects.filter(id=newCategory).first()
+        if not newCategory or newQuestion == "" or newAnswer == "":
+            return render(request, 'support/edit_faq.html', context)
+        question.category = newCategory
+        question.question = newQuestion
+        question.answer = newAnswer
+        question.save()
+        return redirect('/support/faq/')
+
+    return render(request, 'support/edit_faq.html', context)
+
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def faqNew(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    if not isSupport(profile):
+        return HttpResponseRedirect(reverse('index'))
+    platforms = Platform.objects.all()
+    categories = FAQCategory.objects.all()
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+               'messages': [], 'is_support': isSupport(profile)}
+
+    if request.method == "POST":
+        data = get_json_data(request.POST, ['category', 'question', 'answer'])
+        if len(data) != 3:
+            return render(request, 'support/add_faq.html', context)
+        category, question, answer = data
+        category = FAQCategory.objects.filter(id=category).first()
+        if not category or question == "" or answer == "":
+            return render(request, 'support/add_faq.html', context)
+        Question.objects.create(category=category, question=question, answer=answer)
+        return redirect('/support/faq/')
+
+    return render(request, 'support/add_faq.html', context)

@@ -6,40 +6,6 @@
 {% block page %}Linked Accounts Settings{% endblock %}
 
 {% block content %}
-
-<script>
-  function giveError(title, message){
-    $.notify({
-        title: '<strong>' + title + '</strong>',
-        message: message
-    },{
-        type: 'danger',
-        delay: 3000,
-        placement: {
-            from: 'top',
-            align: 'center'
-        }
-    });
-  }  
-  function giveSuccess(title, message){
-    $.notify({
-        title: '<strong>' + title + '</strong>',
-        message: message
-    },{
-        type: 'success',
-        delay: 4500,
-        placement: {
-            from: 'top',
-            align: 'center'
-        }
-    });
-  }  
-</script>
-{% if danger %}
-<script>giveError('{{ danger.title }}', '{{ danger.message }}')</script>
-{% endif %}
-{% if success %}
-<script>giveSuccess('{{ success.title }}', '{{ success.message }}')</script>
 {% endif %}
       <div class="content">
         <div class="container-fluid">

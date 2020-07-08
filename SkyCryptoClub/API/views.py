@@ -849,4 +849,26 @@ def filterExchanges(request, exchanges):
         exchanges = exchanges.filter(from_amount__lte=maxGiven)
     return exchanges
 
-    
+
+def isSupport(profile):
+    support = Role.objects.filter(name="Support").first()
+    if UserRole.objects.filter(profile=profile, role=support).first():
+        return True
+    return False
+
+@login_required
+@require_http_methods(["POST"])
+def deleteFAQ(request):
+    data = json.loads(request.body)
+    question = Question.objects.filter(id=data["id"]).first()
+    profile = Profile.objects.filter(user=request.user).first()
+    if not profile:
+        return HttpResponse(400)
+    canDelete = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.removeFAQ:
+            canDelete = True
+    if canDelete:
+        question.delete()
+        return HttpResponse(200)
+    return HttpResponse(400)

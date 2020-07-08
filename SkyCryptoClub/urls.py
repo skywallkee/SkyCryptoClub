@@ -85,7 +85,7 @@ urlpatterns = [
     # EXCHANGES
     path(r'exchanges/page=<int:page>/', WEBviews.exchanges, name='exchanges'),
     path(r'exchanges/create/', WEBviews.requestExchange, name='request-exchange'),
-    path(r'exchange/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
+    path(r'exchanges/<int:exchange_id>/', WEBviews.exchange_page, name='exchange-page'),
     path(r'delete-exchange/', APIviews.closeExchange, name='delete-exchange'),
     path(r'open-exchange/', APIviews.openExchange, name='open-exchange'),
     path(r'pay-exchange/', APIviews.payExchange, name='pay-exchange'),
@@ -100,10 +100,16 @@ urlpatterns = [
     path(r'transactions/withdraw/<str:username>/page=<int:page>/', WEBviews.withdraws_history_user, name='withdraws-history-user'),
 
     # SUPPORT
-    path(r'support/', WEBviews.support, name='support'),
+    path(r'support/tickets/', WEBviews.support, name='support'),
     path(r'support/ticket/create/', WEBviews.createTicket, name='create-ticket'),
     path(r'support/ticket/<int:tid>/', WEBviews.ticket, name='ticket'),
     path(r'close-ticket/', APIviews.closeTicket, name='close-ticket'),
     path(r'open-ticket/', APIviews.openTicket, name='open-ticket'),
     path(r'reply-ticket/', APIviews.replyTicket, name='reply-ticket'),
+
+    # SUPPORT FAQ
+    path(r'support/faq/', WEBviews.faqPanel, name='faq-panel'),
+    path(r'support/faq/<int:question_id>/', WEBviews.faqEdit, name='faq-edit'),
+    path(r'support/faq/new/', WEBviews.faqNew, name='faq-new'),
+    path(r'delete-faq/', APIviews.deleteFAQ, name='delete-faq'),
 ]

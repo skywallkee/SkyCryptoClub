@@ -1,0 +1,58 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Question {{ question.id }} | SkyCrypto Club{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-header card-header-icon card-header-rose">
+              <div class="card-icon">
+                <i class="material-icons">support</i>
+              </div>
+              <h4 class="card-title">Edit Frequent Asked Question
+              </h4>
+            </div>
+            <div class="card-body">
+              <form method="POST" class="form-horizontal">{% csrf_token %}
+                <div class="row">
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <select name="category" class="selectpicker col-sm-12" data-style="select-with-transition" title="Category" data-size="5">
+                      {% for category in categories %}
+                        <option value="{{ category.id }}" {% if question.category == category %}selected{% endif %}>{{ category.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Question</label>
+                      <textarea name="question" type="text" class="form-control">{{ question.question }}</textarea>
+                    </div>
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Answer</label>
+                      <textarea name="answer" type="text" class="form-control">{{ question.answer }}</textarea>
+                    </div>
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <button type="submit" name="addAccount" class="btn btn-rose pull-right col-sm-12">Edit Question</button>
+                  </div>
+                  <div class="col-3"></div>
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endblock %}

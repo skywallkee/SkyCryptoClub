@@ -30,24 +30,26 @@
                 <!--        Here you can write extra buttons/actions for the toolbar              -->
               </div>
               <div class="material-datatables col-sm-12">
-                <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
+                <table id="datatables" class="table table-hover display nowrap" cellspacing="0" width="100%" style="font-weight: bold;">
                   <thead>
                     <tr>
-                      <th>Ticket Title</th>
+                      {% if is_support %}<th>Creator</th>{% endif %}
+                      <th data-priority="1">Ticket Title</th>
                       <th>Ticket Category</th>
-                      <th>Status</th>
+                      <th data-priority="3">Status</th>
                       <th>Date</th>
-                      <th class="disabled-sorting text-right">Actions</th>
+                      <th data-priority="2" class="disabled-sorting text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {% for ticket in tickets %}
                     <tr>
+                      {% if is_support %}<td>{{ ticket.creator.user.username }}</td>{% endif %}
                       <td>{{ ticket.title }}</td>
                       <td>{{ ticket.category.name }}</td>
                       <td>{% if ticket.closed == True %}
                             Completed
-                          {% elif ticket.last_replied == profile %}
+                          {% elif ticket.last_replied == ticket.creator %}
                             Open
                           {% else %}
                             Responded
@@ -57,7 +59,6 @@
                         <a href="{% url 'ticket' ticket.ticketId %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
                         {% if ticket.closed == False %}
                         <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="closeTicket({{ ticket.ticketId }})"><i class="material-icons">close</i></span>
-                        </span>
                         {% else %}
                         <span class="btn btn-link btn-info btn-just-icon remove" style="cursor:pointer;" onclick="openTicket({{ ticket.ticketId }})"><i class="material-icons">refresh</i></span>
                         {% endif %}
@@ -174,6 +175,21 @@
         }
       })
     }
+    $(document).ready(function() {
+      var table = $('#datatable').DataTable(); ;
+      $('#datatables').DataTable({
+        "ordering": false,
+        "bPaginate": false,
+        "bLengthChange": false,
+        "bFilter": true,
+        "bInfo": false,
+        "searching": false,
+        "language": {
+          "emptyTable": "{{ emptyTableMessage }}",
+        },
+        responsive: true,
+      });
+    });
   </script>
 
       {% endblock %}

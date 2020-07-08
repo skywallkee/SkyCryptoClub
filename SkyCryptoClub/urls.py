@@ -112,4 +112,10 @@ urlpatterns = [
     path(r'support/faq/<int:question_id>/', WEBviews.faqEdit, name='faq-edit'),
     path(r'support/faq/new/', WEBviews.faqNew, name='faq-new'),
     path(r'delete-faq/', APIviews.deleteFAQ, name='delete-faq'),
+
+    # MODERATOR
+    path(r'moderator/bans/', WEBviews.bans, name='user-bans'),
+    path(r'moderator/ban/<str:username>/', WEBviews.banUser, name='user-ban'),
+    path(r'moderator/bans/<int:banId>/', WEBviews.banEdit, name='edit-ban'),
+    path(r'unban/', APIviews.unban, name='unban'),
 ]

@@ -30,7 +30,7 @@ admin.site.register(Languages, LanguagesAdmin)
 
 
 class ProfileAdmin(admin.ModelAdmin):
-    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName', "language"]
+    fields = ['user', 'avatar', 'xp', 'level', 'publicStats', 'publicLevel', 'publicXP', 'publicName', "language", "twofactor"]
 
 admin.site.register(Profile, ProfileAdmin)
 
@@ -52,13 +52,14 @@ class RoleAdmin(admin.ModelAdmin):
               'adminPanel', 'adminStatistics',
               'addPlatform',
               'editPlatform', 'deletePlatform', 'banUser',
-              'permanentBan',
+              'permanentBan', 'banExchange', 'banWithdraw',
+              'unban',
               'addCurrency', 'editCurrency', 'deleteCurrency',
               'editExchange',
               'addFAQCategory', 'editFAQCategory',
               'removeFAQCategory', 'approveFAQ',
               'editAccount',
-              'moderationPanel', 'banExchange',
+              'moderationPanel',
               'closeExchange',
               'viewTickets', 'respondTickets', 'closeTickets',
               'addFAQ', 'editFAQ', 'removeFAQ']
@@ -67,7 +68,7 @@ admin.site.register(Role, RoleAdmin)
 
 
 class ProfileBanAdmin(admin.ModelAdmin):
-    fields = ['profile', 'totalBan', 'exchangeBan', 'borrowBan', 'lendBan', 'banDue']
+    fields = ['profile', 'totalBan', 'exchangeBan', 'withdrawBan', 'banDue']
 
 admin.site.register(ProfileBan, ProfileBanAdmin)
 

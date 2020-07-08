@@ -32,6 +32,7 @@ from decimal import *
 import os
 from .validator import valid_login, valid_tfa, valid_register, get_settings_update_errors, \
                        get_settings_update_avatar_errors, get_support_create_errors
+from ..decorators import not_exchange_banned, not_platform_banned
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -856,6 +857,22 @@ def isSupport(profile):
         return True
     return False
 
+def canBan(profile):
+    canBanExchange = False
+    canBanWithdraw = False
+    canBanTemporary = False
+    canBanPermanent = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.banUser:
+            canBanTemporary = True
+        if role.role.banExchange:
+            canBanExchange = True
+        if role.role.banWithdraw:
+            canBanWithdraw = True
+        if role.role.permanentBan:
+            canBanPermanent = True
+    return canBanTemporary or canBanExchange or canBanWithdraw or canBanPermanent
+
 @login_required
 @require_http_methods(["POST"])
 def deleteFAQ(request):
@@ -870,5 +887,23 @@ def deleteFAQ(request):
             canDelete = True
     if canDelete:
         question.delete()
+        return HttpResponse(200)
+    return HttpResponse(400)
+
+@login_required
+@require_http_methods(["POST"])
+def unban(request):
+    data = json.loads(request.body)
+    ban = ProfileBan.objects.filter(id=data["id"]).first()
+    profile = Profile.objects.filter(user=request.user).first()
+    if not profile:
+        return HttpResponse(400)
+    canUnban = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.unban:
+            canUnban = True
+    if canUnban:
+        ban.banDue = timezone.now()
+        ban.save()
         return HttpResponse(200)
     return HttpResponse(400)

@@ -98,6 +98,9 @@ urlpatterns = [
     path(r'transactions/deposit/<str:username>/page=<int:page>/', WEBviews.deposits_history_user, name='deposits-history-user'),
     path(r'transactions/withdraw/page=<int:page>/', WEBviews.withdraws_history, name='withdraws-history'),
     path(r'transactions/withdraw/<str:username>/page=<int:page>/', WEBviews.withdraws_history_user, name='withdraws-history-user'),
+    path(r'transactions/csv/exchange/', WEBviews.exchanges_csv, name='exchanges-csv'),
+    path(r'transactions/csv/deposit/', WEBviews.deposits_csv, name='deposits-csv'),
+    path(r'transactions/csv/withdraw/', WEBviews.withdraws_csv, name='withdraws-csv'),
 
     # SUPPORT
     path(r'support/tickets/', WEBviews.support, name='support'),

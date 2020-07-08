@@ -36,6 +36,7 @@ from .filters import ExchangeFilter, DepositFilter, WithdrawFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
 from ..decorators import not_exchange_banned, not_platform_banned
+from djqscsv import render_to_csv_response
 
 def get_banners():
     banners = {}
@@ -617,6 +618,38 @@ def withdraws_history_user(request, username, page):
                 "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/withdraws_history.html', context)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='5/m')
+@require_http_methods(["GET"])
+def exchanges_csv(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    exchanges = Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)
+    exchanges = exchanges.values('eid', 'creator__user__username', 'from_currency__currency__name', 'from_currency__platform__name', 'from_amount', 
+                                 'to_currency__currency__name', 'to_currency__platform__name', 'to_amount', 'exchanged_by__user__username',
+                                  'creator_amount', 'exchanger_amount', 'ratio', 'status', 'taxCreator__percentage', 'taxExchanger__percentage', 'created_at')
+    return render_to_csv_response(exchanges)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='5/m')
+@require_http_methods(["GET"])
+def deposits_csv(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    depositList = FoundDeposit.objects.filter(profile=profile)
+    depositList = depositList.values('tipId', 'profile__user__username', 'account__username')
+    return render_to_csv_response(depositList)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='5/m')
+@require_http_methods(["GET"])
+def withdraws_csv(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    withdrawList = Withdrawal.objects.filter(profile=profile)
+    withdrawList = withdrawList.values('tipId', 'profile__user__username', 'account__username')
+    return render_to_csv_response(withdrawList)
 
 @not_platform_banned
 @not_exchange_banned

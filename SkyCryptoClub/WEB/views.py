@@ -9,7 +9,7 @@ from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
                          SupportTicket, SupportTicketMessage, SupportCategory, Invitation, FoundDeposit, \
-                         Withdrawal
+                         Withdrawal, ProfileBan
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -24,7 +24,7 @@ from ..METHODS import get_json_data, generate_password
 from ..API.views import get_user_language, user_login_form, user_register_form, contact_send_mail, \
                         settings_update_avatar, settings_update_credentials, change_privacy, \
                         remove_linked_account, find_user_stake, confirm_stake_account, confirm_linked_account, \
-                        filterExchanges, isSupport
+                        filterExchanges, isSupport, canBan
 from ..API.validator import get_support_create_errors
 import string
 import random
@@ -35,6 +35,7 @@ from django.core.paginator import Paginator
 from .filters import ExchangeFilter, DepositFilter, WithdrawFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
+from ..decorators import not_exchange_banned, not_platform_banned
 
 def get_banners():
     banners = {}
@@ -56,7 +57,13 @@ def get_banners():
 @ratelimit(block=True, key='ip', rate='20/m')
 def index(request):
     template    = loader.get_template('WEB/index.html')
-    context     = {"banners": get_banners()}
+    isPlatformBanned = False
+    if request.user.is_authenticated:
+        profile = Profile.objects.filter(user=request.user).first()
+        bans = ProfileBan.objects.filter(profile=profile, totalBan=True, banDue__gte=timezone.now())
+        if len(bans) > 0 and not request.user.is_staff:
+            isPlatformBanned = True
+    context     = {"banners": get_banners(), "isPlatformBanned": isPlatformBanned}
     return HttpResponse(template.render(context, request))
 
 
@@ -167,13 +174,14 @@ def contact(request):
     template    = loader.get_template('WEB/contact.html')
     return HttpResponse(template.render(context, request))
 
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def dashboard(request):
     return HttpResponseRedirect('/dashboard/{}'.format(request.user.username))
 
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
@@ -205,16 +213,23 @@ def dashboard_user(request, username):
     name_color = "#000000"
     if main_role is not None:
         name_color = main_role.role.color
-    context = {'profile': profile,
-               'statistics': statistics,
-               'title': title,
-               'platforms': platforms,
-               'owner': is_owner,
-               'name_color': name_color,
-               'is_support': isSupport(profile)}
+
+    currentUserProfile = Profile.objects.filter(user=request.user).first()
+    
+    isWithdrawBanned = False
+    profile = Profile.objects.filter(user=request.user).first()
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+    context = {'profile': profile, 'statistics': statistics,
+               'title': title, 'platforms': platforms,
+               'owner': is_owner, 'name_color': name_color,
+               'is_support': isSupport(profile),
+               'canBan': canBan(currentUserProfile),
+               'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'dashboard/profile.html', context)
 
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
@@ -228,36 +243,57 @@ def settings(request):
 
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context['profile'] = profile
     context['platforms'] = platforms
     context['is_support'] = isSupport(profile)
+    context['canBan'] = canBan(profile)
+    context['isWithdrawBanned'] = isWithdrawBanned
     return render(request, 'settings/settings.html', context)
 
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def privacy(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile,
                'platforms': platforms,
-               'is_support': isSupport(profile)}
+               'is_support': isSupport(profile),
+               'canBan': canBan(profile),
+               'isWithdrawBanned': isWithdrawBanned}
 
     if request.method == "POST":
         context["messages"] = change_privacy(request, profile)
 
     return render(request, 'settings/privacy.html', context)
 
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
 def linked(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms,
-               'is_support': isSupport(profile)}
+               'is_support': isSupport(profile),
+               'canBan': canBan(profile),
+               'isWithdrawBanned': isWithdrawBanned}
     if request.method == "POST":
         if 'removeAccount' in request.POST:
             context = remove_linked_account(request, context)
@@ -267,15 +303,21 @@ def linked(request):
     context["linked"] = linked
     return render(request, 'settings/linked.html', context)
 
-    
+@not_platform_banned
+@not_exchange_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='10/m')
 @require_http_methods(["GET", "POST"])
 def requestExchange(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": MESSAGES[get_user_language(request).name]["EMPTY_EXCHANGE_TABLE"], 
-               "exchanges": exchanges, 'is_support': isSupport(profile)}
+               "exchanges": exchanges, 'is_support': isSupport(profile), 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
     if request.method == "POST":
         getcontext().prec = 20
         data = get_json_data(request.POST, ("requestFrom", "fromPlatform", "fromCurrency", "fromAmount", "toPlatform", "toCurrency", "toAmount"))
@@ -354,13 +396,19 @@ def requestExchange(request):
         return redirect('/exchange/' + str(exchange.eid) + "/")
     return render(request, 'exchange/exchange_request.html', context)
 
-
+@not_platform_banned
+@not_exchange_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
 def exchanges(request, page):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
 
     exchanges = Exchange.objects.filter(status="Open").order_by('eid')
     exchangeFilter = ExchangeFilter(request.GET, exchanges)
@@ -376,7 +424,8 @@ def exchanges(request, page):
                 'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                 "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
         return render(request, 'exchange/exchanges_list.html', context)
 
     startPagination = max(page - 2, 1)
@@ -386,18 +435,28 @@ def exchanges(request, page):
     canPrevious = paginator.page(page).has_previous()
     exchanges = paginator.page(page).object_list
 
+    canCloseExchanges = False
+    isModerator = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.moderationPanel:
+            isModerator = True
+        if role.role.closeExchange:
+            canCloseExchanges = True
+    
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges,
-                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                "isModerator": isModerator, "canCloseExchanges": canCloseExchanges,
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'exchange/exchanges_list.html', context)
 
-
+@not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def exchanges_history(request, page):
     return HttpResponseRedirect('/transactions/exchange/{}/page={}/'.format(request.user.username, page))
     
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
@@ -409,6 +468,11 @@ def exchanges_history_user(request, username, page):
         return HttpResponseRedirect('/exchanges/history/{}/page=1/'.format(request.user.username))
     profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     
     exchanges = Exchange.objects.filter(status="Open").order_by('eid')
     exchangeFilter = ExchangeFilter(request.GET, exchanges)
@@ -424,7 +488,8 @@ def exchanges_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
         return render(request, 'transactions/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -437,15 +502,16 @@ def exchanges_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges,
-                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile)}
+                "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/exchanges_history.html', context)
 
-
+@not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def deposits_history(request, page):
     return HttpResponseRedirect('/transactions/deposit/{}/page={}/'.format(request.user.username, page))
     
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
@@ -457,6 +523,11 @@ def deposits_history_user(request, username, page):
         return HttpResponseRedirect('/transactions/deposit/{}/page=1/'.format(request.user.username))
     profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
 
     deposits = FoundDeposit.objects.filter(profile=profile).order_by('tipId')
     
@@ -473,7 +544,8 @@ def deposits_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no deposits in your history", "deposits": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "depositFilter": depositFilter, 'is_support': isSupport(profile)}
+                "depositFilter": depositFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
         return render(request, 'transactions/deposits_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -486,15 +558,16 @@ def deposits_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no deposits in your history", "deposits": deposits,
-                "depositFilter": depositFilter, 'is_support': isSupport(profile)}
+                "depositFilter": depositFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/deposits_history.html', context)
 
-
+@not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def withdraws_history(request, page):
     return HttpResponseRedirect('/transactions/withdraw/{}/page={}/'.format(request.user.username, page))
     
-
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET", "POST"])
@@ -506,6 +579,11 @@ def withdraws_history_user(request, username, page):
         return HttpResponseRedirect('/transactions/withdraw/{}/page=1/'.format(request.user.username))
     profile = Profile.objects.filter(user=user).first()
     platforms = Platform.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
 
     withdraws = Withdrawal.objects.filter(profile=profile).order_by('tipId')
     
@@ -522,7 +600,8 @@ def withdraws_history_user(request, username, page):
                'currentPage': 1, 'pages': [], 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
-                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile)}
+                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
         return render(request, 'transactions/withdraws_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -535,10 +614,12 @@ def withdraws_history_user(request, username, page):
     context = {'totalPages': totalPages, 'canPrevious': canPrevious, 'canNext': canNext, 
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": withdraws,
-                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile)}
+                "withdrawFilter": withdrawFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/withdraws_history.html', context)
 
-    
+@not_platform_banned
+@not_exchange_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
@@ -548,11 +629,18 @@ def exchange_page(request, exchange_id):
         return HttpResponseRedirect(reverse('index'))
 
     profile = Profile.objects.filter(user=request.user).first()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     platforms = Platform.objects.all()
-    context = {'profile': profile, 'platforms': platforms, "exchange": exchange, 'is_support': isSupport(profile)}
+    context = {'profile': profile, 'platforms': platforms, "exchange": exchange, 
+                'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'exchange/exchange.html', context)
 
-  
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
@@ -562,10 +650,18 @@ def support(request):
     tickets = SupportTicket.objects.filter(creator=profile).order_by('-created_at')
     if isSupport(profile):
         tickets = tickets | SupportTicket.objects.filter(closed=False)
-    context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 'is_support': isSupport(profile)}
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+    platforms = Platform.objects.all()
+    context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 
+                'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'support/contact_support.html', context)
 
-    
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
 @require_http_methods(["GET"])
@@ -576,10 +672,17 @@ def ticket(request, tid):
     if ticket is None:
         return HttpResponseRedirect(reverse('index'))
     messages = SupportTicketMessage.objects.filter(ticket=ticket)
-    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 'ticket_messages': messages, 'is_support': isSupport(profile)}
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+    context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 
+            'ticket_messages': messages, 'is_support': isSupport(profile), 'canBan': canBan(profile),
+            'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'support/ticket.html', context)
 
-    
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='10/m')
 @require_http_methods(["GET", "POST"])
@@ -587,7 +690,14 @@ def createTicket(request):
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
     categories = SupportCategory.objects.all().order_by('order')
-    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 'messages': [], 'is_support': isSupport(profile)}
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+                'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
+                'isWithdrawBanned': isWithdrawBanned}
 
     if request.method == "POST":
         context["messages"] = get_support_create_errors(request)
@@ -606,6 +716,7 @@ def createTicket(request):
 
     return render(request, 'support/create_ticket.html', context)
 
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
 @require_http_methods(["GET", "POST"])
@@ -626,11 +737,18 @@ def faqPanel(request):
             canEdit = True
         if role.role.addFAQ:
             canAdd = True
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'questions': questions, 'messages': [], 'is_support': isSupport(profile),
-               'canDelete': canDelete, 'canEdit': canEdit, 'canAdd': canAdd}
+               'canDelete': canDelete, 'canEdit': canEdit, 'canAdd': canAdd, 'canBan': canBan(profile),
+               'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'support/faq_panel.html', context)
 
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
 @require_http_methods(["GET", "POST"])
@@ -643,9 +761,14 @@ def faqEdit(request, question_id):
     question = Question.objects.filter(id=question_id).first()
     if not question:
          return redirect('/support/faq/')
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'messages': [], 'is_support': isSupport(profile),
-               'question': question}
+               'question': question, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
 
     if request.method == "POST":
         data = get_json_data(request.POST, ['category', 'question', 'answer'])
@@ -663,6 +786,7 @@ def faqEdit(request, question_id):
 
     return render(request, 'support/edit_faq.html', context)
 
+@not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
 @require_http_methods(["GET", "POST"])
@@ -672,8 +796,14 @@ def faqNew(request):
         return HttpResponseRedirect(reverse('index'))
     platforms = Platform.objects.all()
     categories = FAQCategory.objects.all()
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
-               'messages': [], 'is_support': isSupport(profile)}
+               'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
+               'isWithdrawBanned': isWithdrawBanned}
 
     if request.method == "POST":
         data = get_json_data(request.POST, ['category', 'question', 'answer'])
@@ -687,3 +817,157 @@ def faqNew(request):
         return redirect('/support/faq/')
 
     return render(request, 'support/add_faq.html', context)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def bans(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    if not canBan(profile):
+        return HttpResponseRedirect(reverse('index'))
+    platforms = Platform.objects.all()
+    bans = ProfileBan.objects.filter(banDue__gt=timezone.now())
+    canUnban = False
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.unban:
+            canUnban = True
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+
+    context = {'profile': profile, 'platforms': platforms, 
+               'messages': [], 'is_support': isSupport(profile),
+               'bans': bans, 'canBan': canBan(profile),
+               'canUnban': canUnban, 'isWithdrawBanned': isWithdrawBanned}
+    return render(request, 'moderator/ban_panel.html', context)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def banUser(request, username):
+    userBanned = get_user_model().objects.filter(username=username).first()
+    if not userBanned:
+        return HttpResponseRedirect(reverse('bans'))
+    banned = Profile.objects.filter(user=userBanned).first()
+    if not userBanned:
+        return HttpResponseRedirect(reverse('bans'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    categories = FAQCategory.objects.all()
+
+    canBanExchange = False
+    canBanWithdraw = False
+    canBanTemporary = False
+    canBanPermanent = False
+    for role in UserRole.objects.filter(profile=currentUserProfile):
+        if role.role.banUser:
+            canBanTemporary = True
+        if role.role.banExchange:
+            canBanExchange = True
+        if role.role.banWithdraw:
+            canBanWithdraw = True
+        if role.role.permanentBan:
+            canBanPermanent = True
+    
+    currentUserProfile = Profile.objects.filter(user=request.user).first()
+    if not canBan(currentUserProfile):
+        return HttpResponseRedirect(reverse('index'))
+    
+    if request.method == "POST":
+        data = get_json_data(request.POST, ['exchangeBan', 'withdrawBan', 'platformBan', 'duration', 'reason'])
+        exchangeBan, withdrawBan, platformBan, duration, reason = data
+        exchangeBan = exchangeBan == "True"
+        withdrawBan = withdrawBan == "True"
+        platformBan = platformBan == "True"
+        if not duration.isnumeric():
+            return HttpResponseRedirect(reverse('bans'))
+        duration = int(duration)
+        banDue = timezone.now() + timezone.timedelta(hours=duration)
+        if canBanPermanent and duration == 0:
+            banDue = timezone.now() + timezone.timedelta(days=356*150)
+        elif duration == 0:
+            return HttpResponseRedirect(reverse('bans'))
+        if reason == "":
+            return HttpResponseRedirect(reverse('bans'))
+        ProfileBan.objects.create(profile=banned, totalBan=platformBan, exchangeBan=exchangeBan, 
+                                  withdrawBan=withdrawBan, reason=reason, bannedBy=profile, banDue=banDue)
+    
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+               'messages': [], 'is_support': isSupport(profile), 'username': username,
+               'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
+               'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange, 'canBan': canBan(profile),
+               'isWithdrawBanned': isWithdrawBanned}
+    return render(request, 'moderator/ban_user.html', context)
+
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='30/m')
+@require_http_methods(["GET", "POST"])
+def banEdit(request, banId):
+    ban = ProfileBan.objects.filter(id=banId).first()
+    if not ban:
+        return HttpResponseRedirect(reverse('index'))
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    categories = FAQCategory.objects.all()
+    currentUserProfile = Profile.objects.filter(user=request.user).first()
+    if not canBan(currentUserProfile):
+        return HttpResponseRedirect(reverse('index'))
+
+    canBanExchange = False
+    canBanWithdraw = False
+    canBanTemporary = False
+    canBanPermanent = False
+    for role in UserRole.objects.filter(profile=currentUserProfile):
+        if role.role.banUser:
+            canBanTemporary = True
+        if role.role.banExchange:
+            canBanExchange = True
+        if role.role.banWithdraw:
+            canBanWithdraw = True
+        if role.role.permanentBan:
+            canBanPermanent = True
+    
+    if request.method == "POST":
+        data = get_json_data(request.POST, ['exchangeBan', 'withdrawBan', 'platformBan', 'duration', 'reason'])
+        exchangeBan, withdrawBan, platformBan, duration, reason = data
+        exchangeBan = exchangeBan == "True"
+        withdrawBan = withdrawBan == "True"
+        platformBan = platformBan == "True"
+        if not duration.isnumeric():
+            return HttpResponseRedirect(reverse('bans'))
+        duration = int(duration)
+        banDue = timezone.now() + timezone.timedelta(hours=duration)
+        if canBanPermanent and duration == 0:
+            banDue = timezone.now() + timezone.timedelta(days=356*150)
+        elif duration == 0:
+            return HttpResponseRedirect(reverse('bans'))
+        if reason == "":
+            return HttpResponseRedirect(reverse('bans'))
+        ban.exchangeBan = exchangeBan
+        ban.withdrawBan = withdrawBan
+        ban.totalBan = platformBan
+        ban.banDue = banDue
+        ban.reason = reason
+        ban.save()
+
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 or not request.user.is_staff:
+        isWithdrawBanned = True
+
+    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+               'messages': [], 'is_support': isSupport(profile),
+               'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
+               'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange,
+               'ban': ban, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
+    return render(request, 'moderator/edit_ban.html', context)

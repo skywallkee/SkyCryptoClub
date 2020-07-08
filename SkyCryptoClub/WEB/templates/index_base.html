@@ -241,27 +241,29 @@
             </a>
           </li>
           {% if user.is_authenticated %}
-          <li class="nav-item ">
-            <a href="{% url 'dashboard' %}" class="nav-link">
-              <i class="material-icons">dashboard</i> Dashboard ({{ user.username }})
-            </a>
-          </li>
-          <li class="nav-item ">
-            <a href="{% url 'logout' %}" class="nav-link">
-              <i class="material-icons">highlight_off</i> Log-Out
-            </a>
-          </li>
+            {% if not isPlatformBanned%}
+              <li class="nav-item ">
+                <a href="{% url 'dashboard' %}" class="nav-link">
+                  <i class="material-icons">dashboard</i> Dashboard ({{ user.username }})
+                </a>
+              </li>
+            {% endif %}
+            <li class="nav-item ">
+              <a href="{% url 'logout' %}" class="nav-link">
+                <i class="material-icons">highlight_off</i> Log-Out
+              </a>
+            </li>
           {% else %}
-          <li class="nav-item {% if request.path == '/register/' %}active{% endif %}">
-            <a href="{% url 'register' %}" class="nav-link">
-              <i class="material-icons">person_add</i> Register
-            </a>
-          </li>
-          <li class="nav-item {% if request.path == '/login/' %}active{% endif %}">
-            <a href="{% url 'login' %}" class="nav-link">
-              <i class="material-icons">fingerprint</i> Login
-            </a>
-          </li>
+            <li class="nav-item {% if request.path == '/register/' %}active{% endif %}">
+              <a href="{% url 'register' %}" class="nav-link">
+                <i class="material-icons">person_add</i> Register
+              </a>
+            </li>
+            <li class="nav-item {% if request.path == '/login/' %}active{% endif %}">
+              <a href="{% url 'login' %}" class="nav-link">
+                <i class="material-icons">fingerprint</i> Login
+              </a>
+            </li>
           {% endif %}
         </ul>
       </div>

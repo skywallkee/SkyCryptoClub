@@ -75,6 +75,7 @@
                 <table id="datatables" class="table table-hover display nowrap" cellspacing="0" width="100%" style="font-weight: bold;">
                   <thead>
                     <tr>
+                      {% if isModerator %}<th>User</th>{% endif %}
                       <th data-priority="1">Ratio</th>
                       <th>Given</th>
                       <th>Requested</th>
@@ -84,12 +85,13 @@
                   <tbody>
                     {% for exchange in exchanges %}
                     <tr>
+                      {% if isModerator %}<td><a href="{% url 'dashboard_user' exchange.creator.user.username %}">{{ exchange.creator.user.username }}</a></td>{% endif %}
                       <td><img src="{{ exchange.from_currency.currency.icon.url }}" width="15" height="15"> 1:{{ exchange.ratio }} <img src="{{ exchange.to_currency.currency.icon.url }}" width="15" height="15"></td>
                       <td>{{ exchange.from_amount }} <span style="color: {{exchange.from_currency.currency.color }};">{{ exchange.from_currency.currency.name }}</span> {{ exchange.from_currency.platform.name }}</td>
                       <td>{{ exchange.to_amount }} <span style="color: {{exchange.to_currency.currency.color }};">{{ exchange.to_currency.currency.name }}</span> {{ exchange.to_currency.platform.name }}</td>
                       <td class="text-right">
                         <a href="{% url 'exchange-page' exchange.eid %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">assignment</i></a>
-                        {% if exchange.creator.user == user %}
+                        {% if exchange.creator.user == user or canCloseExchanges %}
                           <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="deleteRequest({{ exchange.eid }})"><i class="material-icons">close</i></span>
                         {% endif %}
                       </td>

@@ -132,7 +132,6 @@ class Role(models.Model):
     addPlatform = models.BooleanField(default=False)
     editPlatform = models.BooleanField(default=False)
     deletePlatform = models.BooleanField(default=False)
-    banUser = models.BooleanField(default=False)
     permanentBan = models.BooleanField(default=False)
     addCurrency = models.BooleanField(default=False)
     editCurrency = models.BooleanField(default=False)
@@ -146,8 +145,11 @@ class Role(models.Model):
 
     # Moderator
     moderationPanel = models.BooleanField(default=False)
+    banUser = models.BooleanField(default=False)
     banExchange = models.BooleanField(default=False)
+    banWithdraw = models.BooleanField(default=False)
     closeExchange = models.BooleanField(default=False)
+    unban = models.BooleanField(default=False)
 
     # Support
     viewTickets = models.BooleanField(default=False)
@@ -163,24 +165,27 @@ class Role(models.Model):
 
 class UserRole(models.Model):
     id = models.AutoField(primary_key=True)
-    profile = models.ForeignKey(Profile, unique=False, on_delete=models.CASCADE)
-    role = models.ForeignKey(Role, unique=False, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
     primary = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = (("profile", "role"), ("profile", "primary"))
+        unique_together = ("profile", "role")
     
     def __str__(self):
         return self.profile.user.username + " | " + self.role.name
 
 
 class ProfileBan(models.Model):
-    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, primary_key=True)
+    id = models.AutoField(primary_key=True)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     totalBan = models.BooleanField(default=False, null=False)
     exchangeBan = models.BooleanField(default=False, null=False)
     borrowBan = models.BooleanField(default=False, null=False)
     lendBan = models.BooleanField(default=False, null=False)
     withdrawBan = models.BooleanField(default=False, null=False)
+    reason = models.TextField(default="", null=False)
+    bannedBy = models.ForeignKey(Profile, default=None, on_delete=models.CASCADE, related_name="bannedBy")
     banDue = models.DateTimeField(default=timezone.now)
     
     def __str__(self):

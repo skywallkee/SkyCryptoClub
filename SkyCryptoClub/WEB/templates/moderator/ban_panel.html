@@ -1,7 +1,7 @@
 {% extends "dashboard_base.html" %}
 {% load static %}
 
-{% block title %}FAQ Panel | SkyCrypto Club{% endblock %}
+{% block title %}Bans Panel | SkyCrypto Club{% endblock %}
 
 {% block content %}
       <div class="content">
@@ -9,22 +9,11 @@
           <div class="card ">
             <div class="card-header card-header-rose card-header-icon">
               <div class="card-icon">
-                <i class="material-icons">contact_support</i>
+                <i class="material-icons">delete_forever</i>
               </div>
-              <h4 class="card-title">FAQ Panel</h4>
+              <h4 class="card-title">Bans Panel</h4>
             </div>
             <div class="card-body ">
-              {% if canAdd %}
-              <div class="row">
-                <div class="col-md-8">
-                </div>
-                <div class="col-md-4 col-sm-12 text-center">
-                  <a class="btn btn-primary btn-round col-lg-11 col-md-12 col-sm-8" href="{% url 'faq-new' %}">
-                    <i class="material-icons">add</i> Add new FAQ
-                  </a>
-                </div>
-              </div>
-              {% endif %}
               <br /><br />
               <div class="toolbar">
                 <!--        Here you can write extra buttons/actions for the toolbar              -->
@@ -33,22 +22,32 @@
                 <table id="datatables" class="table table-striped table-no-bordered table-hover" cellspacing="0" width="100%" style="width:100%">
                   <thead>
                     <tr>
-                      <th>Category</th>
-                      <th data-priority="1">Question</th>
+                      <th data-priority="1">Banned</th>
+                      <th>Platform Ban</th>
+                      <th>Exchange Ban</th>
+                      <th>Withdraw Ban</th>
+                      <th>Reason</th>
+                      <th>Banned By</th>
+                      <th>Due</th>
                       <th data-priority="2" class="disabled-sorting text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for question in questions %}
+                    {% for ban in bans %}
                     <tr>
-                      <td>{{ question.category.name }}
-                      <td>{{ question.question }}</td>
+                      <td>{{ ban.profile.user.username }}</td>
+                      <td class="text-center">{% if ban.totalBan %}<span class="text-success">✓</span>{% else %}<span class="text-danger">✗</span>{% endif %}</td>
+                      <td class="text-center">{% if ban.exchangeBan %}<span class="text-success">✓</span>{% else %}<span class="text-danger">✗</span>{% endif %}</td>
+                      <td class="text-center">{% if ban.withdrawBan %}<span class="text-success">✓</span>{% else %}<span class="text-danger">✗</span>{% endif %}</td>
+                      <td>{{ ban.reason }}</td>
+                      <td>{{ ban.bannedBy.user.username }}</td>
+                      <td>{{ ban.banDue }}</td>
                       <td class="text-right">
-                        {% if canEdit %}
-                          <a href="{% url 'faq-edit' question.id %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">edit</i></a>
+                        {% if canBan %}
+                          <a href="{% url 'edit-ban' ban.id %}" class="btn btn-link btn-primary btn-just-icon like"><i class="material-icons">edit</i></a>
                         {% endif %}
-                        {% if canDelete %}
-                          <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="deleteFAQ({{ question.id }})"><i class="material-icons">close</i></span>
+                        {% if canUnban %}
+                          <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="unban({{ ban.id }})"><i class="material-icons">close</i></span>
                         {% endif %}
                       </td>
                     </tr>
@@ -61,22 +60,22 @@
         </div>
       </div>
   <script>
-  function sendDeletionFAQ(qid) {
+  function deleteBan(bid) {
       $.ajax({
             type: "POST",
-            url: "/delete-faq/",
+            url: "/unban/",
             headers: {
                 "Content-Type": "application/json",
                 "HTTP_GROUP_NAME": "groups_name",
                 "X-CSRFToken": csrfcookie()
             },
             data: JSON.stringify({
-                "id": qid,
+                "id": bid,
             }),
             success: function(data){
                 if (data != 200) {
                     $.notify({
-                        title: '<strong>You can\'t delete this question!</strong>',
+                        title: '<strong>You can\'t unban this user!</strong>',
                         message: ''
                     },{
                         type: 'danger',
@@ -97,10 +96,10 @@
         });
     }
 
-    function deleteFAQ(qid) {
+    function unban(bid) {
       Swal.fire({
         title: 'Are you sure?',
-        text: 'The question will be deleted permanently.',
+        text: 'The user will be unbanned.',
         type: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -108,10 +107,25 @@
         confirmButtonText: 'Yes!'
       }).then((result) => {
         if (result.value) {
-          sendDeletionFAQ(qid);
+          deleteBan(bid);
         }
       })
     }
+    $(document).ready(function() {
+      var table = $('#datatable').DataTable(); ;
+      $('#datatables').DataTable({
+        "ordering": false,
+        "bPaginate": false,
+        "bLengthChange": false,
+        "bFilter": true,
+        "bInfo": false,
+        "searching": false,
+        "language": {
+          "emptyTable": "{{ emptyTableMessage }}",
+        },
+        responsive: true,
+      });
+    });
   </script>
 
       {% endblock %}

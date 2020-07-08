@@ -1,0 +1,89 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Ban User | SkyCrypto Club{% endblock %}
+
+{% block content %}
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-header card-header-icon card-header-rose">
+              <div class="card-icon">
+                <i class="material-icons">delete_forever</i>
+              </div>
+              <h4 class="card-title">Ban User {{ username }}
+              </h4>
+            </div>
+            <div class="card-body">
+              <form method="POST" class="form-horizontal">{% csrf_token %}
+                <div class="row">
+                  <div class="col-3"></div>
+                  <div class="row col-12 col-lg-6 text-center">
+                    {% if canBanExchange %}
+                      <div class="form-check col-12">
+                        <label class="form-check-label">
+                          <input name="exchangeBan" class="form-check-input" type="hidden" value="False">
+                          <input name="exchangeBan" class="form-check-input" type="checkbox" value="True" checked>
+                          Exchange Ban
+                          <span class="form-check-sign">
+                              <span class="check"></span>
+                          </span>
+                        </label>
+                      </div>
+                    {% endif %}
+                    {% if canBanWithdraw %}
+                      <div class="form-check col-12">
+                        <label class="form-check-label">
+                          <input name="withdrawBan" class="form-check-input" type="hidden" value="False">
+                          <input name="withdrawBan" class="form-check-input" type="checkbox" value="True" checked>
+                          Withdraw Ban
+                          <span class="form-check-sign">
+                              <span class="check"></span>
+                          </span>
+                        </label>
+                      </div>
+                    {% endif %}
+                    {% if canBanTemporary %}
+                      <div class="form-check col-12">
+                        <label class="form-check-label">
+                          <input name="platformBan" class="form-check-input" type="hidden" value="False">
+                          <input name="platformBan" class="form-check-input" type="checkbox" value="True" checked>
+                          Platform Ban
+                          <span class="form-check-sign">
+                              <span class="check"></span>
+                          </span>
+                        </label>
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Ban Duration (hours)</label>
+                      <input type="number" step="1" name="duration" {% if canBanPermanent %}min="0"{% else %}min="1"{% endif %} class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <div class="form-group ">
+                      <label class="bmd-label-floating">Reason</label>
+                      <textarea name="reason" type="text" class="form-control" required></textarea>
+                    </div>
+                  </div>
+                  <div class="col-3"></div>
+                  <div class="col-3"></div>
+                  <div class="col-12 col-lg-6">
+                    <button type="submit" name="banUser" class="btn btn-rose col-sm-12">Ban User</button>
+                  </div>
+                  <div class="col-3"></div>
+                </div>
+                <div class="clearfix"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% endblock %}

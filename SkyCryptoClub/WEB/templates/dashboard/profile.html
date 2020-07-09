@@ -35,14 +35,14 @@
                 </div>
                 <div class="col-md-8">
                   <div class="row">
-                    {% if profile.publicXP == True or owner %}
+                    {% if profile.publicXP == True or owner or is_support %}
                       <span class="alignleft">
                         {% widthratio profile.xp 500 1 %}%
                       </span>
                       <span class="aligncenter">
                         {{ profile.xp }}/50000
                       </span>
-                      {% if profile.publicLevel == True or owner %}
+                      {% if profile.publicLevel == True or owner or is_support %}
                         <span class="alignright">
                           <b>Level: {{ profile.level }} {{ title }}</b>
                         </span>
@@ -54,6 +54,13 @@
                         </div>
                       </div>
                     {% endif %}
+                    {% if is_support %}
+                      <div class="col-12 text-center">
+                        <a href="{% url 'exchanges-history-user' profile.user.username 1 %}" class="btn btn-info">Exchanges</a>
+                        <a href="{% url 'withdraws-history-user' profile.user.username 1 %}" class="btn btn-info">Withdrawals</a>
+                        <a href="{% url 'deposits-history-user' profile.user.username 1 %}" class="btn btn-info">Deposits</a>
+                      </div>
+                    {% endif %}
                     {% if canBan %}
                       <div class="col-12 text-center">
                         <a href="{% url 'user-ban' profile.user.username %}" class="btn btn-danger">Ban User</a>
@@ -61,7 +68,7 @@
                     {% endif %}
                 </div>
               </div>
-              {% if profile.publicStats == True or owner %}
+              {% if profile.publicStats == True or owner or is_support %}
               <div class="row">
                 <div class="col-lg-6 col-md-6 col-sm-12">
                   <div class="card card-stats">

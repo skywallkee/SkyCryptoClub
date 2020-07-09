@@ -70,7 +70,7 @@
                   <div class="card-icon">
                     <i class="material-icons">assignment</i>
                   </div>
-                  <h4 class="card-title">Exchange History</h4> <a href="{% url 'exchanges-csv' %}">Export as CSV</a>
+                  <h4 class="card-title">Exchange History</h4> {% if request.user == profile.user %}<a href="{% url 'exchanges-csv' %}">Export as CSV</a>{% endif %}
                 </div>
                 <div class="card-body">
                   <div class="toolbar">

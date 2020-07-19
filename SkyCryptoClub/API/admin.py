@@ -134,7 +134,7 @@ admin.site.register(Exchange, ExchangeAdmin)
 
 
 class FAQCategoryAdmin(admin.ModelAdmin):
-    fields = ['name']
+    fields = ['order', 'name']
 
 admin.site.register(FAQCategory, FAQCategoryAdmin)
 

@@ -1,5 +1,6 @@
 import django_filters
-from ..API.models import Exchange, PlatformCurrency, FoundDeposit, Account, Profile, Withdrawal, SupportCategory, SupportTicket
+from ..API.models import Exchange, PlatformCurrency, FoundDeposit, Account, Profile, Withdrawal, \
+                         SupportCategory, SupportTicket, Question, FAQCategory
 from django import forms
 from django_filters.widgets import RangeWidget
 
@@ -68,8 +69,16 @@ class TicketsFilter(django_filters.FilterSet):
     class Meta:
         model = SupportTicket
         fields = []
+        
+
+class FAQFilter(django_filters.FilterSet):
+    category = django_filters.ModelMultipleChoiceFilter(field_name='category', queryset=FAQCategory.objects.all(), 
+                                                widget=forms.SelectMultiple(attrs={'class': 'col-12 selectpicker', 'data-style':"select-with-transition", 'data-size':"5"}))
+
+    class Meta:
+        model = Question
+        fields = []
 
     def __init__(self, *args, **kwargs):
-        super(TicketsFilter, self).__init__(*args, **kwargs)
-        print(self.filters['category'].extra['widget'].__dict__)
-        self.filters['category'].null_label = 'Categories'
+        super(FAQFilter, self).__init__(*args, **kwargs)
+        self.filters["category"].queryset = self.filters["category"].queryset.order_by('order')

@@ -41,7 +41,6 @@ from djqscsv import render_to_csv_response
 
 def handler400(request, exception, template_name="400.html"):
     template    = loader.get_template('WEB/' + template_name)
-    response.status_code = 400
     isPlatformBanned = False
     if request.user.is_authenticated:
         profile = Profile.objects.filter(user=request.user).first()
@@ -49,12 +48,11 @@ def handler400(request, exception, template_name="400.html"):
         if len(bans) > 0 and not request.user.is_staff:
             isPlatformBanned = True
     context     = {"isPlatformBanned": isPlatformBanned}
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request), status=400)
 
 
 def handler404(request, exception, template_name="404.html"):
     template    = loader.get_template('WEB/' + template_name)
-    response.status_code = 404
     isPlatformBanned = False
     if request.user.is_authenticated:
         profile = Profile.objects.filter(user=request.user).first()
@@ -62,12 +60,11 @@ def handler404(request, exception, template_name="404.html"):
         if len(bans) > 0 and not request.user.is_staff:
             isPlatformBanned = True
     context     = {"isPlatformBanned": isPlatformBanned}
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request), status=404)
 
 
 def handler500(request):
     template    = loader.get_template('WEB/505.html')
-    response.status_code = 500
     isPlatformBanned = False
     if request.user.is_authenticated:
         profile = Profile.objects.filter(user=request.user).first()
@@ -75,7 +72,7 @@ def handler500(request):
         if len(bans) > 0 and not request.user.is_staff:
             isPlatformBanned = True
     context     = {"isPlatformBanned": isPlatformBanned}
-    return HttpResponse(template.render(context, request))
+    return HttpResponse(template.render(context, request), status=505)
 
 
 def get_banners():

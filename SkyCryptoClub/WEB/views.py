@@ -75,6 +75,10 @@ def handler500(request):
     return HttpResponse(template.render(context, request), status=505)
 
 
+def favicon(request):
+    return HttpResponse("<img src=\"https://skycrypto-club.s3.amazonaws.com/static/assets/img/favicon.png?AWSAccessKeyId=AKIAI2XTFCZOLLMFAHTA&Signature=vz9HZhyCTTCCx%2FzAIaMw9Sk4lSo%3D&Expires=1595190773\" alt=\"favicon\">")
+
+
 def get_banners():
     banners = {}
     large = PublicityBanners.objects.filter(imageType="large")

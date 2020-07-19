@@ -8,13 +8,18 @@
   <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    {% block title %}{% endblock %}
+    {% block title %}{% endblock %} - Cryptocurrency exchanges made right
   </title>
-  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <!-- CSS Files -->
   <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
+
+  <!-- SEO -->
+  <meta name="description" content="Cryptocurrency peer-to-peer and server-client exchanges.">
+  <meta name="keywords" content="crypto, currency, cryptocurrency, Stake, exchange, peer-to-peer, server-client, safe, transaction">
+  <meta name="author" content="skywallkee">
+  <meta name="viewport" content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'>
 </head>
 
 <!--   Core JS Files   -->
@@ -220,7 +225,7 @@
   <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top text-white">
     <div class="container">
       <div class="navbar-wrapper">
-        <a class="navbar-brand" href="{% url 'index' %}">{% block page %}{% endblock %}</a>
+        <h4><a class="navbar-brand" href="{% url 'index' %}">{% block page %}{% endblock %}</a></h4>
       </div>
       <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
         <span class="sr-only">Toggle navigation</span>

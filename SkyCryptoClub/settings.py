@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.sitemaps',
     'SkyCryptoClub.API',
     'SkyCryptoClub.WEB',
     'storages',
@@ -58,7 +59,7 @@ INSTALLED_APPS = [
 
 SITE_ID = 2
 ROBOTS_USE_HOST = True
-ROBOTS_USE_SITEMAP = False
+ROBOTS_USE_SITEMAP = True
 ROBOTS_CACHE_TIMEOUT = 60*60*24
 
 AUTH_USER_MODEL = 'API.User'
@@ -73,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'redirect_to_non_www.middleware.RedirectToNonWww',
 ]
 
 ROOT_URLCONF = 'SkyCryptoClub.urls'
@@ -98,6 +100,38 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SkyCryptoClub.wsgi.application'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console':{
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+DEBUG_PROPAGATE_EXCEPTIONS = True
 
 
 # Database
@@ -190,12 +224,26 @@ GZIP_CONTENT_TYPES = (
  'text/javascript'
 )
 
-if not DEBUG:
-    import django_heroku
-    django_heroku.settings(locals())
-
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = "mail.privateemail.com"
 EMAIL_PORT = 465
 EMAIL_HOST_USER = gEMAIL
 EMAIL_HOST_PASSWORD = gPASSWORD
 EMAIL_USE_SSL = True
+
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    import django_heroku
+    django_heroku.settings(locals(), staticfiles=False)
+else:
+    CORS_REPLACE_HTTPS_REFERER      = False
+    HOST_SCHEME                     = "http://"
+    SECURE_PROXY_SSL_HEADER         = None
+    SECURE_SSL_REDIRECT             = False
+    SESSION_COOKIE_SECURE           = False
+    CSRF_COOKIE_SECURE              = False
+    SECURE_HSTS_SECONDS             = None
+    SECURE_HSTS_INCLUDE_SUBDOMAINS  = False
+    SECURE_FRAME_DENY               = False

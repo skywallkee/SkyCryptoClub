@@ -21,6 +21,7 @@ django-robots = "*"
 django-filter = "*"
 django-ratelimit = "*"
 django-queryset-csv = "*"
+django-redirect-to-non-www = "*"
 
 [requires]
 python_version = "3.6"

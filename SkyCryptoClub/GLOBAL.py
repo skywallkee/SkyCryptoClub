@@ -1,6 +1,7 @@
 import os
 
 # EMAIL
+CONTACT_MAIL = os.environ['CONTACT_MAIL']
 EMAIL = os.environ['EMAIL']
 PASSWORD = os.environ['EMAIL_PASSWORD']
 

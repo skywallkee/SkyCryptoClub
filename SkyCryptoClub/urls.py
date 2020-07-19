@@ -45,6 +45,9 @@ router.register(r'exchanges', APIviews.ExchangeViewSet)
 router.register(r'faqcategories', APIviews.FAQCategoryViewSet)
 router.register(r'questions', APIviews.QuestionViewSet)
 
+handler400 = 'SkyCryptoClub.WEB.views.handler400'
+handler404 = 'SkyCryptoClub.WEB.views.handler404'
+handler500 = 'SkyCryptoClub.WEB.views.handler500'
 
 urlpatterns = [
     path('', WEBviews.index, name='index'),

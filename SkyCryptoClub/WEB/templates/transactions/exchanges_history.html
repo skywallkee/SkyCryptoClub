@@ -107,9 +107,6 @@
                                 <span class="btn btn-link btn-danger btn-just-icon remove" style="cursor:pointer;" onclick="deleteRequest({{ exchange.eid }})"><i class="material-icons">close</i></span>
                               {% endif %}
                             {% endif %}
-                            {% if exchange.status.status == "Completed" %}
-                              <a href="" class="btn btn-link btn-warning btn-just-icon like"><i class="material-icons">help</i></a>
-                            {% endif %}
                             {% if exchange.status.status == "Pending" %}
                               <span class="btn btn-link btn-success btn-just-icon remove" style="cursor:pointer;" onclick="approveRequest({{ exchange.eid }})"><i class="material-icons">check</i></span>
                             {% endif %}

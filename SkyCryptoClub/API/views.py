@@ -18,7 +18,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import User, Profile, Role, UserRole, ProfileBan, Platform, PlatformCurrency, Currency, Wallet, \
                     Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
                     FAQCategory, Question, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportTicketMessage, SupportCategory, Languages, Invitation
+                    SupportTicket, SupportTicketMessage, SupportCategory, Languages, Invitation, \
+                    Withdrawal
 import json
 
 
@@ -315,7 +316,7 @@ def contact_send_mail(request):
 
     message = email + ": " + message
 
-    send_mail_process   = Process(target=send_mail, args=(os.environ["EMAIL"], "CONTACT FORM: " + subject, message, message))
+    send_mail_process   = Process(target=send_mail, args=(os.environ["CONTACT_MAIL"], "CONTACT FORM: " + subject, message, message))
     send_mail_process.start()
     send_mail_process   = Process(target=send_mail, args=(email, subject, message, message))
     send_mail_process.start()
@@ -378,7 +379,7 @@ def reload_stake(accounts, platform, profile):
     limit = 50
     found = []
     while searching:
-        payload = "{\"query\":\"{\\n user {\\n tipList(limit: " + str(limit) + ", offset: " + str(offset) + ") {\\n id\\n currency\\n amount\\n sendBy {\\n name\\n }\\n }\\n}\\n}\"}"
+        payload = "{\"query\":\"{ user { tipList(limit: " + str(limit) + ", offset: " + str(offset) + ") { id currency amount sendBy { name } }}}\"}"
         headers = {
         'Content-Type': 'application/json',
         'x-access-token': STAKE_TOKEN
@@ -414,24 +415,26 @@ def reload_balance(request):
         reload_stake(accounts, platform ,profile)
     return HttpResponse(200)
 
-@login_required
 def find_user_id_stake(username):
     import requests
     url = "https://api.stake.com/graphql"
-    payload = "{\"query\":\"query {\\n user(name: \\\"" + username + "\\\") {\\n id\\n}\\n}\"}"
+    payload = "{\"query\":\"query { user(name: \\\"" + username + "\\\") { id }}\"}"
     headers = {
     'Content-Type': 'application/json',
     'x-access-token': STAKE_TOKEN,
     'Content-Type': 'application/json'
     }
     response = requests.request("POST", url, headers=headers, data = payload)
-    user = response.json()["data"]["user"]
+    result = response.json()
+    print(result)
+    if "errors" in result:
+        return None
+    user = result["data"]["user"]
     if "id" in user:
         return user["id"]
     else:
         return None
 
-@login_required
 def do_withdraw_stake(platform, currency, amount, username):
     import requests
     url = "https://api.stake.com/graphql"
@@ -439,7 +442,7 @@ def do_withdraw_stake(platform, currency, amount, username):
     if userId is None:
         return None
     else:
-        payload = "{\"query\":\"mutation SendTipMutation {\\nsendTip(userId: \\\"" + userId + "\\\", amount: " + str(amount) + ", currency: " + currency.name + ", isPublic: true, chatId: \\\"f0326994-ee9e-411c-8439-b4997c187b95\\\", tfaToken: \"" + TOTP.now() + "\") {\\nid\\namount\\ncurrency}\\n}\"}"
+        payload = "{\"query\":\"mutation SendTipMutation { sendTip(userId: \\\"" + userId + "\\\", amount: " + str(amount) + ", currency: " + currency.name + ", isPublic: true, chatId: \\\"f0326994-ee9e-411c-8439-b4997c187b95\\\", tfaToken: \\\"" + TOTP.now() + "\\\") {id amount currency}}\"}"
         headers = {
         'Content-Type': 'application/json',
         'x-access-token': STAKE_TOKEN,
@@ -447,33 +450,30 @@ def do_withdraw_stake(platform, currency, amount, username):
         }
         response = requests.request("POST", url, headers=headers, data = payload)
         result = response.json()
-        if "errors" in response:
+        print(result)
+        if "errors" in result:
             return None
-    return 200
+    return result["data"]["sendTip"]
 
-@login_required
 def do_withdraw(platform, currency, amount, username):
     if platform.name == "Stake":
         response = do_withdraw_stake(platform, currency, amount, username)
         return response
-    return 400
+    return None
 
 def add_vault_stake(currency, amount):
     import requests
     url = "https://api.stake.com/graphql"
-    if userId is None:
+    payload = "{\"query\":\"mutation CreateVaultDepositMutation { createVaultDeposit(amount: " + str(amount) + ", currency: " + currency + ") { id } }\"}"
+    headers = {
+    'Content-Type': 'application/json',
+    'x-access-token': STAKE_TOKEN,
+    'Content-Type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data = payload)
+    result = response.json()
+    if "data" not in result or not result["data"] or "errors" in result:
         return None
-    else:
-        payload = "{\"query\":\"mutation CreateVaultDepositMutation { createVaultDeposit(amount: " + amount + ", currency: " + currency + ") { id } }\"}"
-        headers = {
-        'Content-Type': 'application/json',
-        'x-access-token': STAKE_TOKEN,
-        'Content-Type': 'application/json'
-        }
-        response = requests.request("POST", url, headers=headers, data = payload)
-        result = response.json()
-        if "errors" in response:
-            return None
     return 200
 
 def add_vault(platform, currency, amount):
@@ -492,13 +492,21 @@ def withdraw(request):
     username = data["account"]
 
     profile = Profile.objects.filter(user=request.user).first()
+    account = Account.objects.filter(profile=profile, platform=platform, username=username).first()
+    if not account or not platform or not currency:
+        return HttpResponse(400)
     store = PlatformCurrency.objects.filter(platform=platform, currency=currency).first()
+    if not store:
+        return HttpResponse(400)
     wallet = Wallet.objects.filter(profile=profile, store=store).first()
     if wallet.amount > amount:
-        if do_withdraw(platform, currency, amount, username) == 200:
-            wallet.amount -= amount
-            wallet.save()
-            return HttpResponse(200)
+        result = do_withdraw(platform, currency, amount, username)
+        if not result:
+            return HttpResponse(400)
+        Withdrawal.objects.create(tipId=result["id"], profile=profile, account=account)
+        wallet.amount -= amount
+        wallet.save()
+        return HttpResponse(200)
     return HttpResponse(400)
 
 @login_required
@@ -522,7 +530,7 @@ def closeExchange(request):
 def openExchange(request):
     data = json.loads(request.body)
     exchange = Exchange.objects.filter(eid=data["eid"]).first()
-    if exchange.creator.user == request.user:
+    if exchange.creator.user == request.user and exchange.status.status == "Pending":
         open = ExchangeStatus.objects.filter(status="Open").first()
         exchange.status = open
         exchange.save()
@@ -532,6 +540,16 @@ def openExchange(request):
 @login_required
 @require_http_methods(["POST"])
 def payExchange(request):
+    prices = {
+        "eth": 39.11,
+        "ltc": 217.52,
+        "doge": 3093838.04,
+        "bch": 41.04,
+        "xrp": 47002.64,
+        "trx": 534954,
+        "eos": 3644.21,
+        "btc": 1,
+    }
     data = json.loads(request.body)
     exchange = Exchange.objects.filter(eid=data["eid"]).first()
     if exchange.status.status != "Open":
@@ -549,22 +567,30 @@ def payExchange(request):
     wallet.save()
     # Add profit from exchanger to vault
     remaining_from_exchanger = exchange.from_amount - exchange.exchanger_amount
-    to_vault = round_down(Decimal(0.9) * remaining_from_exchanger, 8)
-    to_xp = round_down(Decimal(0.1) * remaining_from_exchanger, 8)
+    to_vault = Decimal(0.9) * remaining_from_exchanger
+    to_vault = to_vault.quantize(Decimal('.00000001'), rounding="ROUND_DOWN")
+    to_xp_creator = Decimal(0.1) * remaining_from_exchanger
+    to_xp_creator = to_xp_creator.quantize(Decimal('.00000001'), rounding="ROUND_DOWN")
     add_vault(exchange.from_currency.platform, exchange.from_currency.currency.name, to_vault)
-    profile.xp += to_xp
-    profile.save()
     # Add to creator the promised balance
     wallet = Wallet.objects.filter(profile=exchange.creator, store=exchange.to_currency).first()
     wallet.amount += exchange.creator_amount
     wallet.save()
     # Add profit from creator to vault
     remaining_from_creator = exchange.to_amount - exchange.creator_amount
-    to_vault = round_down(Decimal(0.9) * remaining_from_creator, 8)
-    to_xp = round_down(Decimal(0.1) * remaining_from_creator, 8)
+    to_vault = Decimal(0.9) * remaining_from_creator
+    to_vault = to_vault.quantize(Decimal('.00000001'), rounding="ROUND_DOWN")
+    to_xp_exchanger = Decimal(0.1) * remaining_from_creator
+    to_xp_exchanger = to_xp_exchanger.quantize(Decimal('.00000001'), rounding="ROUND_DOWN")
     add_vault(exchange.to_currency.platform, exchange.to_currency.currency.name, remaining_from_creator)
-    exchange.creator.xp += to_xp
+    # Add xp to parties
+    xp_creator = to_xp_creator * Decimal(100000000) / Decimal(prices[exchange.from_currency.currency.name])
+    exchange.creator.xp = exchange.creator.xp + xp_creator
     exchange.creator.save()
+    xp_exchanger = to_xp_exchanger * Decimal(100000000) / Decimal(prices[exchange.to_currency.currency.name])
+    profile = Profile.objects.filter(user=request.user).first()
+    profile.xp = profile.xp + xp_exchanger
+    profile.save()
     # Set exchanger to the exchange and close it
     exchanger = Profile.objects.filter(user=request.user).first()
     completed = ExchangeStatus.objects.filter(status="Completed").first()
@@ -746,7 +772,7 @@ def remove_linked_account(request, context):
 def find_user_stake(api):
     import requests
     url = "https://api.stake.com/graphql"
-    payload = "{\"query\":\"query {\\n user {\\n name\\n}\\n}\"}"
+    payload = "{\"query\":\"query { user { name }}\"}"
     headers = {'x-access-token': api,}
     data = api_request(url, payload, headers, "POST")
     if "data" not in data:
@@ -852,9 +878,9 @@ def filterExchanges(request, exchanges):
 
 
 def isSupport(profile):
-    support = Role.objects.filter(name="Support").first()
-    if UserRole.objects.filter(profile=profile, role=support).first():
-        return True
+    for role in UserRole.objects.filter(profile=profile):
+        if role.role.viewTickets == True:
+            return True
     return False
 
 def canBan(profile):

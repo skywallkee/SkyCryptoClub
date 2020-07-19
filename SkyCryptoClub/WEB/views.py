@@ -97,14 +97,16 @@ def user_register(request):
     if (not invitation or (invitation.registrations >= invitation.limit and invitation.limit != -1)) and DjangoSettings.CLOSED_REGISTRATION:
         return HttpResponseRedirect(reverse('index'))
     
-    invitation.clicks += 1
-    invitation.save()
+    if invitation:
+        invitation.clicks += 1
+        invitation.save()
 
     if request.method == 'POST':
         context = user_register_form(request)
         if context["success"]:
-            invitation.registrations += 1
-            invitation.save()
+            if invitation:
+                invitation.registrations += 1
+                invitation.save()
 
     return HttpResponse(template.render(context, request))
 
@@ -151,7 +153,7 @@ def recover_password(request):
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def faq(request):
-    categories = FAQCategory.objects.all()
+    categories = FAQCategory.objects.all().order_by('order')
     answers = Question.objects.filter(accepted=True)
     context = {"categories": categories, "answers": answers}
     return render(request, 'WEB/faq.html', context)
@@ -220,7 +222,7 @@ def dashboard_user(request, username):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=currentProfile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'statistics': statistics,
                'title': title, 'platforms': platforms,
@@ -247,7 +249,7 @@ def settings(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context['profile'] = profile
     context['platforms'] = platforms
@@ -266,7 +268,7 @@ def privacy(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile,
                'platforms': platforms,
@@ -289,7 +291,7 @@ def linked(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms,
                'is_support': isSupport(profile),
@@ -315,7 +317,7 @@ def requestExchange(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": MESSAGES[get_user_language(request).name]["EMPTY_EXCHANGE_TABLE"], 
                "exchanges": exchanges, 'is_support': isSupport(profile), 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
@@ -394,7 +396,7 @@ def requestExchange(request):
         except:
             context["messages"] = [MESSAGES[get_user_language(request).name]["EXCHANGE_REQUEST"]["FAIL"]]
             return render(request, 'exchange/exchange_request.html', context)
-        return redirect('/exchange/' + str(exchange.eid) + "/")
+        return redirect('/exchanges/' + str(exchange.eid) + "/")
     return render(request, 'exchange/exchange_request.html', context)
 
 @not_platform_banned
@@ -408,7 +410,7 @@ def exchanges(request, page):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     exchanges = Exchange.objects.filter(status="Open").order_by('eid')
@@ -473,7 +475,7 @@ def exchanges_history_user(request, username, page):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=currentProfile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     
     exchanges = (Exchange.objects.filter(creator=profile) | Exchange.objects.filter(exchanged_by=profile)).order_by('eid')
@@ -530,7 +532,7 @@ def deposits_history_user(request, username, page):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     deposits = FoundDeposit.objects.filter(profile=profile).order_by('tipId')
@@ -587,7 +589,7 @@ def withdraws_history_user(request, username, page):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=currentProfile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     withdraws = Withdrawal.objects.filter(profile=profile).order_by('tipId')
@@ -669,7 +671,7 @@ def exchange_page(request, exchange_id):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange, 
@@ -690,7 +692,7 @@ def support(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 
@@ -712,7 +714,7 @@ def ticket(request, tid):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 
             'ticket_messages': messages, 'is_support': isSupport(profile), 'canBan': canBan(profile),
@@ -730,7 +732,7 @@ def createTicket(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                 'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
@@ -747,7 +749,7 @@ def createTicket(request):
             return HttpResponseRedirect(reverse('index'))
         message = request.POST["message"]
         creator = profile
-        ticket = SupportTicket.objects.create(creator=creator, title=title, category=category)
+        ticket = SupportTicket.objects.create(creator=creator, title=title, category=category, last_replied=profile)
         SupportTicketMessage.objects.create(ticket=ticket, sender=creator, message=message)
         return redirect('/support/ticket/' + str(ticket.ticketId) + "/")
 
@@ -777,7 +779,7 @@ def faqPanel(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'questions': questions, 'messages': [], 'is_support': isSupport(profile),
@@ -801,7 +803,7 @@ def faqEdit(request, question_id):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'messages': [], 'is_support': isSupport(profile),
@@ -836,7 +838,7 @@ def faqNew(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
@@ -872,7 +874,7 @@ def bans(request):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     context = {'profile': profile, 'platforms': platforms, 
@@ -935,7 +937,7 @@ def banUser(request, username):
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
@@ -999,7 +1001,7 @@ def banEdit(request, banId):
 
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
-    if len(bans) > 0 or not request.user.is_staff:
+    if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
@@ -1008,3 +1010,4 @@ def banEdit(request, banId):
                'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange,
                'ban': ban, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'moderator/edit_ban.html', context)
+    

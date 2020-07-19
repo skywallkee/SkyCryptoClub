@@ -53,6 +53,7 @@ urlpatterns = [
     path('', WEBviews.index, name='index'),
     path(r'robots.txt', include('robots.urls')),
     path(r'sitemap.xml', sitemap, {'sitemaps': sitemaps}),
+    path(r'favicon.ico', WEBviews.favicon, name='favicon'),
 
     # API
     path(r'endpoints/', include(router.urls)),

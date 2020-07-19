@@ -32,7 +32,7 @@ import os
 from decimal import *
 import math
 from django.core.paginator import Paginator
-from .filters import ExchangeFilter, DepositFilter, WithdrawFilter
+from .filters import ExchangeFilter, DepositFilter, WithdrawFilter, TicketsFilter, FAQFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
 from ..decorators import not_exchange_banned, not_platform_banned
@@ -73,6 +73,10 @@ def handler500(request):
             isPlatformBanned = True
     context     = {"isPlatformBanned": isPlatformBanned}
     return HttpResponse(template.render(context, request), status=505)
+
+
+def favicon(request):
+    return HttpResponse("<img src=\"https://skycrypto-club.s3.amazonaws.com/static/assets/img/favicon.png?AWSAccessKeyId=AKIAI2XTFCZOLLMFAHTA&Signature=vz9HZhyCTTCCx%2FzAIaMw9Sk4lSo%3D&Expires=1595190773\" alt=\"favicon\">")
 
 
 def get_banners():
@@ -234,6 +238,7 @@ def dashboard_user(request, username):
     is_owner = user.username == request.user.username
 
     profile = Profile.objects.filter(user=user).first()
+    
     currentProfile = Profile.objects.filter(user=request.user).first()
     statistics = {}
     statistics["totalExchangesStarted"] = len(Exchange.objects.filter(creator=profile))
@@ -726,6 +731,9 @@ def support(request):
     tickets = SupportTicket.objects.filter(creator=profile).order_by('-created_at')
     if isSupport(profile):
         tickets = tickets | SupportTicket.objects.filter(closed=False)
+
+    ticketsFilter = TicketsFilter(request.GET, tickets)
+    tickets = ticketsFilter.qs
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
@@ -734,7 +742,7 @@ def support(request):
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 
                 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'ticketsFilter': ticketsFilter}
     return render(request, 'support/contact_support.html', context)
 
 @not_platform_banned
@@ -801,8 +809,12 @@ def faqPanel(request):
     if not isSupport(profile):
         return HttpResponseRedirect(reverse('index'))
     platforms = Platform.objects.all()
-    categories = FAQCategory.objects.all()
+    categories = FAQCategory.objects.all().order_by('order')
     questions = Question.objects.all()
+
+    faqFilter = FAQFilter(request.GET, questions)
+    questions = faqFilter.qs
+
     canDelete = False
     canEdit = False
     canAdd = False
@@ -821,7 +833,7 @@ def faqPanel(request):
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'questions': questions, 'messages': [], 'is_support': isSupport(profile),
                'canDelete': canDelete, 'canEdit': canEdit, 'canAdd': canAdd, 'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned, 'faqFilter': faqFilter}
     return render(request, 'support/faq_panel.html', context)
 
 @not_platform_banned
@@ -833,7 +845,7 @@ def faqEdit(request, question_id):
     if not isSupport(profile):
         return HttpResponseRedirect(reverse('index'))
     platforms = Platform.objects.all()
-    categories = FAQCategory.objects.all()
+    categories = FAQCategory.objects.all().order_by('order')
     question = Question.objects.filter(id=question_id).first()
     if not question:
          return redirect('/support/faq/')
@@ -871,7 +883,7 @@ def faqNew(request):
     if not isSupport(profile):
         return HttpResponseRedirect(reverse('index'))
     platforms = Platform.objects.all()
-    categories = FAQCategory.objects.all()
+    categories = FAQCategory.objects.all().order_by('order')
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
@@ -933,7 +945,10 @@ def banUser(request, username):
         return HttpResponseRedirect(reverse('bans'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    categories = FAQCategory.objects.all()
+    
+    currentUserProfile = Profile.objects.filter(user=request.user).first()
+    if not canBan(currentUserProfile):
+        return HttpResponseRedirect(reverse('index'))
 
     canBanExchange = False
     canBanWithdraw = False
@@ -948,10 +963,6 @@ def banUser(request, username):
             canBanWithdraw = True
         if role.role.permanentBan:
             canBanPermanent = True
-    
-    currentUserProfile = Profile.objects.filter(user=request.user).first()
-    if not canBan(currentUserProfile):
-        return HttpResponseRedirect(reverse('index'))
     
     if request.method == "POST":
         data = get_json_data(request.POST, ['exchangeBan', 'withdrawBan', 'platformBan', 'duration', 'reason'])
@@ -977,7 +988,7 @@ def banUser(request, username):
     if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
-    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+    context = {'profile': profile, 'platforms': platforms, 
                'messages': [], 'is_support': isSupport(profile), 'username': username,
                'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
                'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange, 'canBan': canBan(profile),
@@ -994,7 +1005,6 @@ def banEdit(request, banId):
         return HttpResponseRedirect(reverse('index'))
     profile = Profile.objects.filter(user=request.user).first()
     platforms = Platform.objects.all()
-    categories = FAQCategory.objects.all()
     currentUserProfile = Profile.objects.filter(user=request.user).first()
     if not canBan(currentUserProfile):
         return HttpResponseRedirect(reverse('index'))
@@ -1041,7 +1051,7 @@ def banEdit(request, banId):
     if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
 
-    context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
+    context = {'profile': profile, 'platforms': platforms, 
                'messages': [], 'is_support': isSupport(profile),
                'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
                'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange,

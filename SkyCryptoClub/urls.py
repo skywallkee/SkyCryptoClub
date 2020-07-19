@@ -21,6 +21,12 @@ from django.contrib.auth import views as auth_views
 from rest_framework import routers
 from SkyCryptoClub.API import views as APIviews
 from SkyCryptoClub.WEB import views as WEBviews
+from django.contrib.sitemaps.views import sitemap
+from SkyCryptoClub.WEB.sitemaps import StaticViewSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap
+}
 
 router = routers.DefaultRouter()
 router.register(r'users', APIviews.UserViewSet)
@@ -43,6 +49,7 @@ router.register(r'questions', APIviews.QuestionViewSet)
 urlpatterns = [
     path('', WEBviews.index, name='index'),
     path(r'robots.txt', include('robots.urls')),
+    path(r'sitemap.xml', sitemap, {'sitemaps': sitemaps}),
 
     # API
     path(r'endpoints/', include(router.urls)),

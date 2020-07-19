@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.sitemaps',
     'SkyCryptoClub.API',
     'SkyCryptoClub.WEB',
     'storages',
@@ -58,7 +59,7 @@ INSTALLED_APPS = [
 
 SITE_ID = 2
 ROBOTS_USE_HOST = True
-ROBOTS_USE_SITEMAP = False
+ROBOTS_USE_SITEMAP = True
 ROBOTS_CACHE_TIMEOUT = 60*60*24
 
 AUTH_USER_MODEL = 'API.User'
@@ -73,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'redirect_to_non_www.middleware.RedirectToNonWww',
 ]
 
 ROOT_URLCONF = 'SkyCryptoClub.urls'

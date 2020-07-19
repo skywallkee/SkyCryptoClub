@@ -32,7 +32,7 @@ import os
 from decimal import *
 import math
 from django.core.paginator import Paginator
-from .filters import ExchangeFilter, DepositFilter, WithdrawFilter
+from .filters import ExchangeFilter, DepositFilter, WithdrawFilter, TicketsFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
 from ..decorators import not_exchange_banned, not_platform_banned
@@ -238,6 +238,7 @@ def dashboard_user(request, username):
     is_owner = user.username == request.user.username
 
     profile = Profile.objects.filter(user=user).first()
+    
     currentProfile = Profile.objects.filter(user=request.user).first()
     statistics = {}
     statistics["totalExchangesStarted"] = len(Exchange.objects.filter(creator=profile))
@@ -730,6 +731,9 @@ def support(request):
     tickets = SupportTicket.objects.filter(creator=profile).order_by('-created_at')
     if isSupport(profile):
         tickets = tickets | SupportTicket.objects.filter(closed=False)
+
+    ticketsFilter = TicketsFilter(request.GET, tickets)
+    tickets = ticketsFilter.qs
     
     isWithdrawBanned = False
     bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
@@ -738,7 +742,7 @@ def support(request):
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 
                 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'ticketsFilter': ticketsFilter}
     return render(request, 'support/contact_support.html', context)
 
 @not_platform_banned

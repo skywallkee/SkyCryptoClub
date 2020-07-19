@@ -1,6 +1,7 @@
 import django_filters
-from ..API.models import Exchange, PlatformCurrency, FoundDeposit, Account, Profile, Withdrawal
+from ..API.models import Exchange, PlatformCurrency, FoundDeposit, Account, Profile, Withdrawal, SupportCategory, SupportTicket
 from django import forms
+from django_filters.widgets import RangeWidget
 
 class ExchangeFilter(django_filters.FilterSet):
     from_currency = django_filters.ModelChoiceFilter(empty_label='From Currency', field_name='from_currency', queryset=PlatformCurrency.objects.all(),
@@ -56,3 +57,19 @@ class WithdrawFilter(django_filters.FilterSet):
         self.profile = kwargs.pop('profile')
         super(WithdrawFilter, self).__init__(*args, **kwargs)
         self.filters["account"].queryset = Account.objects.filter(profile=self.profile)
+
+
+class TicketsFilter(django_filters.FilterSet):
+    category = django_filters.ModelMultipleChoiceFilter(field_name='category', queryset=SupportCategory.objects.all(), 
+                                                widget=forms.SelectMultiple(attrs={'class': 'col-12 selectpicker', 'data-style':"select-with-transition", 'data-size':"5"}))
+
+    date_range = django_filters.DateFromToRangeFilter(field_name='created_at', widget=RangeWidget(attrs={'type': 'date', 'class': 'col-12 col-lg-6 form-control datetime'}))
+
+    class Meta:
+        model = SupportTicket
+        fields = []
+
+    def __init__(self, *args, **kwargs):
+        super(TicketsFilter, self).__init__(*args, **kwargs)
+        print(self.filters['category'].extra['widget'].__dict__)
+        self.filters['category'].null_label = 'Categories'

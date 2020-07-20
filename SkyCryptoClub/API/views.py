@@ -980,7 +980,11 @@ def get_usd_price(coin):
     import requests
     content = requests.get(url).content
     content = json.loads(content)
-    return float(content["market_data"]["current_price"]["usd"])
+    try:
+        return float(content["market_data"]["current_price"]["usd"])
+    except:
+        print(content)
+        return 0
 
 
 def exchangeRate(request):

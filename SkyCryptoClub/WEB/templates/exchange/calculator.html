@@ -1,0 +1,98 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Rate Calculator | SkyCrypto Club{% endblock %}
+
+{% block content %}
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-header card-header-icon card-header-rose">
+              <div class="card-icon">
+                <i class="material-icons">perm_identity</i>
+              </div>
+              <h4 class="card-title">Rate Calculator</h4>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-12 col-lg-6">
+                  <select class="selectpicker col-12" data-style="select-with-transition" id="fromCurrency" data-size="5" onchange=calculate("first")>
+                    {% for currency in currencies %}
+                      <option value="{{ currency.name }}">{{ currency.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="form-group ">
+                    <label class="bmd-label-floating">From amount</label>
+                    <input id="fromAmount" type="number" class="form-control" value=1 step="0.00000001" onchange=calculate("first")>
+                  </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <select class="selectpicker col-12" data-style="select-with-transition" id="toCurrency" data-size="5" onchange=calculate("second")>
+                    {% for currency in currencies %}
+                      <option value="{{ currency.name }}">{{ currency.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="form-group ">
+                    <label class="bmd-label-floating">To amount</label>
+                    <input id="toAmount" type="number" class="form-control" value=1 step="0.00000001" onchange=calculate("second")>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<script>
+function calculate(direction) {
+  let fromCurrencySelect = document.getElementById('fromCurrency');
+  let fromAmountInput = document.getElementById('fromAmount');
+  let toCurrencySelect = document.getElementById('toCurrency');
+  let toAmountInput = document.getElementById('toAmount');
+
+  let fromCurrency = fromCurrencySelect.options[fromCurrencySelect.selectedIndex].value;
+  let fromAmount = fromAmountInput.value;
+  let toCurrency = toCurrencySelect.options[toCurrencySelect.selectedIndex].value;
+  let toAmount = toAmountInput.value;
+  
+  if (direction == "second") {
+    [fromCurrency, fromAmount, toCurrency, toAmount] = [toCurrency, toAmount, fromCurrency, fromAmount];
+  }
+
+  $.ajax({
+        type: "POST",
+        url: "/get-exchange-rate/",
+        headers: {
+            "Content-Type": "application/json",
+            "HTTP_GROUP_NAME": "groups_name",
+            "X-CSRFToken": csrfcookie()
+        },
+        data: JSON.stringify({
+            "fromCurrency": fromCurrency,
+            "fromAmount": fromAmount,
+            "toCurrency": toCurrency,
+            "toAmount": toAmount,
+        }),
+        success: function(data){
+          if (direction == "first") {
+            toAmountInput.value = data
+          } else {
+            fromAmountInput.value = data
+          }
+        },
+        failure: function(data){
+            console.log(data);
+        },
+    });
+}
+
+$(document).ready(function() {
+      calculate("first");
+    });
+</script>
+{% endblock %}

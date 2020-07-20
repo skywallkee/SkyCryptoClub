@@ -962,3 +962,38 @@ def unban(request):
         ban.save()
         return HttpResponse(200)
     return HttpResponse(400)
+
+
+def get_usd_price(coin):
+    coin_ids = {
+        "btc": "bitcoin",
+        "eth": "ethereum",
+        "ltc": "litecoin",
+        "doge": "dogecoin",
+        "bch": "bitcoin-cash",
+        "xrp": "ripple",
+        "trx": "tron",
+        "eos": "eos",
+    }
+    url = "https://api.coingecko.com/api/v3/coins/{}?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=false".format(coin_ids[coin])
+
+    import requests
+    content = requests.get(url).content
+    content = json.loads(content)
+    return float(content["market_data"]["current_price"]["usd"])
+
+
+def exchangeRate(request):
+    data = get_json_data(json.loads(request.body), ("fromCurrency", "fromAmount", "toCurrency", "toAmount"))
+    if len(data) != 4:
+        return HttpResponse(0)
+    fromCurrency, fromAmount, toCurrency, toAmount = data
+
+    fromUSDAmount = get_usd_price(fromCurrency)
+    fromAmount = float(fromAmount) * fromUSDAmount
+
+    toUSDAmount = get_usd_price(toCurrency)
+
+    getcontext().prec = 8
+    rate = Decimal(fromAmount) / Decimal(toUSDAmount)
+    return HttpResponse(rate.quantize(Decimal('.00000001'), rounding="ROUND_DOWN"))

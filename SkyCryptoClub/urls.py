@@ -142,4 +142,5 @@ urlpatterns = [
     path(r'changelog/<int:page>/', CLviews.changelogs, name='changelog'),
     path(r'changelog/upcoming/', CLviews.upcoming, name='changelog-upcoming'),
     path(r'changelog/upcoming/<int:page>/', CLviews.changelogs, name='changelog-upcoming'),
+    path(r'changelog/request/', CLviews.request, name='changelog-request'),
 ]

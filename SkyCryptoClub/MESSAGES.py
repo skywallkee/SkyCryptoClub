@@ -217,6 +217,23 @@ MESSAGES = {
                 }
             }
         },
+        # FEATURE REQUEST
+        "FEATURE_REQUEST": {
+            "SUCCESS": {
+                "type": "success",
+                "message": "The request has been sent to our developers successfully."
+            },
+            "FAIL": {
+                "ELABORATE": {
+                    "type": "danger",
+                    "message": "Please try to elaborate the given request a little more."
+                },
+                "TOO_MANY": {
+                    "type": "danger",
+                    "message": "Too many requests in a short period of time. Please wait 24 hours before doing any other request."
+                }
+            }
+        },
         # LOGIN
         "TFA_MAIL": {
             "SUBJECT": "2FA Key",

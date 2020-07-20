@@ -2,7 +2,12 @@
 
 {% block title %}ChangeLog | SkyCrypto Club{% endblock %}
 
-
+{% block header %}
+<h1 style='font-size: x-large; font-weight: bold;'>
+Updates: <a href="{% url 'changelog' %}" {% if '/changelog/' in request.path and 'upcoming' not in request.path %}class='disabled'{% endif %}>Released</a> | 
+            <a href="{% url 'changelog-upcoming' %}" {% if '/changelog/upcoming/' in request.path %}class='disabled'{% endif %}>Upcoming</a>
+</h1>
+{% endblock %}
 
 {% block content %}
 {% for update in updates %}

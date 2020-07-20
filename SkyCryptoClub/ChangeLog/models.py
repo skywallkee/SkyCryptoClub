@@ -21,3 +21,13 @@ class Feature(models.Model):
     
     def __str__(self):
         return self.title
+
+
+class FeatureRequest(models.Model):
+    id = models.AutoField(primary_key=True)
+    summary = models.TextField()
+    requested_by = models.CharField(max_length=15, default="")
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return str(self.date) + " - " + self.requested_by

@@ -1,0 +1,35 @@
+{% extends "changelog_base.html" %}
+
+{% block title %}ChangeLog | SkyCrypto Club{% endblock %}
+
+{% block header %}
+<h1 style='font-size: x-large; font-weight: bold;'>
+Request new feature
+</h1>
+{% endblock %}
+
+{% block content %}
+<article>
+    <form class="form text-center" method="post" action="" id="request-form">{% csrf_token %}
+        <div class="form-group">
+            <label for="featureSummary"><h2>Feature Summary</h2></label><br/>
+            {% for message in messages %}
+            <span class="text-{{ message.type }}" style="font-weight: bold;">
+                {{ message.message }}<br/>
+            </span>
+            {% endfor %}
+            <textarea class="form-control" id="featureSummary" name="featureSummary" rows="10"></textarea>
+            <small id="featureHelp" class="form-text text-muted">Describe the requested feature as detailed as possible and we'll review it.<br/>Spamming this form or using it for other purposes than the one it was intended can lead to a complete restriction on our platform.</small>
+        </div>
+        <div class="row">
+            <div class='text-center col-12'>
+                <script src='https://www.google.com/recaptcha/api.js'></script>
+                <div class="g-recaptcha" style='display: inline-block' data-sitekey="6LdZt7MZAAAAAMIGRZt8agpptOzkbJjNAN076RLb"></div>
+            </div>
+            <div class='text-center col-12'>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </form>
+</article>
+{% endblock %}

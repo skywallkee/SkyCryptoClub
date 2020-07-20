@@ -4,18 +4,26 @@ from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 
-from .models import Update, Feature
+from ..API.views import valid_captcha, get_user_language, get_client_ip
+from ..MESSAGES import MESSAGES
+
+from .models import Update, Feature, FeatureRequest
 
 @ratelimit(block=True, key='ip', rate='20/m')
+@require_http_methods(["GET"])
 def released(request):
     return redirect('/changelog/1/')
 
 @ratelimit(block=True, key='ip', rate='20/m')
+@require_http_methods(["GET"])
 def upcoming(request):
     return redirect('/changelog/upcoming/1/')
 
 @ratelimit(block=True, key='ip', rate='20/m')
+@require_http_methods(["GET"])
 def changelogs(request, page):
     template    = loader.get_template('ChangeLog/index.html')
 
@@ -59,4 +67,28 @@ def changelogs(request, page):
 
     context = {'currentPage': page, 'updates': updates, 'pages': pages,
                 'canNext': canNext, 'canPrevious': canPrevious, 'totalPages': totalPages}
+    return HttpResponse(template.render(context, request))
+
+    
+@ratelimit(block=True, key='ip', rate='10/m')
+@require_http_methods(["GET", "POST"])
+def request(request):
+    template    = loader.get_template('ChangeLog/request.html')
+    context = {'messages': []}
+    if request.method == "POST":
+        if valid_captcha(request):
+            message = request.POST.get('featureSummary')
+            if not message or len(message) < 30:
+                context['messages'].append(MESSAGES[get_user_language(request).name]["FEATURE_REQUEST"]["FAIL"]["ELABORATE"])
+            else:
+                user_ip = get_client_ip(request)
+                current_date = timezone.now() - timezone.timedelta(hours=24)
+                user_requests = FeatureRequest.objects.filter(date__gte=current_date)
+                if len(user_requests) > 5:
+                    context['messages'].append(MESSAGES[get_user_language(request).name]["FEATURE_REQUEST"]["FAIL"]["TOO_MANY"])
+                else:
+                    FeatureRequest.objects.create(summary=message, requested_by=user_ip)
+                    context['messages'].append(MESSAGES[get_user_language(request).name]["FEATURE_REQUEST"]["SUCCESS"])
+        else:
+            context['messages'].append(MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"])
     return HttpResponse(template.render(context, request))

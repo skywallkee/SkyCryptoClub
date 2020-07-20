@@ -35,7 +35,7 @@ from django.core.paginator import Paginator
 from .filters import ExchangeFilter, DepositFilter, WithdrawFilter, TicketsFilter, FAQFilter
 from django.conf import settings as DjangoSettings
 from ratelimit.decorators import ratelimit
-from ..decorators import not_exchange_banned, not_platform_banned
+from ..decorators import not_exchange_banned, not_platform_banned, not_ip_banned, ip_banned
 from djqscsv import render_to_csv_response
 
 
@@ -79,6 +79,11 @@ def favicon(request):
     return HttpResponse("<img src=\"https://skycrypto-club.s3.amazonaws.com/static/assets/img/favicon.png?AWSAccessKeyId=AKIAI2XTFCZOLLMFAHTA&Signature=vz9HZhyCTTCCx%2FzAIaMw9Sk4lSo%3D&Expires=1595190773\" alt=\"favicon\">")
 
 
+@ip_banned
+def ip_banned_page(request):
+    return HttpResponse("You've been IP banned from the platform. In case you want to appeal the ban please contact us at the email address: contact@skycrypto.club")
+
+
 def get_banners():
     banners = {}
     large = PublicityBanners.objects.filter(imageType="large")
@@ -96,6 +101,7 @@ def get_banners():
         banners["stake_small"] = small[pickSmall].image.url
     return banners
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 def index(request):
     template    = loader.get_template('WEB/index.html')
@@ -109,6 +115,7 @@ def index(request):
     return HttpResponse(template.render(context, request))
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def user_login(request):
@@ -127,6 +134,7 @@ def user_login(request):
     return HttpResponse(template.render(context, request))
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def user_register(request):
@@ -160,6 +168,7 @@ def user_register(request):
     return HttpResponse(template.render(context, request))
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def user_register_invitation(request, invitation):
@@ -170,6 +179,7 @@ def user_register_invitation(request, invitation):
     return response
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def recover_password(request):
@@ -203,6 +213,7 @@ def recover_password(request):
     return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["PASSWORD_RESET"]["SUCCESS"]]})
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def faq(request):
@@ -212,6 +223,7 @@ def faq(request):
     return render(request, 'WEB/faq.html', context)
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def terms(request):
@@ -219,6 +231,7 @@ def terms(request):
     return render(request, 'WEB/terms.html', context)
 
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET", "POST"])
 def contact(request):
@@ -233,6 +246,8 @@ def contact(request):
     template    = loader.get_template('WEB/contact.html')
     return HttpResponse(template.render(context, request))
 
+
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -240,6 +255,8 @@ def contact(request):
 def dashboard(request):
     return HttpResponseRedirect('/dashboard/{}'.format(request.user.username))
 
+
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -289,6 +306,7 @@ def dashboard_user(request, username):
                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'dashboard/profile.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -315,6 +333,7 @@ def settings(request):
     context['isWithdrawBanned'] = isWithdrawBanned
     return render(request, 'settings/settings.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -338,6 +357,7 @@ def privacy(request):
 
     return render(request, 'settings/privacy.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -363,6 +383,7 @@ def linked(request):
     context["linked"] = linked
     return render(request, 'settings/linked.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @not_exchange_banned
 @login_required
@@ -456,6 +477,7 @@ def requestExchange(request):
         return redirect('/exchanges/' + str(exchange.eid) + "/")
     return render(request, 'exchange/exchange_request.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @not_exchange_banned
 @login_required
@@ -511,11 +533,13 @@ def exchanges(request, page):
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'exchange/exchanges_list.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def exchanges_history(request, page):
     return HttpResponseRedirect('/transactions/exchange/{}/page={}/'.format(request.user.username, page))
-    
+  
+@not_ip_banned  
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -567,11 +591,13 @@ def exchanges_history_user(request, username, page):
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/exchanges_history.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def deposits_history(request, page):
     return HttpResponseRedirect('/transactions/deposit/{}/page={}/'.format(request.user.username, page))
-    
+   
+@not_ip_banned 
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -625,11 +651,13 @@ def deposits_history_user(request, username, page):
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/deposits_history.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @ratelimit(block=True, key='ip', rate='15/m')
 def withdraws_history(request, page):
     return HttpResponseRedirect('/transactions/withdraw/{}/page={}/'.format(request.user.username, page))
     
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -682,6 +710,7 @@ def withdraws_history_user(request, username, page):
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'transactions/withdraws_history.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='5/m')
@@ -694,6 +723,7 @@ def exchanges_csv(request):
                                   'creator_amount', 'exchanger_amount', 'ratio', 'status', 'taxCreator__percentage', 'taxExchanger__percentage', 'created_at')
     return render_to_csv_response(exchanges)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='5/m')
@@ -704,6 +734,7 @@ def deposits_csv(request):
     depositList = depositList.values('tipId', 'profile__user__username', 'account__username')
     return render_to_csv_response(depositList)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='5/m')
@@ -714,6 +745,7 @@ def withdraws_csv(request):
     withdrawList = withdrawList.values('tipId', 'profile__user__username', 'account__username')
     return render_to_csv_response(withdrawList)
 
+@not_ip_banned
 @not_platform_banned
 @not_exchange_banned
 @login_required
@@ -736,6 +768,7 @@ def exchange_page(request, exchange_id):
                 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'exchange/exchange.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -760,6 +793,7 @@ def support(request):
                 'isWithdrawBanned': isWithdrawBanned, 'ticketsFilter': ticketsFilter}
     return render(request, 'support/contact_support.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='15/m')
@@ -781,6 +815,7 @@ def ticket(request, tid):
             'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'support/ticket.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='10/m')
@@ -817,6 +852,7 @@ def createTicket(request):
 
     return render(request, 'support/create_ticket.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
@@ -853,6 +889,7 @@ def faqPanel(request):
                'isWithdrawBanned': isWithdrawBanned, 'faqFilter': faqFilter}
     return render(request, 'support/faq_panel.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
@@ -891,6 +928,7 @@ def faqEdit(request, question_id):
 
     return render(request, 'support/edit_faq.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
@@ -923,6 +961,7 @@ def faqNew(request):
 
     return render(request, 'support/add_faq.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
@@ -949,6 +988,7 @@ def bans(request):
                'canUnban': canUnban, 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'moderator/ban_panel.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')
@@ -1012,6 +1052,7 @@ def banUser(request, username):
                'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'moderator/ban_user.html', context)
 
+@not_ip_banned
 @not_platform_banned
 @login_required
 @ratelimit(block=True, key='user_or_ip', rate='30/m')

@@ -248,3 +248,5 @@ else:
     SECURE_HSTS_SECONDS             = None
     SECURE_HSTS_INCLUDE_SUBDOMAINS  = False
     SECURE_FRAME_DENY               = False
+
+admin_page = os.environ['ADMIN_PANEL_URL']

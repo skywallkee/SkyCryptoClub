@@ -9,19 +9,23 @@ from django.utils import timezone
 
 from ..API.views import valid_captcha, get_user_language, get_client_ip
 from ..MESSAGES import MESSAGES
+from ..decorators import not_ip_banned
 
 from .models import Update, Feature, FeatureRequest
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def released(request):
     return redirect('/changelog/1/')
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def upcoming(request):
     return redirect('/changelog/upcoming/1/')
 
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='20/m')
 @require_http_methods(["GET"])
 def changelogs(request, page):
@@ -70,6 +74,7 @@ def changelogs(request, page):
     return HttpResponse(template.render(context, request))
 
     
+@not_ip_banned
 @ratelimit(block=True, key='ip', rate='10/m')
 @require_http_methods(["GET", "POST"])
 def request(request):

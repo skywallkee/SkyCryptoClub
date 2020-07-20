@@ -2,10 +2,17 @@ from django.contrib import admin
 from .models import User, Profile, UserRole, Role, ProfileBan, Platform, PlatformCurrency, Currency, \
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
                     ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
-                    SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation, Withdrawal
+                    SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation, Withdrawal, \
+                    IPBan
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
+
+class IPBanAdmin(admin.ModelAdmin):
+    fields = ['ipAddress', 'due', 'permanent']
+
+admin.site.register(IPBan, IPBanAdmin)
+
 
 class UserAdmin(admin.ModelAdmin):
     fields = ['publicId', 'username', 'email', 'password', 'is_staff', 'is_active', 'date_joined']

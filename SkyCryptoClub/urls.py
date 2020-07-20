@@ -24,6 +24,7 @@ from SkyCryptoClub.WEB import views as WEBviews
 from SkyCryptoClub.ChangeLog import views as CLviews
 from django.contrib.sitemaps.views import sitemap
 from SkyCryptoClub.WEB.sitemaps import StaticViewSitemap
+from .settings import admin_page
 
 sitemaps = {
     'static': StaticViewSitemap
@@ -55,6 +56,7 @@ urlpatterns = [
     path(r'robots.txt', include('robots.urls')),
     path(r'sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path(r'favicon.ico', WEBviews.favicon, name='favicon'),
+    path(r'banned/', WEBviews.ip_banned_page, name='ip-banned-page'),
 
     # API
     path(r'endpoints/', include(router.urls)),
@@ -71,7 +73,7 @@ urlpatterns = [
 
     # ADMIN
     path(r'admin_tools/', include('admin_tools.urls')),
-    path(r'admin/', admin.site.urls, name='admin-panel'),
+    path(admin_page, admin.site.urls, name='admin-panel'),
 
     # USER REGISTRATION
     path(r'login/', WEBviews.user_login, name='login'),

@@ -11,6 +11,17 @@ from django.contrib.auth import get_user_model
 
 from .managers import CustomUserManager
 
+
+class IPBan(models.Model):
+    ipAddress = models.CharField(max_length=16, primary_key=True)
+    due = models.DateTimeField(null=True, blank=True)
+    permanent = models.BooleanField(default=False)
+
+    def __str__(self):
+        permanent = "PERMANENT" if self.permanent else "TEMPORARY"
+        return self.ipAddress + " " + str(self.due) + " | " + permanent
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     publicId = models.UUIDField(primary_key=True, default=uuid.uuid4)
     username = models.CharField(max_length=35, unique=True)
@@ -26,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
 
 class PasswordToken(models.Model):
     def setValid():

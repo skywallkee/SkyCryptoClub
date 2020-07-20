@@ -34,7 +34,7 @@ def changelogs(request, page):
     updates = []
 
     released = 'upcoming' not in request.path
-    for update in Update.objects.filter(released=released):
+    for update in Update.objects.filter(released=released).order_by('date'):
         features = Feature.objects.filter(update=update)
         new_features = features.filter(featureType='NEW')
         improved_features = features.filter(featureType='IMPROVED')
@@ -60,7 +60,10 @@ def changelogs(request, page):
     totalPages = paginator.num_pages
 
     if page <= 0 or page > totalPages:
-        return redirect('/changelog/1/')
+        if released:
+            return redirect('/changelog/1/')
+        else:
+            return redirect('/changelog/upcoming/1/')
 
     startPagination = max(page - 2, 1)
     endPagination = min(totalPages, startPagination + 4) + 1
@@ -69,8 +72,10 @@ def changelogs(request, page):
     canPrevious = paginator.page(page).has_previous()
     updates = paginator.page(page).object_list
 
+    url = 'changelog' if released else 'changelog-upcoming'
     context = {'currentPage': page, 'updates': updates, 'pages': pages,
-                'canNext': canNext, 'canPrevious': canPrevious, 'totalPages': totalPages}
+                'canNext': canNext, 'canPrevious': canPrevious, 'totalPages': totalPages,
+                'addressURL': url}
     return HttpResponse(template.render(context, request))
 
     

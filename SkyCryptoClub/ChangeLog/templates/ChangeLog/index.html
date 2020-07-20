@@ -66,10 +66,10 @@ Updates: <a href="{% url 'changelog' %}" {% if '/changelog/' in request.path and
 <br />
 <ul class="pagination justify-content-center">
     <li class="page-item {% if not canPrevious %}disabled{% endif %}">
-      <a class="page-link" href="{% url 'changelog' 1 %}">First</a>
+      <a class="page-link" href="{% url addressURL 1 %}">First</a>
     </li>
     <li class="page-item {% if not canPrevious %}disabled{% endif %}">
-      <a class="page-link" href="{% url 'changelog' currentPage|add:-1 %}">Previous</a>
+      <a class="page-link" href="{% url addressURL currentPage|add:-1 %}">Previous</a>
     </li>
     {% for page in pages %}
       {% if page == currentPage %}
@@ -80,14 +80,14 @@ Updates: <a href="{% url 'changelog' %}" {% if '/changelog/' in request.path and
           </span>
         </li>
       {% else %}
-      <li class="page-item"><a class="page-link" href="{% url 'changelog' page %}">{{ page }}</a></li>
+      <li class="page-item"><a class="page-link" href="{% url addressURL page %}">{{ page }}</a></li>
       {% endif %}
     {% endfor %}
     <li class="page-item {% if not canNext %}disabled{% endif %}">
-      <a class="page-link" href="{% url 'changelog' currentPage|add:1 %}">Next</a>
+      <a class="page-link" href="{% url addressURL currentPage|add:1 %}">Next</a>
     </li>
     <li class="page-item {% if not canNext %}disabled{% endif %}">
-      <a class="page-link" href="{% url 'changelog' totalPages %}">Last</a>
+      <a class="page-link" href="{% url addressURL totalPages %}">Last</a>
     </li>
   </ul>
 {% endblock %}

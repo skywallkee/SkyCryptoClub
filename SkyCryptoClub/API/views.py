@@ -205,6 +205,26 @@ class PublicityBannersViewSet(viewsets.ModelViewSet):
     serializer_class = PublicityBannersSerializer
     permission_classes = [permissions.IsAdminUser]
 
+
+def valid_captcha(request):
+    if not 'g-recaptcha-response' in request.POST and not 'g-recaptcha-response' in json.loads(request.body):
+        return False
+    if 'g-recaptcha-response' in request.POST:
+        captcha = request.POST.get('g-recaptcha-response')
+    else:
+        captcha = json.loads(request.body)['g-recaptcha-response']
+    import requests
+    content = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data={
+            'secret': os.environ['GOOGLE_RECAPTCHA_SECRET_KEY'],
+            'response': captcha,
+        }
+    ).content
+    content = json.loads( content )
+    return 'success' in content and content['success']
+
+
 @require_http_methods(["POST"])
 def has_tfa(request):
     data = get_json_data(json.loads(request.body), ["username"])
@@ -307,12 +327,12 @@ def user_register_form(request):
 def contact_send_mail(request):
     data    = get_json_data(request.POST, ['email', 'subject', 'message'])
     if len(data) != 3:
-        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
+        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]["INCOMPLETE"]]}
 
     email, subject, message = data
 
     if email == "" or subject == "" or message == "":
-        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]]}
+        return {"messages": [MESSAGES[get_user_language(request).name]["CONTACT_US"]["FAIL"]["INCOMPLETE"]]}
 
     message = email + ": " + message
 

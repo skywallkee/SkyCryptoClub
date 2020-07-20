@@ -143,6 +143,11 @@
             </a>
             <div class="collapse show" id="exchanges">
               <ul class="nav">
+                <li class="nav-item {% if 'exchange' in request.path and 'calculator' in request.path %}active{% endif %}">
+                  <a class="nav-link" href="{% url 'rate-calculator'%}">
+                    <span class="sidebar-normal"> Rate Calculator </span>
+                  </a>
+                </li>
                 <li class="nav-item {% if 'exchange' in request.path and 'create' in request.path %}active{% endif %}">
                   <a class="nav-link" href="{% url 'request-exchange'%}">
                     <span class="sidebar-normal"> Request Exchange </span>

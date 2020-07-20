@@ -1116,3 +1116,21 @@ def banEdit(request, banId):
                'ban': ban, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
     return render(request, 'moderator/edit_ban.html', context)
     
+
+@not_ip_banned
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='10/m')
+@require_http_methods(["GET", "POST"])
+def rate_calculator(request):
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 and not request.user.is_staff:
+        isWithdrawBanned = True
+    context = {'profile': profile, 'platforms': platforms, 
+               'messages': [], 'is_support': isSupport(profile),
+               'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
+               'currencies': Currency.objects.all()}
+    return render(request, 'exchange/calculator.html', context)

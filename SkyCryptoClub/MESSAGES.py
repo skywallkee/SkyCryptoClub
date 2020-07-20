@@ -1,5 +1,12 @@
 MESSAGES = {
     "en": {
+        "CAPTCHA": {
+            "FAIL": {
+                "type": "danger",
+                "title": "Invalid Captcha!",
+                "message": "The captcha form is invalid or not completed."
+            }
+        },
         # PASSWORD RESET
         "PASSWORD_RESET": {
             "SUCCESS": {
@@ -63,13 +70,15 @@ MESSAGES = {
             "SUCCESS": {
                 "type": "success",
                 "title": "Message sent!",
-                "message": "The message has been sent! <br/>We will try to respond as soon as possible."
+                "message": "We will try to respond as soon as possible."
             },
             "FAIL": {
-                "type": "danger",
-                "title": "Invalid Data!",
-                "message": "Please input an email, subject and message."
-            }
+                "INCOMPLETE": {
+                    "type": "danger",
+                    "title": "Invalid Data!",
+                    "message": "Please input an email, subject and message."
+                },
+            },
         },
         # SETTINGS PAGE
         "AVATAR": {

@@ -38,9 +38,15 @@
                         </div>
                         </span>
                     </div>
-                    <div class="card-footer justify-content-center">
-                        <a href="{% url 'recover-password' %}">Forgot your password?</a>
-                        <button type="button" onclick="checkLogin()" class="btn btn-rose btn-link btn-lg">Login</button>
+                    <div class="card-footer row">
+                        <div class='text-center col-12'>
+                          <script src='https://www.google.com/recaptcha/api.js'></script>
+                          <div class="g-recaptcha" style='display: inline-block' data-sitekey="6LdZt7MZAAAAAMIGRZt8agpptOzkbJjNAN076RLb"></div>
+                        </div>
+                        <div class='text-center col-12'>
+                            <a href="{% url 'recover-password' %}">Forgot your password?</a>
+                            <button type="button" onclick="checkLogin()" class="btn btn-rose btn-link btn-lg">Login</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -153,7 +159,7 @@
             success: function(data){
                 if (data != 200) {
                     $.notify({
-                        title: '<strong>Invalid username or password!</strong>',
+                        title: "<strong>Invalid username or password!</strong>",
                         message: ''
                     },{
                         type: 'danger',

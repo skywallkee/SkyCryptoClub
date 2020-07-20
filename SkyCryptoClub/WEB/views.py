@@ -24,7 +24,7 @@ from ..METHODS import get_json_data, generate_password
 from ..API.views import get_user_language, user_login_form, user_register_form, contact_send_mail, \
                         settings_update_avatar, settings_update_credentials, change_privacy, \
                         remove_linked_account, find_user_stake, confirm_stake_account, confirm_linked_account, \
-                        filterExchanges, isSupport, canBan
+                        filterExchanges, isSupport, canBan, valid_captcha
 from ..API.validator import get_support_create_errors
 import string
 import random
@@ -115,11 +115,16 @@ def user_login(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('index'))
 
+    context = {}
+
     if request.method == "POST":
-        return user_login_form(request)
+        if valid_captcha(request):
+            return user_login_form(request)
+        else:
+            context['messages'] = [MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"]]
 
     template    = loader.get_template('registration/login.html')
-    return HttpResponse(template.render({}, request))
+    return HttpResponse(template.render(context, request))
 
 
 @ratelimit(block=True, key='ip', rate='20/m')
@@ -143,11 +148,14 @@ def user_register(request):
         invitation.save()
 
     if request.method == 'POST':
-        context = user_register_form(request)
-        if context["success"]:
-            if invitation:
-                invitation.registrations += 1
-                invitation.save()
+        if valid_captcha(request):
+            context = user_register_form(request)
+            if context["success"]:
+                if invitation:
+                    invitation.registrations += 1
+                    invitation.save()
+        else:
+            context['messages'] = [MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"]]
 
     return HttpResponse(template.render(context, request))
 
@@ -170,6 +178,10 @@ def recover_password(request):
 
     if request.method == 'GET':
         return render(request, 'registration/recover_password.html', {})
+
+    
+    if not valid_captcha(request):
+        return render(request, 'registration/recover_password.html', {"messages": [MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"]]})
 
     data = get_json_data(request.POST, ['username', 'email'])
     if len(data) != 2:
@@ -213,7 +225,10 @@ def contact(request):
     context = {}
 
     if request.method == "POST":
-        context =  contact_send_mail(request)
+        if valid_captcha(request):
+            context =  contact_send_mail(request)
+        else:
+            context['messages'] = [MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"]]
 
     template    = loader.get_template('WEB/contact.html')
     return HttpResponse(template.render(context, request))
@@ -785,6 +800,8 @@ def createTicket(request):
 
     if request.method == "POST":
         context["messages"] = get_support_create_errors(request)
+        if not valid_captcha(request):
+            context['messages'].append(MESSAGES[get_user_language(request).name]["CAPTCHA"]["FAIL"])
         if len(context["messages"]) > 0:
             return render(request, 'support/create_ticket.html', context)
 

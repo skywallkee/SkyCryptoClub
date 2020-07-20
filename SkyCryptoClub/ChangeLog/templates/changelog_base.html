@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172973263-1"></script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "url": "https://skycrypto.club",
+      "name": "Cryptocurrency transactions",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contact@skycrypto.club",
+        "contactType": "Customer service"
+      }
+    }
+  </script>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-172973263-1');
+    gtag('set', {'user_id': 'USER_ID'});
+  </script>
+  <meta charset="utf-8" />
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.png' %}">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>
+    {% block title %}{% endblock %}
+  </title>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link href="{% static 'assets/css/changelog.css' %}" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    .disabled {
+      pointer-events: none;
+      cursor: default;
+      color: gray;
+    }
+    .logo {
+      font-weight: bolder;
+      color: black;
+      text-decoration: none;
+    }
+    a:hover{
+      text-decoration: none;
+      color: #347EFD;
+    }
+    a.navbutton {
+      color: #347EFD;
+      font-size: large;
+      height: 100%;
+      width: 75px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      border-bottom-width: 3;
+      border-bottom-style: solid;
+      border-bottom-color: #347EFD;
+      cursor: pointer;
+    }
+    a.navbutton:hover {
+      background-color: #347EFD;
+      border-bottom-color: darkblue;
+      color: white;
+      transition: 400ms;
+    }
+    .links {
+      height: 100%;
+      margin-left: 15px;
+      margin-right: 10px;
+    }
+    body {
+      background-color: #F2F5F7;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #FFFFFF;
+      position: fixed;
+      top: 0px;
+      width: 100%;
+      height: 65px;
+      margin: 0;
+      padding: 0;
+      -webkit-box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+      -moz-box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+      box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+    }
+
+    section {
+      margin-top: 160px;
+    }
+
+    article {
+      margin-top: 20px;
+      background-color: white;
+      border-radius: 5px;
+      padding: 20px;
+      -webkit-box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+      -moz-box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+      box-shadow: 0px 0px 7px 0px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      z-index: 3 !important;
+      width: 100%;
+      background: transparent;
+
+      padding: 0.9375rem 0;
+      text-align: center;
+      display: -webkit-flex;
+      display: flex;
+    }
+    footer ul {
+      margin-bottom: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    footer ul li {
+      display: inline-block;
+    }
+
+    footer ul li a {
+      color: inherit;
+      padding: 0.9375rem;
+      font-weight: 500;
+      font-size: 12px;
+      text-transform: uppercase;
+      border-radius: 3px;
+      text-decoration: none;
+      position: relative;
+      display: block;
+    }
+
+    footer ul li a:hover {
+      text-decoration: none;
+    }
+
+    footer ul li .btn {
+      margin: 0;
+    }
+
+    footer ul.links-horizontal:first-child a {
+      padding-left: 0;
+    }
+
+    footer ul.links-horizontal:last-child a {
+      padding-right: 0;
+    }
+
+    footer ul.links-vertical li {
+      display: block;
+      margin-left: -5px;
+      margin-right: -5px;
+    }
+
+    footer ul.links-vertical li a {
+      padding: 5px;
+    }
+
+    .update-title {
+      font-weight: bold;
+    }
+
+    .update-meta {
+      color: grey;
+    }
+
+    .feature-title {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="links d-flex justify-content-between">
+      <a href="{% url 'changelog' %}" class='logo my-auto'>SkyCrypto.Club Changelog</a>
+      <a class='navbutton' href="{% url 'index' %}">
+        Home
+      </a>
+    </div>
+  </nav>
+  <section class="container">
+    <h1 style='font-size: x-large; font-weight: bold;'>
+      Updates: <a href="{% url 'changelog' %}" {% if '/changelog/' in request.path and 'upcoming' not in request.path %}class='disabled'{% endif %}>Released</a> | 
+               <a href="{% url 'changelog-upcoming' %}" {% if '/changelog/upcoming/' in request.path %}class='disabled'{% endif %}>Upcoming</a>
+    </h1>
+    {% block content %}{% endblock %}
+  </section>
+  <footer>
+    <div class="container">
+      <ul>
+        <li>
+          <a href="https://www.stake.com" title="Stake.com | Crypto Gambling">
+            Stake.com
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'faq' %}" title="Frequently Asked Questions">
+            FAQ
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'terms' %}" title="Terms & Conditions">
+            Terms & Conditions
+          </a>
+        </li>
+      </ul>
+      <div class="copyright float-center">
+        &copy;
+        <script>
+          document.write(new Date().getFullYear())
+        </script>, made by
+        <a href="{% if user.is_superuser %}{% url 'admin:index' %}{% endif %}" target="_blank" title="skywallkee">Skywallkee</a> for the crypto community. <br />
+      </div>
+      <div class="float-center">
+        All exchanges take place on this platform. This website is not affiliated with Stake, PrimeDice, or any of their respective partners.
+      </div>
+    </div>
+  </footer>
+</body>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</html>

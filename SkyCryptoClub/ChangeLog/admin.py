@@ -1,14 +1,20 @@
 from django.contrib import admin
-from .models import Update, Feature
+from .models import Update, Feature, FeatureRequest
 
-# Register your models here.
+
 class UpdateAdmin(admin.ModelAdmin):
     fields = ['title', 'date', 'released']
 
 admin.site.register(Update, UpdateAdmin)
 
-# Register your models here.
+
 class FeatureAdmin(admin.ModelAdmin):
     fields = ['title', 'description', 'featureType', 'update']
 
 admin.site.register(Feature, FeatureAdmin)
+
+
+class FeatureRequestAdmin(admin.ModelAdmin):
+    fields = ['summary', 'requested_by', 'date']
+
+admin.site.register(FeatureRequest, FeatureRequestAdmin)

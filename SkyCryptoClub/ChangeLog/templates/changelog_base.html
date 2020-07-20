@@ -186,16 +186,18 @@
   <nav>
     <div class="links d-flex justify-content-between">
       <a href="{% url 'changelog' %}" class='logo my-auto'>SkyCrypto.Club Changelog</a>
-      <a class='navbutton' href="{% url 'index' %}">
-        Home
-      </a>
+      <div class="row">
+        <a class='navbutton' href="{% url 'changelog-request' %}">
+          Request
+        </a>
+        <a class='navbutton' href="{% url 'index' %}">
+          Home
+        </a>
+      </div>
     </div>
   </nav>
   <section class="container">
-    <h1 style='font-size: x-large; font-weight: bold;'>
-      Updates: <a href="{% url 'changelog' %}" {% if '/changelog/' in request.path and 'upcoming' not in request.path %}class='disabled'{% endif %}>Released</a> | 
-               <a href="{% url 'changelog-upcoming' %}" {% if '/changelog/upcoming/' in request.path %}class='disabled'{% endif %}>Upcoming</a>
-    </h1>
+    {% block header %}{% endblock %}
     {% block content %}{% endblock %}
   </section>
   <footer>

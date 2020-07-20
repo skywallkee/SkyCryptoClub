@@ -21,6 +21,7 @@ from django.contrib.auth import views as auth_views
 from rest_framework import routers
 from SkyCryptoClub.API import views as APIviews
 from SkyCryptoClub.WEB import views as WEBviews
+from SkyCryptoClub.ChangeLog import views as CLviews
 from django.contrib.sitemaps.views import sitemap
 from SkyCryptoClub.WEB.sitemaps import StaticViewSitemap
 
@@ -132,4 +133,13 @@ urlpatterns = [
     path(r'moderator/ban/<str:username>/', WEBviews.banUser, name='user-ban'),
     path(r'moderator/bans/<int:banId>/', WEBviews.banEdit, name='edit-ban'),
     path(r'unban/', APIviews.unban, name='unban'),
+
+
+
+
+    # CHANGELOG
+    path(r'changelog/', CLviews.released, name='changelog'),
+    path(r'changelog/<int:page>/', CLviews.changelogs, name='changelog'),
+    path(r'changelog/upcoming/', CLviews.upcoming, name='changelog-upcoming'),
+    path(r'changelog/upcoming/<int:page>/', CLviews.changelogs, name='changelog-upcoming'),
 ]

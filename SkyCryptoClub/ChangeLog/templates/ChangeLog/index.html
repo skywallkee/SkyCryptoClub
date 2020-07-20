@@ -1,0 +1,88 @@
+{% extends "changelog_base.html" %}
+
+{% block title %}ChangeLog | SkyCrypto Club{% endblock %}
+
+
+
+{% block content %}
+{% for update in updates %}
+<article>
+    <div class="content">
+        <h4 class='update-title'>{{ update.update.title }}</h4>
+        <h7 class='update-meta'>SkyCrypto Club · {{ update.update.date }}</h7>
+        <hr>
+        {% if update.features.new|length > 0 %}
+        <h5><span class='badge badge-success'>NEW</span></h5>
+        {% for feature in update.features.new %}
+            <span class='feature-title'>{{ feature.title }}: </span> 
+            {{ feature.description }}<br />
+        {% endfor %}
+        <br />
+        {% endif %}
+        {% if update.features.improved|length > 0 %}
+        <h5><span class='badge badge-info'>IMPROVED</span></h5>
+        {% for feature in update.features.improved %}
+            <span class='feature-title'>{{ feature.title }}: </span>
+            {{ feature.description }}<br />
+        {% endfor %}
+        <br />
+        {% endif %}
+
+        {% if update.features.fixed|length > 0 %}
+        <h5><span class='badge badge-primary'>FIXED</span></h5>
+        {% for feature in update.features.fixed %}
+            <span class='feature-title'>{{ feature.title }}: </span>
+            {{ feature.description }}<br />
+        {% endfor %}
+        <br />
+        {% endif %}
+
+        {% if update.features.removed|length > 0 %}
+        <h5><span class='badge badge-danger'>REMOVED</span></h5>
+        {% for feature in update.features.removed %}
+            <span class='feature-title'>{{ feature.title }}: </span>
+            {{ feature.description }}<br />
+        {% endfor %}
+        <br />
+        {% endif %}
+
+        {% if update.features.others|length > 0 %}
+        <h5><span class='badge badge-warning'>OTHERS</span></h5>
+        {% for feature in update.features.others %}
+            <span class='feature-title'>{{ feature.title }}: </span>
+            {{ feature.description }}<br />
+        {% endfor %}
+        <br />
+        {% endif %}
+    </div>
+</article>
+{% endfor %}
+
+<br />
+<ul class="pagination justify-content-center">
+    <li class="page-item {% if not canPrevious %}disabled{% endif %}">
+      <a class="page-link" href="{% url 'changelog' 1 %}">First</a>
+    </li>
+    <li class="page-item {% if not canPrevious %}disabled{% endif %}">
+      <a class="page-link" href="{% url 'changelog' currentPage|add:-1 %}">Previous</a>
+    </li>
+    {% for page in pages %}
+      {% if page == currentPage %}
+        <li class="page-item active">
+          <span class="page-link">
+            {{ page }}
+            <span class="sr-only">(current)</span>
+          </span>
+        </li>
+      {% else %}
+      <li class="page-item"><a class="page-link" href="{% url 'changelog' page %}">{{ page }}</a></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not canNext %}disabled{% endif %}">
+      <a class="page-link" href="{% url 'changelog' currentPage|add:1 %}">Next</a>
+    </li>
+    <li class="page-item {% if not canNext %}disabled{% endif %}">
+      <a class="page-link" href="{% url 'changelog' totalPages %}">Last</a>
+    </li>
+  </ul>
+{% endblock %}

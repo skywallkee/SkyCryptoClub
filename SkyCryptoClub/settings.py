@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'SkyCryptoClub.API',
     'SkyCryptoClub.WEB',
+    'SkyCryptoClub.ChangeLog',
     'storages',
     'robots',
     'django_filters',

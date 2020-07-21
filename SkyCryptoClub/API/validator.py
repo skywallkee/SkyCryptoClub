@@ -80,6 +80,8 @@ def valid_register(username, email):
 # Data output: 
 def valid_image_size(value):
     limit = 3 * 1024 * 1024
+    if not value:
+        return False
     if value.size > limit:
         return False
     return True
@@ -93,6 +95,8 @@ def valid_file_dimensions(value):
     minLength = 150
     maxLength = 500
     width, height = get_image_dimensions(value)
+    if not width or not height:
+        return False
     if width != height or width < minLength or width > maxLength:
         return False
     return True

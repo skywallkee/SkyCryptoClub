@@ -9,7 +9,7 @@ from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
                          SupportTicket, SupportTicketMessage, SupportCategory, Invitation, FoundDeposit, \
-                         Withdrawal, ProfileBan, Notification, Announcement, ReadAnnouncement
+                         Withdrawal, ProfileBan, Notification
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods

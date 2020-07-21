@@ -491,30 +491,18 @@ class SupportTicketMessage(models.Model):
         return self.sender.user.username + " -> " + self.ticket.title
 
 
-class Announcement(models.Model):
+class GlobalNotification(models.Model):
     id = models.AutoField(primary_key=True)
     message = models.TextField(blank=False, null=False, default="Message")
     date = models.DateTimeField(default=timezone.now)
-    valid_until = models.DateTimeField(null=True, blank=True)
+    expired = models.BooleanField(default=False)
 
-    class Meta: 
-        verbose_name = "Announcement"
-        verbose_name_plural = "Announcements"
+    class Meta:
+        verbose_name = "Global Notification"
+        verbose_name_plural = "Global Notifications"
 
     def __str__(self):
         return self.message
-
-
-class ReadAnnouncement(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE)
-
-    class Meta: 
-        verbose_name = "Read Announcement"
-        verbose_name_plural = "Marked as Read Announcements"
-
-    def __str__(self):
-        return self.profile.user.username + " | " + str(self.announcement.id)
 
 
 class Notification(models.Model):
@@ -553,11 +541,25 @@ def create_profile_wallet(sender, instance, created, **kwargs):
         Wallet.objects.create(profile=profile, store=store, amount=0)
 
 
+def create_user_notifications(sender, instance, created, **kwargs):
+    if created:
+        profile = Profile.objects.filter(user=instance).first()
+        for notification in GlobalNotification.objects.filter(expired=False):
+            Notification.objects.create(profile=profile, message=notification.message, date=notification.date)
+
+
+def create_all_users_notifications(sender, instance, created, **kwargs):
+    if created:
+        for profile in Profile.objects.all():
+            Notification.objects.create(profile=profile, message=instance.message, date=instance.date)
+
+
 def create_user(sender, instance, created, **kwargs):
     if created:
         create_user_profile(sender, instance, created, **kwargs)
         create_profile_role(sender, instance, created, **kwargs)
         create_profile_wallet(sender, instance, created, **kwargs)
+        create_user_notifications(sender, instance, created, **kwargs)
 
 
 def create_wallets(sender, instance, created, **kwargs):
@@ -568,3 +570,4 @@ def create_wallets(sender, instance, created, **kwargs):
 
 post_save.connect(create_user, sender=User)
 post_save.connect(create_wallets, sender=PlatformCurrency)
+post_save.connect(create_all_users_notifications, sender=GlobalNotification)

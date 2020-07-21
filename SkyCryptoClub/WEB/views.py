@@ -314,6 +314,7 @@ def dashboard_user(request, username):
 @require_http_methods(["GET", "POST"])
 def settings(request):
     context = {}
+    profile = Profile.objects.filter(user=request.user).first()
     if request.method == "POST":
         if "updateAvatar" in request.POST:
             context = settings_update_avatar(request, context, profile)

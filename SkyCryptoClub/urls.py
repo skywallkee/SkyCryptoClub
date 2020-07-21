@@ -90,6 +90,7 @@ urlpatterns = [
     # DASHBOARD
     path(r'dashboard/', WEBviews.dashboard, name='dashboard'),
     path(r'dashboard/<str:username>/', WEBviews.dashboard_user, name='dashboard_user'),
+    path(r'dashboard/<str:username>/notifications/', WEBviews.user_notifications, name='notifications'),
 
     # SETTINGS
     path(r'settings/', WEBviews.settings, name='settings'),

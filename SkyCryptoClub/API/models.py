@@ -17,6 +17,10 @@ class IPBan(models.Model):
     due = models.DateTimeField(null=True, blank=True)
     permanent = models.BooleanField(default=False)
 
+    class Meta: 
+        verbose_name = "IP Ban"
+        verbose_name_plural = "IP Bans"
+
     def __str__(self):
         permanent = "PERMANENT" if self.permanent else "TEMPORARY"
         return self.ipAddress + " " + str(self.due) + " | " + permanent
@@ -34,6 +38,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
 
     objects = CustomUserManager()
+
+    class Meta: 
+        verbose_name = "User"
+        verbose_name_plural = "Users"
 
     def __str__(self):
         return self.username
@@ -53,6 +61,10 @@ class PasswordToken(models.Model):
     key = models.CharField(max_length=35, default=setKey)
     valid_until = models.DateTimeField(default=setValid)
 
+    class Meta: 
+        verbose_name = "Password Token"
+        verbose_name_plural = "Password Tokens"
+
     def __str__(self):
         return self.user.username + " | " + str(self.valid_until)
 
@@ -70,6 +82,10 @@ class TwoFactorLogin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     key = models.CharField(max_length=35, default=setKey)
     valid_until = models.DateTimeField(default=setValid)
+
+    class Meta: 
+        verbose_name = "2FA Code"
+        verbose_name_plural = "2FA Codes"
 
     def __str__(self):
         return self.user.username + " | " + str(self.valid_until)
@@ -96,6 +112,10 @@ class Languages(models.Model):
     long_name = models.CharField(max_length=30)
     flag = models.ImageField(null=True, upload_to=flag_upload)
 
+    class Meta: 
+        verbose_name = "Language"
+        verbose_name_plural = "Languages"
+
     def __str__(self):
         return self.long_name
 
@@ -110,6 +130,10 @@ class Profile(models.Model):
     publicName = models.BooleanField(default=True)
     language = models.ForeignKey(Languages, null=True, default="en", on_delete=models.SET_DEFAULT)
     twofactor = models.BooleanField(default=True)
+
+    class Meta: 
+        verbose_name = "Profile"
+        verbose_name_plural = "Profiles"
     
     def __str__(self):
         return self.user.username
@@ -120,6 +144,10 @@ class Invitation(models.Model):
     clicks = models.BigIntegerField(default=0)
     registrations = models.BigIntegerField(default=0)
     limit = models.BigIntegerField(default=-1)
+
+    class Meta: 
+        verbose_name = "Invitation"
+        verbose_name_plural = "Invitations"
 
     def __str__(self):
         return self.creator.user.username + " | " + self.code
@@ -170,6 +198,10 @@ class Role(models.Model):
     addFAQ = models.BooleanField(default=False)
     editFAQ = models.BooleanField(default=False)
     removeFAQ = models.BooleanField(default=False)
+
+    class Meta: 
+        verbose_name = "Role"
+        verbose_name_plural = "Roles"
     
     def __str__(self):
         return self.name
@@ -182,6 +214,8 @@ class UserRole(models.Model):
     primary = models.BooleanField(default=True)
 
     class Meta:
+        verbose_name = "User Role"
+        verbose_name_plural = "User Roles"
         unique_together = ("profile", "role")
     
     def __str__(self):
@@ -199,6 +233,10 @@ class ProfileBan(models.Model):
     reason = models.TextField(default="", null=False)
     bannedBy = models.ForeignKey(Profile, default=None, on_delete=models.CASCADE, related_name="bannedBy")
     banDue = models.DateTimeField(default=timezone.now)
+
+    class Meta: 
+        verbose_name = "Profile Ban"
+        verbose_name_plural = "Profile Bans"
     
     def __str__(self):
         return self.profile.user.username
@@ -207,6 +245,10 @@ class ProfileBan(models.Model):
 class Platform(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=35, null=False, unique=True)
+
+    class Meta: 
+        verbose_name = "Platform"
+        verbose_name_plural = "Platforms"
     
     def __str__(self):
         return self.name
@@ -226,6 +268,10 @@ class Currency(models.Model):
     color = models.CharField(max_length=7, blank=False, default="#000000")
     icon = models.ImageField(default="default_crypto.png", upload_to=currency_icon_upload)
 
+    class Meta: 
+        verbose_name = "Currency"
+        verbose_name_plural = "Currencies"
+
     
     def __str__(self):
         return self.largeName
@@ -237,6 +283,8 @@ class PlatformCurrency(models.Model):
     minTip = models.DecimalField(max_digits=21, decimal_places=8, default=0)
 
     class Meta:
+        verbose_name = "Platform Currency"
+        verbose_name_plural = "Platform Currencies"
         unique_together = ("platform", "currency")
 
     def __str__(self):
@@ -250,6 +298,8 @@ class Wallet(models.Model):
     amount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
 
     class Meta:
+        verbose_name = "Wallet"
+        verbose_name_plural = "Wallets"
         unique_together = ("profile", "store")
     
     def __str__(self):
@@ -264,6 +314,8 @@ class Account(models.Model):
     active = models.BooleanField(default=True)
 
     class Meta:
+        verbose_name = "Account"
+        verbose_name_plural = "Accounts"
         unique_together = ("profile", "platform", "username")
     
     def __str__(self):
@@ -278,6 +330,8 @@ class FoundDeposit(models.Model):
     platform = models.ForeignKey(Platform, on_delete=models.CASCADE)
 
     class Meta:
+        verbose_name = "Found Deposit"
+        verbose_name_plural = "Found Deposits"
         unique_together = ("tipId", "account")
     
     def __str__(self):
@@ -291,6 +345,8 @@ class Withdrawal(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
     class Meta:
+        verbose_name = "Withdrawal"
+        verbose_name_plural = "Withdrawals"
         unique_together = ("tipId", "account")
     
     def __str__(self):
@@ -301,6 +357,10 @@ class ExchangeStatus(models.Model):
     status = models.CharField(max_length=40, primary_key=True)
     color = models.CharField(max_length=7, default="#a8a8a8")
 
+    class Meta: 
+        verbose_name = "Exchange Status"
+        verbose_name_plural = "Exchange Statuses"
+
     def __str__(self):
         return self.status
 
@@ -310,6 +370,10 @@ class ExchangeTaxPeer(models.Model):
     maxAmount = models.DecimalField(max_digits=20, decimal_places=8, default=0)
     percentage = models.DecimalField(max_digits=6, decimal_places=4, default=0)
     currency = models.ForeignKey(Currency, null=False, on_delete=models.CASCADE)
+
+    class Meta: 
+        verbose_name = "Exchange Tax Peer"
+        verbose_name_plural = "Exchange Taxes Peer"
 
     def __str__(self):
         return "[" + str(self.minAmount) + "; " + str(self.maxAmount) + "] " + str(self.percentage) + "% " + self.currency.name
@@ -330,6 +394,10 @@ class Exchange(models.Model):
     taxCreator = models.ForeignKey(ExchangeTaxPeer, null=True, on_delete=models.SET_NULL, related_name="creator_tax")
     taxExchanger = models.ForeignKey(ExchangeTaxPeer, null=True, on_delete=models.SET_NULL, related_name="exchanger_tax")
     created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta: 
+        verbose_name = "Exchange"
+        verbose_name_plural = "Exchanges"
     
     def __str__(self):
         return self.creator.user.username + " | " + self.from_currency.currency.name + " -> " + self.to_currency.currency.name
@@ -339,6 +407,10 @@ class FAQCategory(models.Model):
     id = models.AutoField(primary_key=True)
     order = models.IntegerField(unique=True, null=True)
     name = models.CharField(max_length=35, null=False, unique=True)
+
+    class Meta: 
+        verbose_name = "FAQ Category"
+        verbose_name_plural = "FAQ Categories"
     
     def __str__(self):
         return str(self.order) + ". " + self.name
@@ -350,6 +422,10 @@ class Question(models.Model):
     question = models.TextField()
     answer = models.TextField()
     accepted = models.BooleanField(default=False)
+
+    class Meta: 
+        verbose_name = "Question"
+        verbose_name_plural = "Questions"
     
     def __str__(self):
         return self.category.name + " | " + self.question
@@ -363,6 +439,10 @@ BANNER_CHOICES = (
 class PublicityBanners(models.Model):
     image = models.ImageField(upload_to="partners/")
     imageType = models.CharField(max_length = 35, choices = BANNER_CHOICES, default = "large")
+
+    class Meta: 
+        verbose_name = "Publicity Banner"
+        verbose_name_plural = "Publicity Banners"
     
     def __str__(self):
         return self.image.name
@@ -371,6 +451,10 @@ class PublicityBanners(models.Model):
 class SupportCategory(models.Model):
     name = models.CharField(max_length = 35, primary_key=True)
     order = models.IntegerField(unique=True, null=True)
+
+    class Meta: 
+        verbose_name = "Support Category"
+        verbose_name_plural = "Support Categories"
 
     def __str__(self):
         return str(self.order) + ". " + self.name
@@ -385,6 +469,10 @@ class SupportTicket(models.Model):
     last_replied = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL, related_name="last_replier")
     closed = models.BooleanField(default=False)
 
+    class Meta: 
+        verbose_name = "Support Ticket"
+        verbose_name_plural = "Support Tickets"
+
     def __str__(self):
         return self.creator.user.username + " | " + self.title + " | " + self.category.name
 
@@ -395,8 +483,44 @@ class SupportTicketMessage(models.Model):
     message = models.TextField(blank=False, null=False, default="Message")
     sent_at = models.DateTimeField(default=timezone.now)
 
+    class Meta: 
+        verbose_name = "Support Ticket Message"
+        verbose_name_plural = "Support Ticket Messages"
+
     def __str__(self):
         return self.sender.user.username + " -> " + self.ticket.title
+
+
+class GlobalNotification(models.Model):
+    id = models.AutoField(primary_key=True)
+    message = models.TextField(blank=False, null=False, default="Message")
+    date = models.DateTimeField(default=timezone.now)
+    expired = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Global Notification"
+        verbose_name_plural = "Global Notifications"
+
+    def __str__(self):
+        return self.message
+
+
+class Notification(models.Model):
+    id = models.AutoField(primary_key=True)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    message = models.TextField(blank=False, null=False, default="Message")
+    date = models.DateTimeField(default=timezone.now)
+    read = models.BooleanField(default=False)
+
+    class Meta: 
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return self.message
+
+    def __str__(self):
+        return self.profile.user.username + " | " + self.message
 
 
 def create_user_profile(sender, instance, created, **kwargs):
@@ -417,11 +541,25 @@ def create_profile_wallet(sender, instance, created, **kwargs):
         Wallet.objects.create(profile=profile, store=store, amount=0)
 
 
+def create_user_notifications(sender, instance, created, **kwargs):
+    if created:
+        profile = Profile.objects.filter(user=instance).first()
+        for notification in GlobalNotification.objects.filter(expired=False):
+            Notification.objects.create(profile=profile, message=notification.message, date=notification.date)
+
+
+def create_all_users_notifications(sender, instance, created, **kwargs):
+    if created:
+        for profile in Profile.objects.all():
+            Notification.objects.create(profile=profile, message=instance.message, date=instance.date)
+
+
 def create_user(sender, instance, created, **kwargs):
     if created:
         create_user_profile(sender, instance, created, **kwargs)
         create_profile_role(sender, instance, created, **kwargs)
         create_profile_wallet(sender, instance, created, **kwargs)
+        create_user_notifications(sender, instance, created, **kwargs)
 
 
 def create_wallets(sender, instance, created, **kwargs):
@@ -432,3 +570,4 @@ def create_wallets(sender, instance, created, **kwargs):
 
 post_save.connect(create_user, sender=User)
 post_save.connect(create_wallets, sender=PlatformCurrency)
+post_save.connect(create_all_users_notifications, sender=GlobalNotification)

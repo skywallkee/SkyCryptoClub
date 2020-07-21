@@ -982,7 +982,7 @@ def bans(request):
     if not canBan(profile):
         return HttpResponseRedirect(reverse('index'))
     platforms = Platform.objects.all()
-    bans = ProfileBan.objects.filter(banDue__gt=timezone.now())
+    banList = ProfileBan.objects.filter(banDue__gt=timezone.now())
     canUnban = False
     for role in UserRole.objects.filter(profile=profile):
         if role.role.unban:
@@ -995,7 +995,7 @@ def bans(request):
 
     context = {'profile': profile, 'platforms': platforms, 
                'messages': [], 'is_support': isSupport(profile),
-               'bans': bans, 'canBan': canBan(profile),
+               'bans': banList, 'canBan': canBan(profile),
                'canUnban': canUnban, 'isWithdrawBanned': isWithdrawBanned,
                'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'moderator/ban_panel.html', context)

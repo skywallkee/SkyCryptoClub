@@ -9,6 +9,7 @@ from SkyCryptoClub.API.serializers import UserSerializer, ProfileSerializer, Use
                                           PasswordTokenSerializer, ExchangeSerializer, TwoFactorLoginSerializer, ExchangeStatusSerializer, \
                                           FAQCategorySerializer, QuestionSerializer, PublicityBannersSerializer, InvitationSerializer
 from django.contrib.auth import get_user_model
+from django.utils.html import strip_tags
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -19,7 +20,7 @@ from .models import User, Profile, Role, UserRole, ProfileBan, Platform, Platfor
                     Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, ExchangeTaxPeer, \
                     FAQCategory, Question, FoundDeposit, PublicityBanners, \
                     SupportTicket, SupportTicketMessage, SupportCategory, Languages, Invitation, \
-                    Withdrawal
+                    Withdrawal, Notification
 import json
 
 
@@ -1001,3 +1002,21 @@ def exchangeRate(request):
     getcontext().prec = 8
     rate = Decimal(fromAmount) / Decimal(toUSDAmount)
     return HttpResponse(rate.quantize(Decimal('.00000001'), rounding="ROUND_DOWN"))
+
+
+def getUserUnreadNotifications(request):
+    notifications = Notification.objects.filter(profile=Profile.objects.filter(user=request.user).first(), read=False)
+    messages = []
+    for notification in notifications:
+        message = strip_tags(notification.message)
+        if len(message) > 30:
+            message = message[:30] + "..."
+        messages.append(message)
+    return messages
+
+
+def markUserNotifications(request):
+    notifications = Notification.objects.filter(profile=Profile.objects.filter(user=request.user).first(), read=False)
+    for notification in notifications:
+        notification.read = True
+        notification.save()

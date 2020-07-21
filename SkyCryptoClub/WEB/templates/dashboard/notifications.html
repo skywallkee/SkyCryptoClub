@@ -1,0 +1,176 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Notifications | SkyCrypto Club{% endblock %}
+
+{% block content %}
+      <!-- End Navbar -->
+      <div class="content">
+        <div class="container-fluid">
+          <div class="card ">
+            <div class="card-header card-header-success card-header-icon">
+              <div class="card-icon">
+                <i class="material-icons">notifications_active</i>
+              </div>
+              <h4 class="card-title">Notifications</h4>
+              <small class="card-title">Read notifications older than 24 hours will not be displayed!</small>
+            </div>
+            <div class="card-body ">
+              <div class="row">
+                {% if notifications|length == 0 %}
+                <div class="col-12 text-center">
+                  You currently have no notification.
+                </div>
+                {% endif %}
+                {% for notification in notifications %}
+                  <div class="col-12 row" style="min-height: 100px; margin: 0; border-top: 1px #bfbfbf solid; border-bottom: 1px #bfbfbf solid; background-color: {% if notification.read %}#fafafa{% else %}#ebebeb{% endif %}">
+                    <div class="col-12 col-md-9">
+                      {{ notification.message|safe }}
+                    </div>
+                    <div class="col-12 col-md-3 text-right">
+                      {{ notification.date }}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+<!-- Chartist JS -->
+<script src="{% static 'assets/js/plugins/chartist.min.js' %}"></script>
+<script>
+      var dataNrExchangedSent = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.numberBTCSent }}'), 
+          parseFloat('{{ statistics.numberETHSent }}'), 
+          parseFloat('{{ statistics.numberLTCSent }}'), 
+          parseFloat('{{ statistics.numberXDGSent }}'), 
+          parseFloat('{{ statistics.numberBCHSent }}'),
+          parseFloat('{{ statistics.numberXRPSent }}'),
+          parseFloat('{{ statistics.numberTRXSent }}')]
+        ]
+      };
+
+    var optionsNrExchangedSent = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsNrExchangedSent = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#nrExchangesSent', dataNrExchangedSent, optionsNrExchangedSent, responsiveOptionsNrExchangedSent);
+
+    var dataNrExchangedReceived = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.numberBTCReceived }}'), 
+          parseFloat('{{ statistics.numberETHReceived }}'), 
+          parseFloat('{{ statistics.numberLTCReceived }}'), 
+          parseFloat('{{ statistics.numberXDGReceived }}'), 
+          parseFloat('{{ statistics.numberBCHReceived }}'),
+          parseFloat('{{ statistics.numberXRPReceived }}'),
+          parseFloat('{{ statistics.numberTRXReceived }}')]
+        ]
+      };
+
+    var optionsNrExchangedReceived = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsNrExchangedReceived = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#nrExchangesReceived', dataNrExchangedReceived, optionsNrExchangedReceived, responsiveOptionsNrExchangedReceived);
+
+    var dataAmountExchangedSent = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.amountBTCSent }}'), 
+          parseFloat('{{ statistics.amountETHSent }}'), 
+          parseFloat('{{ statistics.amountLTCSent }}'), 
+          parseFloat('{{ statistics.amountXDGSent }}'), 
+          parseFloat('{{ statistics.amountBCHSent }}'),
+          parseFloat('{{ statistics.amountXRPSent }}'),
+          parseFloat('{{ statistics.amountTRXSent }}')]
+        ]
+      };
+
+    var optionsAmountExchangedSent = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsAmountExchangedSent = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#amountExchangesSent', dataAmountExchangedSent, optionsAmountExchangedSent, responsiveOptionsAmountExchangedSent);
+
+    var dataAmountExchangedReceived = {
+        labels: ['BTC', 'ETH', 'LTC', 'XDG', 'BCH', 'XRP', 'TRX'],
+        series: [
+          [parseFloat('{{ statistics.amountBTCReceived }}'), 
+          parseFloat('{{ statistics.amountETHReceived }}'), 
+          parseFloat('{{ statistics.amountLTCReceived }}'), 
+          parseFloat('{{ statistics.amountXDGReceived }}'), 
+          parseFloat('{{ statistics.amountBCHReceived }}'),
+          parseFloat('{{ statistics.amountXRPReceived }}'),
+          parseFloat('{{ statistics.amountTRXReceived }}')]
+        ]
+      };
+
+    var optionsAmountExchangedReceived = {
+      seriesBarDistance: 5,
+      axisX: {
+        showGrid: false
+      }
+    };
+
+    var responsiveOptionsAmountExchangedReceived = [
+      ['screen and (max-width: 640px)', {
+        seriesBarDistance: 5,
+        axisX: {
+          labelInterpolationFnc: function(value) {
+            return value[0];
+          }
+        }
+      }]
+    ];
+
+    var simpleBarChart = Chartist.Bar('#amountExchangesReceived', dataAmountExchangedReceived, optionsAmountExchangedReceived, responsiveOptionsAmountExchangedReceived);
+  </script>
+{% endblock %}

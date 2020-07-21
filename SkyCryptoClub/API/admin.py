@@ -3,7 +3,7 @@ from .models import User, Profile, UserRole, Role, ProfileBan, Platform, Platfor
                     Wallet, Account, PasswordToken, Exchange, ExchangeStatus, TwoFactorLogin, \
                     ExchangeTaxPeer, Question, FAQCategory, FoundDeposit, PublicityBanners, \
                     SupportTicket, SupportCategory, SupportTicketMessage, Languages, Invitation, Withdrawal, \
-                    IPBan
+                    IPBan, Announcement, ReadAnnouncement, Notification
 from django.contrib.auth.models import Group
 
 admin.site.unregister(Group)
@@ -174,3 +174,21 @@ class SupportTicketMessageAdmin(admin.ModelAdmin):
     fields = ['ticket', 'sender', 'message', 'sent_at']
 
 admin.site.register(SupportTicketMessage, SupportTicketMessageAdmin)
+
+
+class AnnouncementAdmin(admin.ModelAdmin):
+    fields = ['message', 'date', 'valid_until']
+
+admin.site.register(Announcement, AnnouncementAdmin)
+
+
+class ReadAnnouncementAdmin(admin.ModelAdmin):
+    fields = ['profile', 'announcement']
+
+admin.site.register(ReadAnnouncement, ReadAnnouncementAdmin)
+
+
+class NotificationAdmin(admin.ModelAdmin):
+    fields = ['profile', 'message', 'date', 'read']
+
+admin.site.register(Notification, NotificationAdmin)

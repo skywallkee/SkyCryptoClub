@@ -9,7 +9,7 @@ from ..API.models import TwoFactorLogin, User, FAQCategory, Question, Profile, \
                          Platform, PlatformCurrency, Wallet, Account, UserRole, \
                          Role, PublicityBanners, Exchange, Currency, ExchangeStatus, ExchangeTaxPeer, \
                          SupportTicket, SupportTicketMessage, SupportCategory, Invitation, FoundDeposit, \
-                         Withdrawal, ProfileBan
+                         Withdrawal, ProfileBan, Notification, Announcement, ReadAnnouncement
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -24,7 +24,7 @@ from ..METHODS import get_json_data, generate_password
 from ..API.views import get_user_language, user_login_form, user_register_form, contact_send_mail, \
                         settings_update_avatar, settings_update_credentials, change_privacy, \
                         remove_linked_account, find_user_stake, confirm_stake_account, confirm_linked_account, \
-                        filterExchanges, isSupport, canBan, valid_captcha
+                        filterExchanges, isSupport, canBan, valid_captcha, getUserUnreadNotifications, markUserNotifications
 from ..API.validator import get_support_create_errors
 import string
 import random
@@ -303,7 +303,8 @@ def dashboard_user(request, username):
                'owner': is_owner, 'name_color': name_color,
                'is_support': isSupport(currentProfile),
                'canBan': canBan(currentUserProfile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'dashboard/profile.html', context)
 
 @not_ip_banned
@@ -330,7 +331,8 @@ def settings(request):
     context['platforms'] = platforms
     context['is_support'] = isSupport(profile)
     context['canBan'] = canBan(profile)
-    context['isWithdrawBanned'] = isWithdrawBanned
+    context['isWithdrawBanned'] = isWithdrawBanned,
+    context['unreadnotifications'] = getUserUnreadNotifications(request)
     return render(request, 'settings/settings.html', context)
 
 @not_ip_banned
@@ -350,7 +352,8 @@ def privacy(request):
                'platforms': platforms,
                'is_support': isSupport(profile),
                'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
 
     if request.method == "POST":
         context["messages"] = change_privacy(request, profile)
@@ -373,7 +376,8 @@ def linked(request):
     context = {'profile': profile, 'platforms': platforms,
                'is_support': isSupport(profile),
                'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     if request.method == "POST":
         if 'removeAccount' in request.POST:
             context = remove_linked_account(request, context)
@@ -398,7 +402,8 @@ def requestExchange(request):
     if len(bans) > 0 and not request.user.is_staff:
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, "emptyTableMessage": MESSAGES[get_user_language(request).name]["EMPTY_EXCHANGE_TABLE"], 
-               "exchanges": exchanges, 'is_support': isSupport(profile), 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
+               "exchanges": exchanges, 'is_support': isSupport(profile), 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     if request.method == "POST":
         getcontext().prec = 20
         data = get_json_data(request.POST, ("requestFrom", "fromPlatform", "fromCurrency", "fromAmount", "toPlatform", "toCurrency", "toAmount"))
@@ -507,7 +512,7 @@ def exchanges(request, page):
                 "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
                 "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
         return render(request, 'exchange/exchanges_list.html', context)
 
     startPagination = max(page - 2, 1)
@@ -530,7 +535,7 @@ def exchanges(request, page):
                "emptyTableMessage": "There are no opened Exchange Requests", "exchanges": exchanges,
                 "exchangeFilter": exchangeFilter, 'is_support': isSupport(profile), 'canBan': canBan(profile),
                 "isModerator": isModerator, "canCloseExchanges": canCloseExchanges,
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'exchange/exchanges_list.html', context)
 
 @not_ip_banned
@@ -574,7 +579,7 @@ def exchanges_history_user(request, username, page):
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
                 "exchangeFilter": exchangeFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
         return render(request, 'transactions/exchanges_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -588,7 +593,7 @@ def exchanges_history_user(request, username, page):
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no exchanges in your history", "exchanges": exchanges,
                 "exchangeFilter": exchangeFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'transactions/exchanges_history.html', context)
 
 @not_ip_banned
@@ -634,7 +639,7 @@ def deposits_history_user(request, username, page):
                "emptyTableMessage": "You have no deposits in your history", "deposits": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
                 "depositFilter": depositFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
         return render(request, 'transactions/deposits_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -648,7 +653,7 @@ def deposits_history_user(request, username, page):
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no deposits in your history", "deposits": deposits,
                 "depositFilter": depositFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'transactions/deposits_history.html', context)
 
 @not_ip_banned
@@ -693,7 +698,7 @@ def withdraws_history_user(request, username, page):
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": [],
                 "messages": [MESSAGES[get_user_language(request).name]["INVALID_PAGE"]],
                 "withdrawFilter": withdrawFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
         return render(request, 'transactions/withdraws_history.html', context)
 
     startPagination = max(page - 2, 1)
@@ -707,7 +712,7 @@ def withdraws_history_user(request, username, page):
                'currentPage': page, 'pages': pages, 'profile': profile, 'platforms': platforms, 
                "emptyTableMessage": "You have no withdrawals in your history", "withdraws": withdraws,
                 "withdrawFilter": withdrawFilter, 'is_support': isSupport(currentProfile), 'canBan': canBan(currentProfile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'transactions/withdraws_history.html', context)
 
 @not_ip_banned
@@ -765,7 +770,8 @@ def exchange_page(request, exchange_id):
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, "exchange": exchange, 
                 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'exchange/exchange.html', context)
 
 @not_ip_banned
@@ -790,7 +796,8 @@ def support(request):
     platforms = Platform.objects.all()
     context = {'profile': profile, 'platforms': platforms, 'tickets': tickets, 
                 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned, 'ticketsFilter': ticketsFilter}
+                'isWithdrawBanned': isWithdrawBanned, 'ticketsFilter': ticketsFilter,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'support/contact_support.html', context)
 
 @not_ip_banned
@@ -812,7 +819,7 @@ def ticket(request, tid):
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'ticket': ticket, 
             'ticket_messages': messages, 'is_support': isSupport(profile), 'canBan': canBan(profile),
-            'isWithdrawBanned': isWithdrawBanned}
+            'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'support/ticket.html', context)
 
 @not_ip_banned
@@ -831,7 +838,7 @@ def createTicket(request):
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                 'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
-                'isWithdrawBanned': isWithdrawBanned}
+                'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
 
     if request.method == "POST":
         context["messages"] = get_support_create_errors(request)
@@ -886,7 +893,8 @@ def faqPanel(request):
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'questions': questions, 'messages': [], 'is_support': isSupport(profile),
                'canDelete': canDelete, 'canEdit': canEdit, 'canAdd': canAdd, 'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned, 'faqFilter': faqFilter}
+               'isWithdrawBanned': isWithdrawBanned, 'faqFilter': faqFilter,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'support/faq_panel.html', context)
 
 @not_ip_banned
@@ -910,7 +918,8 @@ def faqEdit(request, question_id):
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'messages': [], 'is_support': isSupport(profile),
-               'question': question, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
+               'question': question, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
 
     if request.method == "POST":
         data = get_json_data(request.POST, ['category', 'question', 'answer'])
@@ -946,7 +955,8 @@ def faqNew(request):
         isWithdrawBanned = True
     context = {'profile': profile, 'platforms': platforms, 'categories': categories, 
                'messages': [], 'is_support': isSupport(profile), 'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
 
     if request.method == "POST":
         data = get_json_data(request.POST, ['category', 'question', 'answer'])
@@ -985,7 +995,8 @@ def bans(request):
     context = {'profile': profile, 'platforms': platforms, 
                'messages': [], 'is_support': isSupport(profile),
                'bans': bans, 'canBan': canBan(profile),
-               'canUnban': canUnban, 'isWithdrawBanned': isWithdrawBanned}
+               'canUnban': canUnban, 'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'moderator/ban_panel.html', context)
 
 @not_ip_banned
@@ -1049,7 +1060,7 @@ def banUser(request, username):
                'messages': [], 'is_support': isSupport(profile), 'username': username,
                'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
                'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange, 'canBan': canBan(profile),
-               'isWithdrawBanned': isWithdrawBanned}
+               'isWithdrawBanned': isWithdrawBanned, 'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'moderator/ban_user.html', context)
 
 @not_ip_banned
@@ -1113,7 +1124,8 @@ def banEdit(request, banId):
                'messages': [], 'is_support': isSupport(profile),
                'canBanTemporary': canBanTemporary, 'canBanPermanent': canBanPermanent,
                'canBanWithdraw': canBanWithdraw, 'canBanExchange': canBanExchange,
-               'ban': ban, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned}
+               'ban': ban, 'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'moderator/edit_ban.html', context)
     
 
@@ -1132,5 +1144,44 @@ def rate_calculator(request):
     context = {'profile': profile, 'platforms': platforms, 
                'messages': [], 'is_support': isSupport(profile),
                'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
-               'currencies': Currency.objects.all()}
+               'currencies': Currency.objects.all(),
+               'unreadnotifications': getUserUnreadNotifications(request)}
     return render(request, 'exchange/calculator.html', context)
+
+
+@not_ip_banned
+@not_platform_banned
+@login_required
+@ratelimit(block=True, key='user_or_ip', rate='10/m')
+@require_http_methods(["GET"])
+def user_notifications(request, username):
+    if request.user.username != username and not request.user.is_staff:
+        return HttpResponseRedirect(reverse('index'))
+    user = get_user_model().objects.filter(username=username).first()
+    if not user:
+        return HttpResponseRedirect(reverse('index'))
+
+    all_notifications = Notification.objects.filter(profile=Profile.objects.filter(user=user).first(), read=False)
+    last_notifications = Notification.objects.filter(profile=Profile.objects.filter(user=user).first(), date__gte=timezone.now() - timezone.timedelta(hours=24))
+
+    notification_list = all_notifications | last_notifications
+    # intersection = all_notifications & last_notifications
+    # notification_list = union.difference(intersection)
+
+    notifications = []
+    for notification in notification_list.order_by('-date'):
+        notifications.append({"message": notification.message, "date": notification.date, "read": notification.read})
+
+    markUserNotifications(request)
+
+    profile = Profile.objects.filter(user=request.user).first()
+    platforms = Platform.objects.all()
+    isWithdrawBanned = False
+    bans = ProfileBan.objects.filter(profile=profile, withdrawBan=True, banDue__gte=timezone.now())
+    if len(bans) > 0 and not request.user.is_staff:
+        isWithdrawBanned = True
+    context = {'profile': profile, 'platforms': platforms, 
+               'messages': [], 'is_support': isSupport(profile),
+               'canBan': canBan(profile), 'isWithdrawBanned': isWithdrawBanned,
+               'notifications': notifications, 'unreadnotifications': getUserUnreadNotifications(request)}
+    return render(request, 'dashboard/notifications.html', context)

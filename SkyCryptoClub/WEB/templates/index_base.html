@@ -37,7 +37,7 @@
   <!--     Fonts and icons     -->
   <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
   <!-- CSS Files -->
-  <link href="{% static 'assets/css/material-dashboard.css' %}" rel="stylesheet" />
+  <link href="{% static 'assets/css/material-dashboard.min.css' %}" rel="stylesheet" />
 
   <!-- SEO -->
   <meta name="description" content="Cryptocurrency peer-to-peer escrow exchanges and client-server transactions. Post your cryptocurrency exchanging rates and safely perform transactions.">
@@ -232,7 +232,7 @@
   });
 </script>
 
-<body class="off-canvas-sidebar header-filter" filter-color="black  " style="background-image: url('{% static 'assets/img/lock.jpg' %}'); background-size: cover; background-attachment: fixed;">
+<body class="off-canvas-sidebar header-filter" filter-color="black  " style="background-image: url('{% static 'assets/img/login.jpg' %}'); background-size: cover; background-attachment: fixed;">
     <!--   you can change the color of the filter page using: data-color="blue | green | orange | red | purple" -->
 {% if messages %}
 {% for message in messages %}
